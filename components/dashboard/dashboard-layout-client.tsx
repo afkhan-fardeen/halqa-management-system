@@ -20,7 +20,8 @@ import {
   useTheme,
 } from "@mui/material";
 
-const drawerWidth = 288;
+/** Sidebar width — fits grouped nav + session attendance labels */
+const drawerWidth = 304;
 
 function DashboardSidebarPanel({
   unread,
