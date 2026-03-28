@@ -81,7 +81,7 @@ Use a hosted Postgres URL (e.g. Neon) in production via `DATABASE_URL`.
 
 1. **Neon:** Create a database and copy the connection string (prefer **pooled** / serverless-friendly if Neon shows two URLs). Add `?sslmode=require` if not already present.
 
-2. **Vercel:** Import this Git repo, framework **Next.js**. Leave the **root directory** empty (this repository’s root is the Next.js app).
+2. **Vercel:** Import this Git repo, framework **Next.js**. Leave the **Root Directory** empty (`.`). Do **not** set it to `halqa-management-system` unless that folder exists inside the repo (it does not when this repo is only the app). Wrong root → successful build can still yield **404 NOT_FOUND** on every route. Use the default Next.js preset and **do not** set a custom **Output Directory** (Vercel handles `.next`).
 
 3. **Environment variables** (Project → Settings → Environment Variables): copy from `.env.example` and fill at least:
 
