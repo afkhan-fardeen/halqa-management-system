@@ -1,9 +1,11 @@
 /**
  * Seeds fixed demo staff accounts (ADMIN + Riffa INCHARGE, male).
- * Usage: npm run db:seed:staff
+ * Usage:
+ *   npm run db:seed:staff              — uses DATABASE_URL (local Docker)
+ *   npm run db:seed:staff:neon         — uses DATABASE_URL_PRODUCTION (Neon)
  *
  * Password for both (change in production): password123
- * Loads `.env.local` / `.env` for DATABASE_URL.
+ * Loads `.env.local` / `.env` for DATABASE_URL / DATABASE_URL_PRODUCTION.
  */
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
@@ -11,6 +13,19 @@ import { resolve } from "node:path";
 
 config({ path: resolve(process.cwd(), ".env.local") });
 config({ path: resolve(process.cwd(), ".env") });
+
+const useProduction =
+  process.env.SEED_USE_PRODUCTION === "1" ||
+  process.env.MIGRATE_USE_PRODUCTION === "1";
+if (useProduction) {
+  const prod = process.env.DATABASE_URL_PRODUCTION?.trim();
+  if (!prod) {
+    console.error("DATABASE_URL_PRODUCTION is not set (needed for Neon seed).");
+    process.exit(1);
+  }
+  process.env.DATABASE_URL = prod;
+  console.log("[seed:staff] Using DATABASE_URL_PRODUCTION (Neon / production).");
+}
 
 const PASSWORD = "password123";
 

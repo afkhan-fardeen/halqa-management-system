@@ -75,6 +75,7 @@ Members use the home experience at `/`; staff (Admin, Incharge, Secretary) are r
 | `npm run db:studio` | Drizzle Studio |
 | `npm run db:seed` | Seed one `ADMIN` user (local dev) |
 | `npm run db:seed:staff` | Seed `admin@qalbee.com` (ADMIN) + `riffa.incharge@qalbee.com` (INCHARGE, Riffa, male); password `password123` |
+| `npm run db:seed:staff:neon` | Same, against **Neon** (`DATABASE_URL_PRODUCTION` in `.env.local`) |
 | `npm run db:reset-admin-password` | Set password for existing admin (same env as seed) |
 
 Use a hosted Postgres URL (e.g. Neon) in production via `DATABASE_URL`.
