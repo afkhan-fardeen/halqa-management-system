@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AppAttributionFooter } from "@/components/site/app-attribution-footer";
 
 const THEME_KEY = "qalbee-hms-theme";
 
@@ -159,6 +160,9 @@ export function MarketingLandingClient() {
           <button type="button" className="hms-theme-btn" onClick={toggleTheme} aria-label="Toggle theme">
             <ThemeIcon />
           </button>
+          <Link href="/about" className="hms-nav-login">
+            About
+          </Link>
           <Link href="/login" className="hms-nav-login">
             Sign in
           </Link>
@@ -340,12 +344,7 @@ export function MarketingLandingClient() {
         </div>
       </section>
 
-      <footer className="hms-footer">
-        <p>
-          Qalbee &nbsp;·&nbsp; Bahrain &nbsp;·&nbsp; <Link href="/login">Sign in</Link> &nbsp;·&nbsp;{" "}
-          <Link href="/register">Register</Link>
-        </p>
-      </footer>
+      <AppAttributionFooter variant="marketing" />
     </div>
   );
 }

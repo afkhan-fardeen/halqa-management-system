@@ -8,6 +8,7 @@ const publicPaths = new Set([
   "/forgot-password",
   "/reset-password",
   "/install",
+  "/about",
 ]);
 
 /** `/login` and `/login/` both match public routes. */

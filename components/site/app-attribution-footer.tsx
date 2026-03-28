@@ -32,7 +32,31 @@ export function AppAttributionFooter({
       <p className={variant === "marketing" ? "" : "leading-relaxed"}>
         By Afkhan Fardeen Khan, son of Mohammad Haneef Khan · For the sake of Allah
       </p>
-      {!hideAboutLink ? (
+      {hideAboutLink ? (
+        <p className="mt-2">
+          <Link href="/" className={variant === "marketing" ? "hms-form-link" : "underline-offset-4 hover:underline"}>
+            Home
+          </Link>
+          {" · "}
+          <Link
+            href="/install"
+            className={variant === "marketing" ? "hms-form-link" : "underline-offset-4 hover:underline"}
+          >
+            Install
+          </Link>
+          {" · "}
+          <Link href="/login" className={variant === "marketing" ? "hms-form-link" : "underline-offset-4 hover:underline"}>
+            Sign in
+          </Link>
+          {" · "}
+          <Link
+            href="/register"
+            className={variant === "marketing" ? "hms-form-link" : "underline-offset-4 hover:underline"}
+          >
+            Register
+          </Link>
+        </p>
+      ) : (
         <p className={variant === "marketing" ? "mt-2" : "mt-2"}>
           <Link
             href="/about"
@@ -49,7 +73,7 @@ export function AppAttributionFooter({
             </>
           ) : null}
         </p>
-      ) : null}
+      )}
     </footer>
   );
 }

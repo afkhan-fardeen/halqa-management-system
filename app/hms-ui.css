@@ -1188,3 +1188,33 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* About page (public) */
+.hms-nav-right--wrap {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: min(100%, calc(100vw - 120px));
+}
+.hms-nav-login.hms-nav-link-active {
+  border-color: var(--hms-amber);
+  color: var(--hms-amber);
+  font-weight: 600;
+}
+.hms-about-main {
+  padding-top: max(5.5rem, calc(60px + env(safe-area-inset-top, 0px)));
+}
+.hms-card.hms-about-card {
+  max-width: 560px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.hms-about-prose p {
+  margin-bottom: 1.1rem;
+  color: var(--hms-text2);
+  line-height: 1.7;
+  font-size: 15px;
+}
+.hms-about-prose p:last-child {
+  margin-bottom: 0;
+}
