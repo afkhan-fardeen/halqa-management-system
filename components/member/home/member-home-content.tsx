@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import type { MemberHomeDashboard } from "@/lib/queries/member-home";
 import type { PrayerChip } from "@/lib/utils/prayer-display";
 import { formatDisplayMonth } from "@/lib/utils/member-display";
@@ -196,6 +197,53 @@ export function MemberHomeContent({
           </Box>
         </Card>
       )}
+        </motion.div>
+
+        <motion.div variants={sectionMotion}>
+          <Card
+            component={Link}
+            href="/attendance"
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              textDecoration: "none",
+              display: "block",
+              "&:hover": { bgcolor: "action.hover" },
+            }}
+          >
+            <Box
+              sx={{
+                p: 2,
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 1,
+                  bgcolor: "action.selected",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <EventAvailableOutlinedIcon color="primary" fontSize="small" />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="subtitle2" fontWeight={700}>
+                  Session attendance
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Dawati dars & Tarbiyati — mark when you attend
+                </Typography>
+              </Box>
+              <ArrowForwardIcon sx={{ fontSize: 18, color: "text.disabled" }} />
+            </Box>
+          </Card>
         </motion.div>
 
         <motion.div variants={sectionMotion}>

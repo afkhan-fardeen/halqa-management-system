@@ -13,6 +13,7 @@ import {
   Megaphone,
   UserCircle,
   MessageSquare,
+  CalendarCheck,
 } from "lucide-react";
 import { List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 
@@ -39,6 +40,11 @@ const baseNav = [
     href: "/dashboard/submissions",
     label: "Submissions",
     icon: FileSpreadsheet,
+  },
+  {
+    href: "/dashboard/attendance",
+    label: "Attendance",
+    icon: CalendarCheck,
   },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   {

@@ -20,6 +20,7 @@ import MosqueOutlinedIcon from "@mui/icons-material/MosqueOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { PushNotificationsOptIn } from "@/components/pwa/push-notifications-opt-in";
 import type { StaffRole } from "@/lib/auth/roles";
 import {
   formatHalqaGenderLine,
@@ -113,6 +114,24 @@ export function StaffProfileContent({
             {halqaGenderLine}
           </Box>
         </Stack>
+      </Box>
+
+      <Box sx={{ py: 3 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.disabled",
+            letterSpacing: 0.8,
+            textTransform: "uppercase",
+            fontWeight: 600,
+            px: 0.5,
+            display: "block",
+            mb: 1,
+          }}
+        >
+          Notifications
+        </Typography>
+        <PushNotificationsOptIn />
       </Box>
 
       <Box sx={{ py: 3 }}>

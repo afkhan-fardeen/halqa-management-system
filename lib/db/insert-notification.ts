@@ -36,7 +36,9 @@ export async function insertNotification(options: {
       ? "New announcement"
       : options.type === NOTIFICATION_TYPES.PENDING_REGISTRATION_STAFF
         ? "New registration pending"
-        : "Qalbee");
+        : options.type === NOTIFICATION_TYPES.ATTENDANCE_REMINDER
+          ? "Mark attendance"
+          : "Qalbee");
 
   const pushOpen =
     options.pushUrl?.trim() ||

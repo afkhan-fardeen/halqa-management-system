@@ -19,6 +19,8 @@ export function defaultNotificationPathForType(type: string): string {
       return "/login";
     case NOTIFICATION_TYPES.STAFF_ANNOUNCEMENT:
       return "/notifications";
+    case NOTIFICATION_TYPES.ATTENDANCE_REMINDER:
+      return "/attendance";
     case NOTIFICATION_TYPES.DEMO_WELCOME:
       return "/home";
     default:

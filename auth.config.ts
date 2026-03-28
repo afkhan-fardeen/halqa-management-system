@@ -42,8 +42,14 @@ export const authConfig: NextAuthConfig = {
         return true;
       }
 
-      if (pathname.startsWith("/api/auth")) return true;
-      if (pathname.startsWith("/api/cron")) return true;
+      /**
+       * All `/api/*` routes (including `/api/auth`, `/api/cron`, push, export, etc.): do not apply
+       * page redirects here. Handlers enforce `auth()` as needed. Otherwise staff `fetch("/api/...")`
+       * is redirected to `/dashboard` HTML because `/api/*` does not start with `/dashboard`.
+       */
+      if (pathname.startsWith("/api/")) {
+        return true;
+      }
 
       // Staff should land on the dashboard, not the member home.
       if (auth?.user && isStaffRole(auth.user.role) && p === "/") {

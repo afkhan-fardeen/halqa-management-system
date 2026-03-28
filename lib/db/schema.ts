@@ -278,6 +278,110 @@ export const dailyUnitStats = pgTable(
   ],
 );
 
+export const attendanceProgramKindEnum = pgEnum("attendance_program_kind", [
+  "DAWATI",
+  "TARBIYATI",
+]);
+
+export const attendanceMarkStatusEnum = pgEnum("attendance_mark_status", [
+  "PRESENT",
+  "LATE",
+  "ABSENT",
+]);
+
+/** Recurring Dawati / Tarbiyati schedule per halqa + gender unit (one row per kind per unit in v1). */
+export const attendancePrograms = pgTable(
+  "attendance_programs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    halqa: halqaEnum("halqa").notNull(),
+    genderUnit: genderUnitEnum("gender_unit").notNull(),
+    kind: attendanceProgramKindEnum("kind").notNull(),
+    title: varchar("title", { length: 255 }),
+    /** 0 = Sunday … 6 = Saturday (matches JS Date.getDay()). */
+    weekday: integer("weekday").notNull(),
+    /** "HH:MM" 24h */
+    startTime: varchar("start_time", { length: 8 }).notNull(),
+    endTime: varchar("end_time", { length: 8 }).notNull(),
+    timezone: varchar("timezone", { length: 64 }).notNull().default("Asia/Bahrain"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("attendance_programs_halqa_gender_kind_unique").on(
+      table.halqa,
+      table.genderUnit,
+      table.kind,
+    ),
+  ],
+);
+
+export const attendanceSessions = pgTable(
+  "attendance_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    programId: uuid("program_id")
+      .notNull()
+      .references(() => attendancePrograms.id, { onDelete: "cascade" }),
+    sessionDate: date("session_date", { mode: "date" }).notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("attendance_sessions_program_id_session_date_unique").on(
+      table.programId,
+      table.sessionDate,
+    ),
+    index("attendance_sessions_ends_at_idx").on(table.endsAt),
+    index("attendance_sessions_program_id_idx").on(table.programId),
+  ],
+);
+
+export const attendanceMarks = pgTable(
+  "attendance_marks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => attendanceSessions.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: attendanceMarkStatusEnum("status").notNull(),
+    absentReason: text("absent_reason"),
+    lateReason: text("late_reason"),
+    markedAt: timestamp("marked_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("attendance_marks_session_id_user_id_unique").on(table.sessionId, table.userId),
+    index("attendance_marks_user_id_idx").on(table.userId),
+  ],
+);
+
+/** Cron dedupe: one auto-reminder per user per session. */
+export const attendanceReminderSent = pgTable(
+  "attendance_reminder_sent",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    sessionId: uuid("session_id")
+      .notNull()
+      .references(() => attendanceSessions.id, { onDelete: "cascade" }),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("attendance_reminder_sent_user_session_unique").on(
+      table.userId,
+      table.sessionId,
+    ),
+  ],
+);
+
 /** Member-submitted app feedback (fixes, ideas) — visible to admins in the dashboard. */
 export const memberFeedback = pgTable(
   "member_feedback",

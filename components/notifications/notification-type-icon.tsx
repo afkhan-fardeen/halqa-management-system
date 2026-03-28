@@ -8,6 +8,7 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 
 export function NotificationTypeIcon({ type }: { type: string }) {
   const t = type.toLowerCase();
@@ -27,6 +28,10 @@ export function NotificationTypeIcon({ type }: { type: string }) {
     Icon = CheckCircleOutlineIcon;
     bg = "rgba(34, 197, 94, 0.14)";
     fg = "#16A34A";
+  } else if (t.includes("attendance")) {
+    Icon = EventAvailableOutlinedIcon;
+    bg = "rgba(5, 150, 105, 0.14)";
+    fg = "#059669";
   } else if (t.includes("reminder")) {
     Icon = NotificationsNoneOutlinedIcon;
     bg = "rgba(217, 119, 6, 0.18)";

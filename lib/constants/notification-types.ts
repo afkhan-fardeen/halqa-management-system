@@ -19,6 +19,8 @@ export const NOTIFICATION_TYPES = {
   ACCOUNT_DEACTIVATED: "account_deactivated",
   /** Staff broadcast to members (admin or halqa/gender-scoped incharge/secretary) */
   STAFF_ANNOUNCEMENT: "staff_announcement",
+  /** After session end (cron) or manual staff nudge — mark Dawati / Tarbiyati attendance */
+  ATTENDANCE_REMINDER: "attendance_reminder",
 } as const;
 
 export type NotificationTypeKey = keyof typeof NOTIFICATION_TYPES;

@@ -47,7 +47,9 @@ export async function getPushEnvironment(): Promise<PushEnv> {
   let configured = false;
   if (supported) {
     try {
-      const res = await fetch("/api/push/vapid-public-key");
+      const res = await fetch("/api/push/vapid-public-key", {
+        credentials: "include",
+      });
       configured = res.ok;
     } catch {
       configured = false;
@@ -57,9 +59,28 @@ export async function getPushEnvironment(): Promise<PushEnv> {
   return { supported, configured, insecureOrigin };
 }
 
+/**
+ * Ensures `/sw.js` is registered and a worker is active (dashboard + member app both need this).
+ * Without this, `navigator.serviceWorker.ready` can hang or fail if the user enables push before
+ * the root layout’s registration effect runs.
+ */
+export async function ensureServiceWorkerReady(): Promise<ServiceWorkerRegistration> {
+  if (!("serviceWorker" in navigator)) {
+    throw new Error("Service workers are not supported in this browser.");
+  }
+  try {
+    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    return await navigator.serviceWorker.ready;
+  } catch (e) {
+    const msg =
+      e instanceof Error ? e.message : "Could not register the offline worker (sw.js).";
+    throw new Error(msg);
+  }
+}
+
 export async function hasActivePushSubscription(): Promise<boolean> {
   try {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await ensureServiceWorkerReady();
     const sub = await reg.pushManager.getSubscription();
     return !!sub;
   } catch {
@@ -72,7 +93,7 @@ export async function hasActivePushSubscription(): Promise<boolean> {
  */
 export async function subscribeDeviceToPush(): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
-    const res = await fetch("/api/push/vapid-public-key");
+    const res = await fetch("/api/push/vapid-public-key", { credentials: "include" });
     if (!res.ok) {
       return { ok: false, error: "Push is not available on this server." };
     }
@@ -81,7 +102,7 @@ export async function subscribeDeviceToPush(): Promise<{ ok: true } | { ok: fals
     if (perm !== "granted") {
       return { ok: false, error: "Notification permission was not granted." };
     }
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await ensureServiceWorkerReady();
     const existing = await reg.pushManager.getSubscription();
     if (existing) {
       await existing.unsubscribe();
@@ -97,14 +118,33 @@ export async function subscribeDeviceToPush(): Promise<{ ok: true } | { ok: fals
     const save = await fetch("/api/push/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(json),
     });
     if (!save.ok) {
-      return { ok: false, error: "Could not save subscription." };
+      let detail = "Could not save subscription.";
+      if (save.status === 401) {
+        detail = "Your session expired. Sign in again, then enable notifications.";
+      } else {
+        try {
+          const errBody = (await save.json()) as { error?: string };
+          if (errBody.error) {
+            detail =
+              save.status === 400 && errBody.error === "Invalid subscription"
+                ? "Browser sent an invalid subscription. Refresh the page and try again."
+                : errBody.error;
+          }
+        } catch {
+          /* keep default */
+        }
+      }
+      return { ok: false, error: detail };
     }
     return { ok: true };
-  } catch {
-    return { ok: false, error: "Something went wrong. Try again." };
+  } catch (e) {
+    const msg =
+      e instanceof Error ? e.message : "Something went wrong. Try again.";
+    return { ok: false, error: msg };
   }
 }
 
@@ -112,12 +152,13 @@ export const PUSH_WELCOME_DISMISS_KEY = "qalbee-push-welcome-dismissed";
 
 export async function unsubscribeDeviceFromPush(): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await ensureServiceWorkerReady();
     const sub = await reg.pushManager.getSubscription();
     if (sub) {
       await fetch("/api/push/unsubscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ endpoint: sub.endpoint }),
       });
       await sub.unsubscribe();
