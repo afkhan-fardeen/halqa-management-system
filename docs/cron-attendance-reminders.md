@@ -18,17 +18,21 @@ Duplicate cron runs do **not** send duplicate reminders: `attendance_reminder_se
 
 ## Scheduling
 
-Run **every hour** or a few times per day so sessions that end are picked up within the 24h window.
+The handler looks at sessions whose `ends_at` falls in the **last 24 hours**, so **one run per day** is enough to remind everyone who hasn’t marked yet (within that window).
+
+**Vercel Hobby:** cron is limited to **at most once per day** per job — use a daily schedule (e.g. `30 7 * * *` = 07:30 UTC). Hourly schedules require **Pro**.
 
 **Vercel Cron example** (`vercel.json`):
 
 ```json
 {
   "crons": [
-    { "path": "/api/cron/attendance-reminders", "schedule": "15 * * * *" }
+    { "path": "/api/cron/attendance-reminders", "schedule": "30 7 * * *" }
   ]
 }
 ```
+
+Stagger this from your daily log reminder cron (e.g. `0 6 * * *`) so both stay under Hobby limits.
 
 **Manual:**
 
