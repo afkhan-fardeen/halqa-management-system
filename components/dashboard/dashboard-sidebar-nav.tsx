@@ -12,10 +12,11 @@ import {
   BarChart3,
   Megaphone,
   UserCircle,
+  MessageSquare,
 } from "lucide-react";
 import { List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 
-const nav = [
+const baseNav = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/profile", label: "Profile", icon: UserCircle },
   {
@@ -49,11 +50,25 @@ const nav = [
 
 export function DashboardSidebarNav({
   onNavigate,
+  isAdmin = false,
 }: {
   /** Called after a nav item is chosen (e.g. close mobile drawer). */
   onNavigate?: () => void;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
+
+  const nav = isAdmin
+    ? [
+        baseNav[0],
+        {
+          href: "/dashboard/feedback",
+          label: "Member feedback",
+          icon: MessageSquare,
+        },
+        ...baseNav.slice(1),
+      ]
+    : baseNav;
 
   return (
     <List component="nav" dense sx={{ px: 1, py: 1 }}>
@@ -65,7 +80,9 @@ export function DashboardSidebarNav({
               ? pathname === "/dashboard/notifications"
               : href === "/dashboard/profile"
                 ? pathname === "/dashboard/profile"
-                : pathname.startsWith(href);
+                : href === "/dashboard/feedback"
+                  ? pathname === "/dashboard/feedback"
+                  : pathname.startsWith(href);
         return (
           <ListItemButton
             key={href}

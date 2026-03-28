@@ -24,9 +24,11 @@ const drawerWidth = 288;
 
 function DashboardSidebarPanel({
   unread,
+  isAdmin,
   onNavigate,
 }: {
   unread: number;
+  isAdmin: boolean;
   onNavigate?: () => void;
 }) {
   return (
@@ -63,7 +65,7 @@ function DashboardSidebarPanel({
         <InboxLink href="/dashboard/notifications" unread={unread} />
       </Toolbar>
       <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-        <DashboardSidebarNav onNavigate={onNavigate} />
+        <DashboardSidebarNav isAdmin={isAdmin} onNavigate={onNavigate} />
       </Box>
       <Box sx={{ mt: "auto", flexShrink: 0, borderTop: 1, borderColor: "divider", p: 1 }}>
         <SignOutButton className="w-full" />
@@ -74,9 +76,11 @@ function DashboardSidebarPanel({
 
 export function DashboardLayoutClient({
   unread,
+  isAdmin,
   children,
 }: {
   unread: number;
+  isAdmin: boolean;
   children: ReactNode;
 }) {
   const theme = useTheme();
@@ -112,7 +116,7 @@ export function DashboardLayoutClient({
           display: { xs: "none", md: "flex" },
         }}
       >
-        <DashboardSidebarPanel unread={unread} />
+        <DashboardSidebarPanel unread={unread} isAdmin={isAdmin} />
       </Paper>
 
       <Drawer
@@ -129,7 +133,7 @@ export function DashboardLayoutClient({
           },
         }}
       >
-        <DashboardSidebarPanel unread={unread} onNavigate={closeMobile} />
+        <DashboardSidebarPanel unread={unread} isAdmin={isAdmin} onNavigate={closeMobile} />
       </Drawer>
 
       <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>

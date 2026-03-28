@@ -277,3 +277,22 @@ export const dailyUnitStats = pgTable(
     ),
   ],
 );
+
+/** Member-submitted app feedback (fixes, ideas) — visible to admins in the dashboard. */
+export const memberFeedback = pgTable(
+  "member_feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    message: text("message").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("member_feedback_user_id_idx").on(table.userId),
+    index("member_feedback_created_at_idx").on(table.createdAt),
+  ],
+);

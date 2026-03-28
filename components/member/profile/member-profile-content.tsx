@@ -21,6 +21,7 @@ import MosqueOutlinedIcon from "@mui/icons-material/MosqueOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import PhoneIphoneOutlinedIcon from "@mui/icons-material/PhoneIphoneOutlined";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { MemberFeedbackForm } from "@/components/member/profile/member-feedback-form";
 import { PushNotificationsOptIn } from "@/components/pwa/push-notifications-opt-in";
 import { formatDisplayMonth } from "@/lib/utils/member-display";
 import { initials } from "@/lib/utils/profile-display";
@@ -254,6 +255,23 @@ export function MemberProfileContent({
           Notifications on this device
         </Typography>
         <PushNotificationsOptIn />
+      </Box>
+
+      <Box sx={{ px: 0.5, pb: 2 }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.secondary",
+            letterSpacing: 0.8,
+            textTransform: "uppercase",
+            fontWeight: 600,
+            display: "block",
+            mb: 1,
+          }}
+        >
+          Feedback
+        </Typography>
+        <MemberFeedbackForm />
       </Box>
 
       <Box sx={{ pb: 2 }}>
