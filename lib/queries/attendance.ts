@@ -10,6 +10,27 @@ import type { Halqa } from "@/lib/constants/halqas";
 import { isStaffRole } from "@/lib/auth/roles";
 import type { StaffRole } from "@/lib/auth/roles";
 
+/** Maps DB errors to safe UI copy (avoids crashing Server Components when tables are missing). */
+function attendanceQueryError(e: unknown): { error: string } {
+  console.error("[attendance query]", e);
+  const msg = e instanceof Error ? e.message : String(e);
+  if (/42P01|does not exist|relation .*attendance/i.test(msg)) {
+    return {
+      error:
+        "Attendance is not set up on this database yet. Run migrations (including 0008_attendance), then redeploy.",
+    };
+  }
+  if (/DATABASE_URL|ECONNREFUSED|ENOTFOUND/i.test(msg)) {
+    return {
+      error:
+        "Could not connect to the database. Check DATABASE_URL and that the database is reachable.",
+    };
+  }
+  return {
+    error: "Could not load attendance data. Please try again in a moment.",
+  };
+}
+
 export function todayBahrainYmd(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bahrain" });
 }
@@ -121,37 +142,41 @@ export async function listAttendanceProgramsForStaff(session: {
     return { error: "Unauthorized" as const };
   }
 
-  const extra = staffScopeWhere(
-    session.role as StaffRole,
-    session.halqa,
-    session.genderUnit,
-  );
+  try {
+    const extra = staffScopeWhere(
+      session.role as StaffRole,
+      session.halqa,
+      session.genderUnit,
+    );
 
-  const base = db
-    .select({
-      id: attendancePrograms.id,
-      halqa: attendancePrograms.halqa,
-      genderUnit: attendancePrograms.genderUnit,
-      kind: attendancePrograms.kind,
-      title: attendancePrograms.title,
-      weekday: attendancePrograms.weekday,
-      startTime: attendancePrograms.startTime,
-      endTime: attendancePrograms.endTime,
-      timezone: attendancePrograms.timezone,
-      isActive: attendancePrograms.isActive,
-      createdAt: attendancePrograms.createdAt,
-      updatedAt: attendancePrograms.updatedAt,
-    })
-    .from(attendancePrograms)
-    .$dynamic();
+    const base = db
+      .select({
+        id: attendancePrograms.id,
+        halqa: attendancePrograms.halqa,
+        genderUnit: attendancePrograms.genderUnit,
+        kind: attendancePrograms.kind,
+        title: attendancePrograms.title,
+        weekday: attendancePrograms.weekday,
+        startTime: attendancePrograms.startTime,
+        endTime: attendancePrograms.endTime,
+        timezone: attendancePrograms.timezone,
+        isActive: attendancePrograms.isActive,
+        createdAt: attendancePrograms.createdAt,
+        updatedAt: attendancePrograms.updatedAt,
+      })
+      .from(attendancePrograms)
+      .$dynamic();
 
-  const rows = await (extra ? base.where(extra) : base).orderBy(
-    attendancePrograms.halqa,
-    attendancePrograms.genderUnit,
-    attendancePrograms.kind,
-  );
+    const rows = await (extra ? base.where(extra) : base).orderBy(
+      attendancePrograms.halqa,
+      attendancePrograms.genderUnit,
+      attendancePrograms.kind,
+    );
 
-  return { programs: rows };
+    return { programs: rows };
+  } catch (e) {
+    return attendanceQueryError(e);
+  }
 }
 
 export async function getAttendanceProgramByIdForStaff(
@@ -162,26 +187,30 @@ export async function getAttendanceProgramByIdForStaff(
     return { error: "Unauthorized" as const };
   }
 
-  const [row] = await db
-    .select()
-    .from(attendancePrograms)
-    .where(eq(attendancePrograms.id, programId))
-    .limit(1);
+  try {
+    const [row] = await db
+      .select()
+      .from(attendancePrograms)
+      .where(eq(attendancePrograms.id, programId))
+      .limit(1);
 
-  if (!row) {
-    return { error: "Not found" as const };
-  }
-
-  if (session.role !== "ADMIN") {
-    if (
-      row.halqa !== session.halqa ||
-      row.genderUnit !== session.genderUnit
-    ) {
-      return { error: "Forbidden" as const };
+    if (!row) {
+      return { error: "Not found" as const };
     }
-  }
 
-  return { program: row };
+    if (session.role !== "ADMIN") {
+      if (
+        row.halqa !== session.halqa ||
+        row.genderUnit !== session.genderUnit
+      ) {
+        return { error: "Forbidden" as const };
+      }
+    }
+
+    return { program: row };
+  } catch (e) {
+    return attendanceQueryError(e);
+  }
 }
 
 export async function getAttendanceSessionWithProgramForStaff(
@@ -192,33 +221,37 @@ export async function getAttendanceSessionWithProgramForStaff(
     return { error: "Unauthorized" as const };
   }
 
-  const [row] = await db
-    .select({
-      session: attendanceSessions,
-      program: attendancePrograms,
-    })
-    .from(attendanceSessions)
-    .innerJoin(
-      attendancePrograms,
-      eq(attendanceSessions.programId, attendancePrograms.id),
-    )
-    .where(eq(attendanceSessions.id, sessionId))
-    .limit(1);
+  try {
+    const [row] = await db
+      .select({
+        session: attendanceSessions,
+        program: attendancePrograms,
+      })
+      .from(attendanceSessions)
+      .innerJoin(
+        attendancePrograms,
+        eq(attendanceSessions.programId, attendancePrograms.id),
+      )
+      .where(eq(attendanceSessions.id, sessionId))
+      .limit(1);
 
-  if (!row) {
-    return { error: "Not found" as const };
-  }
-
-  if (session.role !== "ADMIN") {
-    if (
-      row.program.halqa !== session.halqa ||
-      row.program.genderUnit !== session.genderUnit
-    ) {
-      return { error: "Forbidden" as const };
+    if (!row) {
+      return { error: "Not found" as const };
     }
-  }
 
-  return row;
+    if (session.role !== "ADMIN") {
+      if (
+        row.program.halqa !== session.halqa ||
+        row.program.genderUnit !== session.genderUnit
+      ) {
+        return { error: "Forbidden" as const };
+      }
+    }
+
+    return row;
+  } catch (e) {
+    return attendanceQueryError(e);
+  }
 }
 
 export async function listSessionsForProgramForStaff(
@@ -233,14 +266,18 @@ export async function listSessionsForProgramForStaff(
     return { error: access.error ?? "Forbidden" };
   }
 
-  const rows = await db
-    .select()
-    .from(attendanceSessions)
-    .where(eq(attendanceSessions.programId, programId))
-    .orderBy(desc(attendanceSessions.sessionDate))
-    .limit(120);
+  try {
+    const rows = await db
+      .select()
+      .from(attendanceSessions)
+      .where(eq(attendanceSessions.programId, programId))
+      .orderBy(desc(attendanceSessions.sessionDate))
+      .limit(120);
 
-  return { sessions: rows };
+    return { sessions: rows };
+  } catch (e) {
+    return attendanceQueryError(e);
+  }
 }
 
 export type SessionMarkWithMember = {
@@ -263,52 +300,56 @@ export async function listMarksForSessionForStaff(
       marks: SessionMarkWithMember[];
     }
 > {
-  const bundle = await getAttendanceSessionWithProgramForStaff(
-    sessionId,
-    staffSession,
-  );
-  if ("error" in bundle) {
-    return bundle;
+  try {
+    const bundle = await getAttendanceSessionWithProgramForStaff(
+      sessionId,
+      staffSession,
+    );
+    if ("error" in bundle) {
+      return bundle;
+    }
+
+    const { session: sess, program } = bundle;
+
+    const members = await db
+      .select({
+        id: users.id,
+        name: users.name,
+      })
+      .from(users)
+      .where(
+        and(
+          eq(users.role, "MEMBER"),
+          eq(users.status, "ACTIVE"),
+          eq(users.halqa, program.halqa),
+          eq(users.genderUnit, program.genderUnit),
+        ),
+      )
+      .orderBy(users.name);
+
+    const markRows = await db
+      .select()
+      .from(attendanceMarks)
+      .where(eq(attendanceMarks.sessionId, sessionId));
+
+    const byUser = new Map(markRows.map((m) => [m.userId, m]));
+
+    const marks: SessionMarkWithMember[] = members.map((u) => {
+      const m = byUser.get(u.id);
+      return {
+        markId: m?.id ?? null,
+        userId: u.id,
+        memberName: u.name,
+        status: m?.status ?? null,
+        lateReason: m?.lateReason ?? null,
+        absentReason: m?.absentReason ?? null,
+      };
+    });
+
+    return { session: sess, program, marks };
+  } catch (e) {
+    return attendanceQueryError(e);
   }
-
-  const { session: sess, program } = bundle;
-
-  const members = await db
-    .select({
-      id: users.id,
-      name: users.name,
-    })
-    .from(users)
-    .where(
-      and(
-        eq(users.role, "MEMBER"),
-        eq(users.status, "ACTIVE"),
-        eq(users.halqa, program.halqa),
-        eq(users.genderUnit, program.genderUnit),
-      ),
-    )
-    .orderBy(users.name);
-
-  const markRows = await db
-    .select()
-    .from(attendanceMarks)
-    .where(eq(attendanceMarks.sessionId, sessionId));
-
-  const byUser = new Map(markRows.map((m) => [m.userId, m]));
-
-  const marks: SessionMarkWithMember[] = members.map((u) => {
-    const m = byUser.get(u.id);
-    return {
-      markId: m?.id ?? null,
-      userId: u.id,
-      memberName: u.name,
-      status: m?.status ?? null,
-      lateReason: m?.lateReason ?? null,
-      absentReason: m?.absentReason ?? null,
-    };
-  });
-
-  return { session: sess, program, marks };
 }
 
 /** Member: load session if it belongs to their halqa/gender program. */

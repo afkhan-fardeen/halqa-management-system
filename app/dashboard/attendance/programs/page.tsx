@@ -24,8 +24,7 @@ import { isStaffRole } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
 import { listAttendanceProgramsForStaff } from "@/lib/queries/attendance";
 import { attendanceKindLabel } from "@/lib/attendance/labels";
-import { HALQA_LABELS } from "@/lib/constants/halqas";
-import type { Halqa } from "@/lib/constants/halqas";
+import { formatHalqaLabel } from "@/lib/constants/halqas";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -108,11 +107,11 @@ export default async function DashboardAttendanceProgramsPage() {
               <TableBody>
                 {list.programs.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell>{HALQA_LABELS[p.halqa as Halqa]}</TableCell>
+                    <TableCell>{formatHalqaLabel(p.halqa)}</TableCell>
                     <TableCell>{p.genderUnit}</TableCell>
                     <TableCell>{attendanceKindLabel(p.kind)}</TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
-                      {WEEKDAYS[p.weekday]} {p.startTime}–{p.endTime}
+                      {WEEKDAYS[p.weekday] ?? "—"} {p.startTime}–{p.endTime}
                     </TableCell>
                     <TableCell>{p.isActive ? "Yes" : "No"}</TableCell>
                     <TableCell className="text-right">
