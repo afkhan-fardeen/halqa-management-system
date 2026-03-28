@@ -2,18 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PublicSiteHeader } from "@/components/marketing/public-site-header";
 import { AppAttributionFooter } from "@/components/site/app-attribution-footer";
 
 const THEME_KEY = "qalbee-hms-theme";
-
-function ThemeIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <circle cx="12" cy="12" r="5" />
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-    </svg>
-  );
-}
 
 const FEATURES = [
   {
@@ -152,25 +144,7 @@ export function MarketingLandingClient() {
 
   return (
     <div className="hms-root min-h-dvh" data-theme={mounted ? theme : "light"}>
-      <nav className="hms-nav">
-        <Link href="/" className="hms-nav-brand">
-          Qalbee<span>.</span>
-        </Link>
-        <div className="hms-nav-right">
-          <button type="button" className="hms-theme-btn" onClick={toggleTheme} aria-label="Toggle theme">
-            <ThemeIcon />
-          </button>
-          <Link href="/about" className="hms-nav-login">
-            About
-          </Link>
-          <Link href="/login" className="hms-nav-login">
-            Sign in
-          </Link>
-          <Link href="/register" className="hms-nav-cta">
-            Get started
-          </Link>
-        </div>
-      </nav>
+      <PublicSiteHeader page="landing" onToggleTheme={toggleTheme} />
 
       <section className="hms-hero">
         <div className="hms-hero-bg" aria-hidden />

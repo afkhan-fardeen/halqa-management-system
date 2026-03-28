@@ -116,6 +116,58 @@
   background: var(--hms-amber-hover);
 }
 
+.hms-nav-menu-wrap {
+  position: relative;
+}
+.hms-nav-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--hms-border);
+  background: var(--hms-bg2);
+  color: var(--hms-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+.hms-nav-menu-btn:hover {
+  border-color: var(--hms-amber);
+  color: var(--hms-amber);
+}
+.hms-nav-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 220px;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--hms-border);
+  background: var(--hms-bg2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+}
+[data-theme="dark"] .hms-nav-dropdown {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+.hms-nav-dropdown-link {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--hms-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+.hms-nav-dropdown-link:hover {
+  background: var(--hms-bg3);
+  color: var(--hms-amber);
+}
+
 .hms-hero {
   min-height: 100vh;
   display: flex;

@@ -1,22 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PublicSiteHeader } from "@/components/marketing/public-site-header";
 import { AppAttributionFooter } from "@/components/site/app-attribution-footer";
 
 const THEME_KEY = "qalbee-hms-theme";
 
-function ThemeIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <circle cx="12" cy="12" r="5" />
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-    </svg>
-  );
-}
-
 /**
- * Public About page — same visual language as the landing (nav, theme, HMS tokens).
+ * Public About page — matches landing header (logo, theme, Menu dropdown).
+ * About is linked from the footer; the menu here offers Home, Sign in, and Get started.
  */
 export function AboutPageClient() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -37,28 +29,7 @@ export function AboutPageClient() {
 
   return (
     <div className="hms-root flex min-h-dvh flex-col" data-theme={mounted ? theme : "light"}>
-      <nav className="hms-nav">
-        <Link href="/" className="hms-nav-brand">
-          Qalbee<span>.</span>
-        </Link>
-        <div className="hms-nav-right hms-nav-right--wrap">
-          <button type="button" className="hms-theme-btn" onClick={toggleTheme} aria-label="Toggle theme">
-            <ThemeIcon />
-          </button>
-          <Link href="/about" className="hms-nav-login hms-nav-link-active" aria-current="page">
-            About
-          </Link>
-          <Link href="/install" className="hms-nav-login max-[420px]:hidden">
-            Install
-          </Link>
-          <Link href="/login" className="hms-nav-login">
-            Sign in
-          </Link>
-          <Link href="/register" className="hms-nav-cta">
-            Get started
-          </Link>
-        </div>
-      </nav>
+      <PublicSiteHeader page="about" onToggleTheme={toggleTheme} />
 
       <main className="hms-about-main flex-1 px-4 pb-16 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
@@ -89,34 +60,6 @@ export function AboutPageClient() {
             </p>
           </article>
         </div>
-
-        <nav
-          className="mx-auto mt-10 flex max-w-[560px] flex-wrap justify-center gap-x-1 gap-y-2 text-sm"
-          style={{ color: "var(--hms-text3)" }}
-          aria-label="Site links"
-        >
-          <Link href="/" className="hms-form-link px-2 font-medium">
-            Home
-          </Link>
-          <span aria-hidden className="select-none px-0.5">
-            ·
-          </span>
-          <Link href="/install" className="hms-form-link px-2 font-medium">
-            Install
-          </Link>
-          <span aria-hidden className="select-none px-0.5">
-            ·
-          </span>
-          <Link href="/login" className="hms-form-link px-2 font-medium">
-            Sign in
-          </Link>
-          <span aria-hidden className="select-none px-0.5">
-            ·
-          </span>
-          <Link href="/register" className="hms-form-link px-2 font-medium">
-            Register
-          </Link>
-        </nav>
       </main>
 
       <AppAttributionFooter variant="marketing" hideAboutLink />

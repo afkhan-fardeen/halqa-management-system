@@ -57,7 +57,7 @@ export function AppAttributionFooter({
           </Link>
         </p>
       ) : (
-        <p className={variant === "marketing" ? "mt-2" : "mt-2"}>
+        <p className="mt-2">
           <Link
             href="/about"
             className={
@@ -68,8 +68,18 @@ export function AppAttributionFooter({
           </Link>
           {variant === "marketing" ? (
             <>
-              {" "}
-              · Qalbee · Bahrain · <Link href="/login">Sign in</Link> · <Link href="/register">Register</Link>
+              {" · "}
+              <Link href="/install" className="hms-form-link">
+                Install
+              </Link>
+              {" · "}
+              <Link href="/login" className="hms-form-link">
+                Sign in
+              </Link>
+              {" · "}
+              <Link href="/register" className="hms-form-link">
+                Register
+              </Link>
             </>
           ) : null}
         </p>
