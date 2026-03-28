@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { MemberHomeContent } from "@/components/member/home/member-home-content";
 import { getMemberHomeDashboard } from "@/lib/queries/member-home";
@@ -17,9 +18,17 @@ export default async function MemberHomePage() {
 
   if (!userId || !isActiveMember) {
     return (
-      <p className="py-8 text-center text-sm text-stone-500">
-        Sign in with an active member account to use this home.
-      </p>
+      <div className="flex flex-col items-center gap-4 py-10 text-center">
+        <p className="text-sm text-stone-600 dark:text-stone-400">
+          Sign in with an active member account to use this home.
+        </p>
+        <Link
+          href="/login"
+          className="inline-flex rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
+        >
+          Sign in
+        </Link>
+      </div>
     );
   }
 

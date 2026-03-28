@@ -10,11 +10,12 @@ const publicPaths = new Set([
   "/install",
 ]);
 
-function isPublicPath(pathname: string) {
-  if (publicPaths.has(pathname)) return true;
-  if (pathname.startsWith("/api/auth")) return true;
-  if (pathname.startsWith("/api/cron")) return true;
-  return false;
+/** `/login` and `/login/` both match public routes. */
+function normalizePathname(pathname: string): string {
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    return pathname.slice(0, -1) || "/";
+  }
+  return pathname;
 }
 
 export const authConfig: NextAuthConfig = {
@@ -29,7 +30,8 @@ export const authConfig: NextAuthConfig = {
   },
   callbacks: {
     authorized({ request, auth }) {
-      const { pathname } = request.nextUrl;
+      const pathname = request.nextUrl.pathname;
+      const p = normalizePathname(pathname);
 
       if (
         pathname.startsWith("/_next") ||
@@ -39,17 +41,28 @@ export const authConfig: NextAuthConfig = {
         return true;
       }
 
-      if (isPublicPath(pathname)) {
-        // Only bounce logged-in users away from sign-in / sign-up — not forgot/reset password
-        // (members open "Reset password" from profile while signed in; staff may use links too).
+      if (pathname.startsWith("/api/auth")) return true;
+      if (pathname.startsWith("/api/cron")) return true;
+
+      // Staff should land on the dashboard, not the member home.
+      if (auth?.user && isStaffRole(auth.user.role) && p === "/") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+
+      if (publicPaths.has(p)) {
         if (
           auth?.user &&
-          (pathname === "/login" || pathname === "/register")
+          (p === "/login" || p === "/register")
         ) {
           const url = request.nextUrl.clone();
           url.pathname = isStaffRole(auth.user.role) ? "/dashboard" : "/";
           return NextResponse.redirect(url);
         }
+        return true;
+      }
+
+      // Member home: entry point without forcing /login first (avoids blank redirect issues).
+      if (p === "/") {
         return true;
       }
 
@@ -63,15 +76,11 @@ export const authConfig: NextAuthConfig = {
       const { role } = auth.user;
 
       if (role === "MEMBER" && pathname.startsWith("/dashboard")) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/";
-        return NextResponse.redirect(url);
+        return NextResponse.redirect(new URL("/", request.url));
       }
 
       if (isStaffRole(role) && !pathname.startsWith("/dashboard")) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/dashboard";
-        return NextResponse.redirect(url);
+        return NextResponse.redirect(new URL("/dashboard", request.url));
       }
 
       return true;
