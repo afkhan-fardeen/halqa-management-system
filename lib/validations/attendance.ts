@@ -10,13 +10,23 @@ const timeHHMM = z
 
 const REASON_MAX = 500;
 
+/** Program row only (halqa / gender / kind / title). Sessions are added separately per date. */
 export const upsertAttendanceProgramSchema = z.object({
   halqa: z.enum(HALQA_VALUES),
   genderUnit: z.enum(GENDER_UNITS),
   kind: z.enum(["DAWATI", "TARBIYATI"]),
   title: z.string().trim().max(200).optional().nullable(),
-  /** 0 = Sunday … 6 = Saturday (JS getDay). */
-  weekday: z.number().int().min(0).max(6),
+  timezone: z.string().trim().min(1).max(64).optional(),
+});
+
+const ymd = z
+  .string()
+  .trim()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD");
+
+export const createAttendanceSessionSchema = z.object({
+  programId: z.string().uuid(),
+  sessionDateYmd: ymd,
   startTime: timeHHMM,
   endTime: timeHHMM,
   timezone: z.string().trim().min(1).max(64).optional(),

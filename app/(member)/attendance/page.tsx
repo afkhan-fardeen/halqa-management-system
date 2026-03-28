@@ -47,7 +47,8 @@ export default async function MemberAttendancePage() {
           Session attendance
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-          Mark Present, Late, or Absent for Dawati dars and Tarbiyati classes in your halqa.
+          Mark Present, Late, or Absent for upcoming classes; your past marks stay below for
+          reference.
         </Typography>
         <MemberAttendanceList rows={rows} />
         <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 2 }}>

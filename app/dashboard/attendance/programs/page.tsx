@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { AttendanceAddSessionForm } from "@/components/dashboard/attendance-add-session-form";
 import {
   AttendanceProgramForm,
   AttendanceProgramRowActions,
@@ -58,20 +59,18 @@ export default async function DashboardAttendanceProgramsPage() {
           Attendance programs
         </h1>
         <p className="text-muted-foreground text-sm">
-          Set up Dawati dars and Tarbiyati class schedules per halqa and gender. Sessions are
-          generated for the next several weeks.
-          {!isAdmin
-            ? " You can only manage your halqa and gender unit."
-            : ""}
+          Create a program per halqa, gender, and kind, then add each class session on the date
+          and time you need. Members mark attendance and see their history.
+          {!isAdmin ? " You can only manage your halqa and gender unit." : ""}
         </p>
       </div>
 
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle>Create or update</CardTitle>
+          <CardTitle>Create or update program</CardTitle>
           <CardDescription>
-            One active program per halqa, gender, and kind (Dawati or Tarbiyati). Saving updates
-            the schedule and materializes upcoming sessions.
+            One row per halqa, gender, and kind (Dawati or Tarbiyati). Add dated sessions in the
+            next card.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,6 +78,24 @@ export default async function DashboardAttendanceProgramsPage() {
             isAdmin={isAdmin}
             defaultHalqa={session.user.halqa}
             defaultGenderUnit={session.user.genderUnit}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle>Add a session</CardTitle>
+          <CardDescription>
+            Choose program, session date, and start/end time (Asia/Bahrain). One session per
+            program per calendar day.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AttendanceAddSessionForm
+            programs={list.programs.map((p) => ({
+              id: p.id,
+              label: `${formatHalqaLabel(p.halqa)} · ${p.genderUnit} · ${attendanceKindLabel(p.kind)}${p.title ? ` — ${p.title}` : ""}`,
+            }))}
           />
         </CardContent>
       </Card>
@@ -100,7 +117,7 @@ export default async function DashboardAttendanceProgramsPage() {
                   <TableHead>Halqa</TableHead>
                   <TableHead>Unit</TableHead>
                   <TableHead>Kind</TableHead>
-                  <TableHead>When</TableHead>
+                  <TableHead>Schedule</TableHead>
                   <TableHead>Active</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -112,8 +129,14 @@ export default async function DashboardAttendanceProgramsPage() {
                     <TableCell>{p.genderUnit}</TableCell>
                     <TableCell>{attendanceKindLabel(p.kind)}</TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
-                      {WEEKDAYS[p.weekday] ?? "—"}{" "}
-                      {formatTimeRange12hFrom24hStrings(p.startTime, p.endTime)}
+                      {p.weekday != null && p.startTime && p.endTime ? (
+                        <>
+                          {WEEKDAYS[p.weekday]}{" "}
+                          {formatTimeRange12hFrom24hStrings(p.startTime, p.endTime)}
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">Per session date</span>
+                      )}
                     </TableCell>
                     <TableCell>{p.isActive ? "Yes" : "No"}</TableCell>
                     <TableCell className="text-right">
@@ -124,7 +147,14 @@ export default async function DashboardAttendanceProgramsPage() {
                         >
                           Sessions →
                         </Link>
-                        <AttendanceProgramRowActions programId={p.id} />
+                        <AttendanceProgramRowActions
+                          programId={p.id}
+                          showRecurringRefresh={
+                            p.weekday != null &&
+                            Boolean(p.startTime) &&
+                            Boolean(p.endTime)
+                          }
+                        />
                       </div>
                     </TableCell>
                   </TableRow>

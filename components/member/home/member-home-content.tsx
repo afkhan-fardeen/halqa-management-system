@@ -238,7 +238,7 @@ export function MemberHomeContent({
                   Session attendance
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Dawati dars & Tarbiyati — mark when you attend
+                  Mark upcoming classes and review past attendance
                 </Typography>
               </Box>
               <ArrowForwardIcon sx={{ fontSize: 18, color: "text.disabled" }} />

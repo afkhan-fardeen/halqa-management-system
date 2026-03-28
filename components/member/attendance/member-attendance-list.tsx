@@ -244,21 +244,64 @@ export function MemberAttendanceList({
   if (rows.length === 0) {
     return (
       <Typography variant="body2" color="text.secondary">
-        No scheduled sessions yet. When your halqa team sets up Dawati and Tarbiyati
-        programs, they will appear here.
+        No sessions yet. When your halqa team adds class dates for Dawati or Tarbiyati, they
+        will appear here.
       </Typography>
     );
   }
 
+  const todayYmd = todayBahrainYmd();
+  const upcoming = rows.filter(
+    (r) => ymdBahrainFromIso(r.sessionDate) >= todayYmd,
+  );
+  const past = rows.filter((r) => ymdBahrainFromIso(r.sessionDate) < todayYmd);
+
+  const sectionTitleSx = {
+    fontWeight: 700,
+    letterSpacing: 0.6,
+    textTransform: "uppercase" as const,
+    display: "block",
+    mb: 0.5,
+  };
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {rows.map((row) => (
-        <SessionCard
-          key={row.sessionId}
-          row={row}
-          highlightSessionId={highlightSessionId}
-        />
-      ))}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+      {upcoming.length > 0 && (
+        <>
+          <Typography variant="caption" color="text.secondary" sx={sectionTitleSx}>
+            Upcoming &amp; today
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {upcoming.map((row) => (
+              <SessionCard
+                key={row.sessionId}
+                row={row}
+                highlightSessionId={highlightSessionId}
+              />
+            ))}
+          </Box>
+        </>
+      )}
+      {past.length > 0 && (
+        <>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ ...sectionTitleSx, mt: upcoming.length > 0 ? 0.5 : 0 }}
+          >
+            Past attendance
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {past.map((row) => (
+              <SessionCard
+                key={row.sessionId}
+                row={row}
+                highlightSessionId={highlightSessionId}
+              />
+            ))}
+          </Box>
+        </>
+      )}
     </Box>
   );
 }

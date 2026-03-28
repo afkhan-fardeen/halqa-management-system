@@ -53,6 +53,14 @@ export async function materializeSessionsForProgram(
     return 0;
   }
 
+  if (
+    program.weekday == null ||
+    !program.startTime ||
+    !program.endTime
+  ) {
+    return 0;
+  }
+
   const startH = parseTimeHHMM(program.startTime);
   const endH = parseTimeHHMM(program.endTime);
 

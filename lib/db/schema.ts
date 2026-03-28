@@ -289,7 +289,7 @@ export const attendanceMarkStatusEnum = pgEnum("attendance_mark_status", [
   "ABSENT",
 ]);
 
-/** Recurring Dawati / Tarbiyati schedule per halqa + gender unit (one row per kind per unit in v1). */
+/** Dawati / Tarbiyati program per halqa + gender unit; optional recurring weekday/times, else sessions are added per date. */
 export const attendancePrograms = pgTable(
   "attendance_programs",
   {
@@ -298,11 +298,11 @@ export const attendancePrograms = pgTable(
     genderUnit: genderUnitEnum("gender_unit").notNull(),
     kind: attendanceProgramKindEnum("kind").notNull(),
     title: varchar("title", { length: 255 }),
-    /** 0 = Sunday … 6 = Saturday (matches JS Date.getDay()). */
-    weekday: integer("weekday").notNull(),
-    /** "HH:MM" 24h */
-    startTime: varchar("start_time", { length: 8 }).notNull(),
-    endTime: varchar("end_time", { length: 8 }).notNull(),
+    /** 0 = Sunday … 6 = Saturday; null = no recurring schedule (sessions added manually). */
+    weekday: integer("weekday"),
+    /** "HH:MM" 24h; null when no recurring schedule. */
+    startTime: varchar("start_time", { length: 8 }),
+    endTime: varchar("end_time", { length: 8 }),
     timezone: varchar("timezone", { length: 64 }).notNull().default("Asia/Bahrain"),
     isActive: boolean("is_active").notNull().default(true),
     createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),

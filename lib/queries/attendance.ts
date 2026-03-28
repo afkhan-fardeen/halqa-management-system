@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   attendanceMarks,
@@ -76,7 +76,7 @@ export type MemberAttendanceSessionRow = {
   endsAt: Date;
   kind: "DAWATI" | "TARBIYATI";
   title: string | null;
-  weekday: number;
+  weekday: number | null;
   markStatus: "PRESENT" | "LATE" | "ABSENT" | null;
   lateReason: string | null;
   absentReason: string | null;
@@ -134,10 +134,13 @@ export async function listMemberAttendanceSessions(
         eq(attendancePrograms.genderUnit, user.genderUnit),
       ),
     )
-    .orderBy(asc(attendanceSessions.sessionDate))
-    .limit(80);
+    .orderBy(desc(attendanceSessions.sessionDate))
+    .limit(200);
 
-  return rows.map((r) => ({
+  const sessionYmdBahrain = (d: Date) =>
+    d.toLocaleDateString("en-CA", { timeZone: "Asia/Bahrain" });
+
+  const mapped = rows.map((r) => ({
     sessionId: r.sessionId,
     programId: r.programId,
     sessionDate: r.sessionDate,
@@ -150,6 +153,20 @@ export async function listMemberAttendanceSessions(
     lateReason: r.lateReason ?? null,
     absentReason: r.absentReason ?? null,
   }));
+
+  const today = todayBahrainYmd();
+  const upcoming = mapped
+    .filter((r) => sessionYmdBahrain(r.sessionDate) >= today)
+    .sort((a, b) =>
+      sessionYmdBahrain(a.sessionDate).localeCompare(sessionYmdBahrain(b.sessionDate)),
+    );
+  const past = mapped
+    .filter((r) => sessionYmdBahrain(r.sessionDate) < today)
+    .sort((a, b) =>
+      sessionYmdBahrain(b.sessionDate).localeCompare(sessionYmdBahrain(a.sessionDate)),
+    );
+
+  return [...upcoming, ...past];
 }
 
 function staffScopeWhere(

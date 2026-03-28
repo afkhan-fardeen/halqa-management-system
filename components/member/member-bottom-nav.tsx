@@ -7,7 +7,6 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import { MEMBER_BAR_ROW_MIN_HEIGHT_PX } from "@/components/member/member-chrome";
 
@@ -25,12 +24,6 @@ const items = [
     label: "Past",
     icon: HistoryOutlinedIcon,
     match: (p: string) => p.startsWith("/history"),
-  },
-  {
-    href: "/attendance",
-    label: "Class",
-    icon: EventAvailableOutlinedIcon,
-    match: (p: string) => p.startsWith("/attendance"),
   },
   {
     href: "/outreach",
@@ -121,7 +114,7 @@ export function MemberBottomNav() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+          gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
           alignItems: "flex-end",
           minHeight: MEMBER_BAR_ROW_MIN_HEIGHT_PX,
           px: 0.25,
@@ -192,12 +185,6 @@ export function MemberBottomNav() {
           label={items[3].label}
           Icon={items[3].icon}
           active={items[3].match(pathname)}
-        />
-        <NavItem
-          href={items[4].href}
-          label={items[4].label}
-          Icon={items[4].icon}
-          active={items[4].match(pathname)}
         />
       </Box>
     </Paper>

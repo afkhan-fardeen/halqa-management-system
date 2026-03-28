@@ -15,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import MosqueOutlinedIcon from "@mui/icons-material/MosqueOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -151,6 +152,17 @@ export function StaffProfileContent({
         </Typography>
         <Card variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
           <List disablePadding>
+            <ListItemButton component={Link} href="/dashboard/attendance/programs">
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <EventAvailableOutlinedIcon fontSize="small" color="primary" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Session attendance"
+                secondary="Programs, sessions, and member marks"
+              />
+              <ChevronRightIcon fontSize="small" color="disabled" />
+            </ListItemButton>
+            <Divider component="li" />
             <ListItemButton disabled>
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <PersonOutlineIcon fontSize="small" color="primary" />

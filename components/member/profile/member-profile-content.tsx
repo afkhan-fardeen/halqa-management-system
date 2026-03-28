@@ -16,6 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import MosqueOutlinedIcon from "@mui/icons-material/MosqueOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -186,6 +187,23 @@ export function MemberProfileContent({
           }}
         >
           <List disablePadding>
+            <ListItemButton component={Link} href="/attendance">
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <EventAvailableOutlinedIcon fontSize="small" color="primary" />
+              </ListItemIcon>
+              <ListItemText
+                primary="Session attendance"
+                secondary="Dawati dars & Tarbiyati — mark when you attend"
+                primaryTypographyProps={{
+                  variant: "body2",
+                  color: "text.primary",
+                  fontWeight: 600,
+                }}
+                secondaryTypographyProps={{ variant: "body2", color: "text.secondary" }}
+              />
+              <ChevronRightIcon fontSize="small" sx={{ color: "action.active" }} />
+            </ListItemButton>
+            <Divider component="li" />
             <ListItemButton disabled>
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <PersonOutlineIcon fontSize="small" color="primary" />
