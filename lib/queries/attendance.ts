@@ -10,24 +10,57 @@ import type { Halqa } from "@/lib/constants/halqas";
 import { isStaffRole } from "@/lib/auth/roles";
 import type { StaffRole } from "@/lib/auth/roles";
 
-/** Maps DB errors to safe UI copy (avoids crashing Server Components when tables are missing). */
+/** Full text from Drizzle / pg (often nests the Postgres detail in `cause`). */
+function errorMessageDeep(e: unknown): string {
+  if (e instanceof Error) {
+    let m = e.message;
+    const c = (e as Error & { cause?: unknown }).cause;
+    if (c instanceof Error) {
+      m = `${m} ${c.message}`;
+    }
+    return m;
+  }
+  return String(e);
+}
+
+/** Maps DB errors to UI copy. Staff-only route — include a short technical tail so ops can fix prod. */
 function attendanceQueryError(e: unknown): { error: string } {
   console.error("[attendance query]", e);
-  const msg = e instanceof Error ? e.message : String(e);
-  if (/42P01|does not exist|relation .*attendance/i.test(msg)) {
+  const msg = errorMessageDeep(e);
+  const lower = msg.toLowerCase();
+
+  if (/42p01|undefined_(table|column)|does not exist|relation ["']?attendance|relation ["']?public\.attendance/i.test(msg)) {
     return {
       error:
-        "Attendance is not set up on this database yet. Run migrations (including 0008_attendance), then redeploy.",
+        "Attendance tables are missing. On production, run: npm run db:migrate (migration 0008_attendance.sql) against your DATABASE_URL, then try again.",
     };
   }
-  if (/DATABASE_URL|ECONNREFUSED|ENOTFOUND/i.test(msg)) {
+  if (
+    /database_url|econnrefused|enotfound|econnreset|etimedout|timeout|getaddrinfo|ssl|certificate|self signed|no pg_hba/i.test(
+      lower,
+    )
+  ) {
     return {
       error:
-        "Could not connect to the database. Check DATABASE_URL and that the database is reachable.",
+        "Could not reach the database. Confirm DATABASE_URL on Vercel matches Neon (SSL), the DB is up, and IP allowlist allows Vercel if you use one.",
     };
   }
+  if (/28p01|password authentication failed|permission denied for (table|schema)|must be owner/i.test(lower)) {
+    return {
+      error:
+        "Database rejected this query (permissions or wrong credentials). Check Neon user/password and that the role can read/write tables.",
+    };
+  }
+  if (/42704|type "attendance_|invalid input value for enum/i.test(lower)) {
+    return {
+      error:
+        "Attendance enums/types are missing or out of date. Re-run migrations (0008_attendance) on this database.",
+    };
+  }
+
+  const tail = msg.replace(/\s+/g, " ").trim().slice(0, 220);
   return {
-    error: "Could not load attendance data. Please try again in a moment.",
+    error: `Could not load attendance data. ${tail || "Unknown error — check Vercel / server logs for [attendance query]."}`,
   };
 }
 
