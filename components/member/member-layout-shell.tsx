@@ -12,6 +12,7 @@ import {
   MemberBottomNav,
 } from "@/components/member/member-bottom-nav";
 import { memberFogBarSx } from "@/components/member/member-chrome";
+import { PushNotificationWelcomeModal } from "@/components/pwa/push-notification-welcome-modal";
 
 /**
  * Expects exactly: [MemberTopBar (or any header), ...pageContent].
@@ -80,6 +81,7 @@ export function MemberLayoutShell({ children }: { children: ReactNode }) {
         </Box>
       </Box>
       <MemberBottomNav />
+      <PushNotificationWelcomeModal audience="member" />
     </Box>
   );
 }

@@ -2,38 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { FormControlLabel, Switch } from "@mui/material";
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
+import {
+  getPushEnvironment,
+  hasActivePushSubscription,
+  isAppleSafari,
+  isIOS,
+  subscribeDeviceToPush,
+  unsubscribeDeviceFromPush,
+} from "@/components/pwa/push-subscription-utils";
 
 function cardClassName() {
   return "border-border bg-card text-card-foreground rounded-lg border p-4 shadow-sm";
-}
-
-function isIOS(): boolean {
-  if (typeof navigator === "undefined") return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent);
-}
-
-/** True for Apple Safari (not Chrome/Firefox/Edge on iOS or desktop). */
-function isAppleSafari(): boolean {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent;
-  const iOS = isIOS();
-  if (iOS) {
-    if (/CriOS|FxiOS|EdgiOS|OPiOS|EdgA|OPT\//.test(ua)) return false;
-    return /Safari\//.test(ua) || (/AppleWebKit/.test(ua) && !/CriOS|FxiOS/.test(ua));
-  }
-  if (/Chrome|Chromium|Edg\/|OPR\/|Firefox|Opera\//.test(ua)) return false;
-  return /Safari/i.test(ua) && /Macintosh|Mac OS X/.test(ua);
 }
 
 /**
@@ -51,38 +30,25 @@ export function PushNotificationsOptIn() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const host = window.location.hostname;
-    const localhost = host === "localhost" || host === "127.0.0.1";
-    setInsecureOrigin(!window.isSecureContext && !localhost);
-    const ok =
-      "serviceWorker" in navigator &&
-      "PushManager" in window &&
-      "Notification" in window;
-    setSupported(ok);
 
     void (async () => {
-      if (!ok) {
-        setConfigured(false);
+      const env = await getPushEnvironment();
+      setInsecureOrigin(env.insecureOrigin);
+      setSupported(env.supported);
+      setConfigured(env.configured);
+
+      if (!env.supported) {
         setReady(true);
         return;
       }
-      try {
-        const res = await fetch("/api/push/vapid-public-key");
-        setConfigured(res.ok);
-        if (res.ok) {
-          try {
-            const reg = await navigator.serviceWorker.ready;
-            const sub = await reg.pushManager.getSubscription();
-            setSubscribed(!!sub);
-          } catch {
-            setSubscribed(false);
-          }
+      if (env.configured) {
+        try {
+          setSubscribed(await hasActivePushSubscription());
+        } catch {
+          setSubscribed(false);
         }
-      } catch {
-        setConfigured(false);
-      } finally {
-        setReady(true);
       }
+      setReady(true);
     })();
   }, []);
 
@@ -90,43 +56,12 @@ export function PushNotificationsOptIn() {
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/push/vapid-public-key");
-      if (!res.ok) {
-        setError("Push is not available on this server.");
-        return;
+      const result = await subscribeDeviceToPush();
+      if (result.ok) {
+        setSubscribed(true);
+      } else {
+        setError(result.error);
       }
-      const { publicKey } = (await res.json()) as { publicKey: string };
-      const perm = await Notification.requestPermission();
-      if (perm !== "granted") {
-        setError("Notification permission was not granted.");
-        return;
-      }
-      const reg = await navigator.serviceWorker.ready;
-      const existing = await reg.pushManager.getSubscription();
-      if (existing) {
-        await existing.unsubscribe();
-      }
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-      const json = sub.toJSON();
-      if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
-        setError("Could not create subscription.");
-        return;
-      }
-      const save = await fetch("/api/push/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(json),
-      });
-      if (!save.ok) {
-        setError("Could not save subscription.");
-        return;
-      }
-      setSubscribed(true);
-    } catch {
-      setError("Something went wrong. Try again.");
     } finally {
       setBusy(false);
     }
@@ -136,19 +71,12 @@ export function PushNotificationsOptIn() {
     setError(null);
     setBusy(true);
     try {
-      const reg = await navigator.serviceWorker.ready;
-      const sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        await fetch("/api/push/unsubscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: sub.endpoint }),
-        });
-        await sub.unsubscribe();
+      const result = await unsubscribeDeviceFromPush();
+      if (result.ok) {
+        setSubscribed(false);
+      } else {
+        setError(result.error);
       }
-      setSubscribed(false);
-    } catch {
-      setError("Could not unsubscribe.");
     } finally {
       setBusy(false);
     }

@@ -4,8 +4,8 @@ import { isStaffRole } from "@/lib/auth/roles";
 import { db } from "@/lib/db";
 import { contacts, dailyLogs, users } from "@/lib/db/schema";
 import { parseYmdToUtcDate } from "@/lib/utils/date";
+import type { Halqa } from "@/lib/constants/halqas";
 
-type Halqa = "MANAMA" | "RIFFA" | "MUHARRAQ" | "UMM_AL_HASSAM";
 type GenderUnit = "MALE" | "FEMALE";
 
 type Scope =

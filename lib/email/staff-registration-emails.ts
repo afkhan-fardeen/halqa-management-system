@@ -6,10 +6,7 @@ import {
   emailPrimaryButtonHtml,
 } from "@/lib/email/html-layout";
 import { sendTransactionalEmail } from "@/lib/email/mailer";
-
-function formatHalqaLabel(halqa: string) {
-  return halqa.replaceAll("_", " ");
-}
+import { formatHalqaLabel } from "@/lib/constants/halqas";
 
 /**
  * Email staff when a new member registers (pending approval). Uses same base URL as password reset.

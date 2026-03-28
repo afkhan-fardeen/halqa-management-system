@@ -7,9 +7,10 @@ import { NOTIFICATION_TYPES } from "@/lib/constants/notification-types";
 import { insertNotification } from "@/lib/db/insert-notification";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
+import { HALQA_VALUES } from "@/lib/constants/halqas";
+import type { Halqa } from "@/lib/constants/halqas";
 import { z } from "zod";
 
-const HALQAS = ["MANAMA", "RIFFA", "MUHARRAQ", "UMM_AL_HASSAM"] as const;
 const GENDER_UNITS = ["MALE", "FEMALE"] as const;
 
 const MESSAGE_MAX = 4000;
@@ -19,7 +20,7 @@ const MIN_MS_BETWEEN_SENDS = 60_000;
 const lastSendByStaff = new Map<string, number>();
 
 const filterSchema = z.object({
-  halqa: z.enum(HALQAS).optional(),
+  halqa: z.enum(HALQA_VALUES).optional(),
   genderUnit: z.enum(GENDER_UNITS).optional(),
 });
 
@@ -64,7 +65,7 @@ function buildMemberScope(args: {
     error: null,
     where: and(
       activeMember,
-      eq(users.halqa, args.sessionHalqa as (typeof HALQAS)[number]),
+      eq(users.halqa, args.sessionHalqa as Halqa),
       eq(users.genderUnit, args.sessionGenderUnit as (typeof GENDER_UNITS)[number]),
     ),
   };

@@ -1,13 +1,10 @@
+import { formatHalqaLabel } from "@/lib/constants/halqas";
 import { NOTIFICATION_TYPES } from "@/lib/constants/notification-types";
-import { sendStaffNewRegistrationEmail } from "@/lib/email/staff-registration-emails";
 import { insertNotification } from "@/lib/db/insert-notification";
+import { sendStaffNewRegistrationEmail } from "@/lib/email/staff-registration-emails";
 import { getStaffRecipientsForNewRegistration } from "@/lib/queries/staff-registration-recipients";
 
 const ACTION_PATH = "/dashboard/registrations";
-
-function formatHalqaLabel(halqa: string) {
-  return halqa.replaceAll("_", " ");
-}
 
 /**
  * In-app + web push for staff; transactional email per recipient (SMTP optional).

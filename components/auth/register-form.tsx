@@ -15,6 +15,7 @@ import {
   registerAction,
   type RegisterState,
 } from "@/lib/actions/register";
+import { HALQA_OPTIONS } from "@/lib/constants/halqas";
 import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -220,10 +221,11 @@ export function RegisterForm() {
             className={`hms-select ${fieldErrors.halqa ? "hms-input-error" : ""}`}
           >
             <option value="">Select halqa</option>
-            <option value="MANAMA">Manama</option>
-            <option value="RIFFA">Riffa</option>
-            <option value="MUHARRAQ">Muharraq</option>
-            <option value="UMM_AL_HASSAM">Umm Al Hassam</option>
+            {HALQA_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
           </select>
           {fieldErrors.halqa ? (
             <p className="text-xs" style={{ color: "var(--hms-danger)" }}>

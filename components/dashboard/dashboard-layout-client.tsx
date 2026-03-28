@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { InboxLink } from "@/components/notifications/inbox-link";
 import { DashboardRefresh } from "@/components/dashboard/dashboard-refresh";
+import { PushNotificationWelcomeModal } from "@/components/pwa/push-notification-welcome-modal";
 import { DashboardSidebarNav } from "@/components/dashboard/dashboard-sidebar-nav";
 import {
   AppBar,
@@ -187,6 +188,7 @@ export function DashboardLayoutClient({
           <Box sx={{ mx: "auto", width: "100%", maxWidth: 1152 }}>{children}</Box>
         </Box>
       </Box>
+      <PushNotificationWelcomeModal audience="staff" />
     </Box>
   );
 }

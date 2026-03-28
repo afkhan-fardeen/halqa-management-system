@@ -11,14 +11,9 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { HALQA_OPTIONS } from "@/lib/constants/halqas";
 
-const HALQAS = [
-  { value: "", label: "All halqas" },
-  { value: "MANAMA", label: "Manama" },
-  { value: "RIFFA", label: "Riffa" },
-  { value: "MUHARRAQ", label: "Muharraq" },
-  { value: "UMM_AL_HASSAM", label: "Umm Al Hassam" },
-] as const;
+const HALQAS = [{ value: "", label: "All halqas" }, ...HALQA_OPTIONS];
 
 const GENDERS = [
   { value: "", label: "All genders" },

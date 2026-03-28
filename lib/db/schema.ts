@@ -13,6 +13,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { HALQA_VALUES } from "@/lib/constants/halqas";
 
 export const userRoleEnum = pgEnum("user_role", [
   "MEMBER",
@@ -21,12 +22,7 @@ export const userRoleEnum = pgEnum("user_role", [
   "ADMIN",
 ]);
 
-export const halqaEnum = pgEnum("halqa", [
-  "MANAMA",
-  "RIFFA",
-  "MUHARRAQ",
-  "UMM_AL_HASSAM",
-]);
+export const halqaEnum = pgEnum("halqa", [...HALQA_VALUES]);
 
 export const genderUnitEnum = pgEnum("gender_unit", ["MALE", "FEMALE"]);
 

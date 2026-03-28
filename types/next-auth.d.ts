@@ -1,7 +1,8 @@
 import type { DefaultSession } from "next-auth";
+import type { Halqa } from "@/lib/constants/halqas";
 
 export type UserRole = "MEMBER" | "SECRETARY" | "INCHARGE" | "ADMIN";
-export type Halqa = "MANAMA" | "RIFFA" | "MUHARRAQ" | "UMM_AL_HASSAM";
+export type { Halqa };
 export type GenderUnit = "MALE" | "FEMALE";
 export type Language = "EN" | "UR";
 export type UserStatus = "PENDING" | "ACTIVE" | "REJECTED" | "DEACTIVATED";
