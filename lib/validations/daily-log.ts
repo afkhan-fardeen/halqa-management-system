@@ -47,7 +47,7 @@ export function buildDailyLogSchema(genderUnit: "MALE" | "FEMALE") {
       quran: z.object({
         quranType: z.enum(["TILAWAT", "TAFSEER", "BOTH"]),
         quranSurah: z.string().trim().min(1).max(255),
-        quranPages: z.coerce.number().int().min(1),
+        quranPages: z.coerce.number().int().min(0),
       }),
       hadithLiterature: hadithLiteratureSchema,
     })
@@ -79,7 +79,7 @@ export function buildSaveDailyLogSectionSchema(genderUnit: "MALE" | "FEMALE") {
         .min(1)
         .max(255)
         .refine((s) => s !== QURAN_SURAH_PLACEHOLDER, "Enter a surah name"),
-      quranPages: z.coerce.number().int().min(1),
+      quranPages: z.coerce.number().int().min(0),
     })
     .strict();
 

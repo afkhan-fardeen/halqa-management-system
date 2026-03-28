@@ -16,8 +16,8 @@ export function MemberHomeGuidance({
         </Alert>
       ) : (
         <Alert severity="info">
-          Daily log has three cards — save each when ready. A draft stays on this device. Outreach is
-          under <strong>Contacts</strong> in the nav.
+          Ehtisaab has three tabs — salah, Quran, and literature and hadith; changes save automatically. A
+          draft stays on this device. Find Raabta in the bottom nav.
         </Alert>
       )}
     </Stack>

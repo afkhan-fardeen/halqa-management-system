@@ -131,7 +131,7 @@ export function MemberProfileContent({
       >
         {[
           { label: "Days logged", val: String(extras.daysLogged) },
-          { label: "Outreach", val: String(extras.contactsTotal) },
+          { label: "Raabta", val: String(extras.contactsTotal) },
           { label: "Aiyanat", val: String(aiyanatHistory.length) },
         ].map((cell) => (
           <Box

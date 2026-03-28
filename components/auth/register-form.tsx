@@ -7,7 +7,6 @@ import {
   type FormEvent,
 } from "react";
 import Link from "next/link";
-import { PasswordInput } from "@/components/auth/password-input";
 import {
   registerSchema,
   fieldErrorsFromZod,
@@ -27,6 +26,7 @@ export function RegisterForm() {
     initialState,
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showPw, setShowPw] = useState(false);
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -141,21 +141,53 @@ export function RegisterForm() {
         </div>
       </div>
       <div className="hms-field">
-        <PasswordInput
-          id="password"
-          name="password"
-          label="Password"
-          placeholder="At least 8 characters, one number"
-          autoComplete="new-password"
-          required
-          inputProps={{ minLength: 8 }}
-          error={Boolean(fieldErrors.password)}
-          helperText={
-            fieldErrors.password
-              ? fieldErrors.password
-              : "At least 8 characters and one number."
-          }
-        />
+        <label className="hms-label" htmlFor="password">
+          Password
+        </label>
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPw ? "text" : "password"}
+            autoComplete="new-password"
+            placeholder="At least 8 characters, one number"
+            required
+            minLength={8}
+            inputMode="text"
+            className={`hms-input pr-11 ${fieldErrors.password ? "hms-input-error" : ""}`}
+            aria-invalid={Boolean(fieldErrors.password)}
+            aria-describedby={fieldErrors.password ? "password-error" : "password-hint"}
+          />
+          <button
+            type="button"
+            tabIndex={-1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent p-1"
+            style={{ color: "var(--hms-text3)" }}
+            onClick={() => setShowPw((s) => !s)}
+            aria-label={showPw ? "Hide password" : "Show password"}
+          >
+            {showPw ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </button>
+        </div>
+        {fieldErrors.password ? (
+          <p id="password-error" className="text-xs" style={{ color: "var(--hms-danger)" }}>
+            {fieldErrors.password}
+          </p>
+        ) : (
+          <p id="password-hint" className="text-xs" style={{ color: "var(--hms-text3)" }}>
+            At least 8 characters and one number.
+          </p>
+        )}
       </div>
       <div className="hms-field">
         <label className="hms-label" htmlFor="phone">

@@ -10,18 +10,17 @@ export function AuthBrand() {
         component={Link}
         href="/login"
         variant="h2"
-        color="primary"
+        className="hms-brand"
         sx={{
           fontWeight: 700,
           textDecoration: "none",
           display: "inline-block",
           lineHeight: 1.05,
           letterSpacing: "-0.03em",
+          fontSize: "2rem",
         }}
-        dir="rtl"
-        lang="ar"
       >
-        قلبي
+        Qalbee<span>.</span>
       </Typography>
       <Typography
         variant="body1"

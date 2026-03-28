@@ -16,9 +16,9 @@ export default async function OutreachPage() {
   return (
     <MemberPageShell>
       <MemberScreenHeader
-        eyebrow="Outreach"
-        title="Contacts"
-        description="Log people you reached — separate from your daily worship log."
+        eyebrow="Raabta"
+        title="Raabta"
+        description="Record da'wah contacts — separate from your daily worship log."
       />
 
       <MemberOutreachPanel rows={rows} />

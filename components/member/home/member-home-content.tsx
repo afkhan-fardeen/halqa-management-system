@@ -399,7 +399,7 @@ export function MemberHomeContent({
           </Card>
           <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: 1, p: 2 }}>
             <Typography variant="caption" color="text.disabled">
-              Outreach
+              Raabta
             </Typography>
             <Typography variant="h4" sx={{ mt: 0.5, fontWeight: 600, lineHeight: 1.2 }}>
               {contactTotal}

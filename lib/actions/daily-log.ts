@@ -44,7 +44,7 @@ function basePlaceholderRow(
     isha: salah.isha,
     quranType: "TILAWAT" as QuranTypeCol,
     quranSurah: QURAN_SURAH_PLACEHOLDER,
-    quranPages: 1,
+    quranPages: 0,
     hadith: false,
     literatureSkipped: false,
     bookTitle: null as string | null,

@@ -47,15 +47,21 @@ export function MemberTopBarClient({
               href="/home"
               variant="h6"
               sx={{
-                fontFamily: (t) => t.typography.h6.fontFamily,
+                fontFamily: "var(--font-hms-serif), 'DM Serif Display', serif",
                 fontWeight: 700,
-                letterSpacing: "-0.03em",
+                letterSpacing: "-0.02em",
                 textDecoration: "none",
                 color: "text.primary",
                 lineHeight: 1.15,
+                display: "flex",
+                alignItems: "baseline",
+                gap: "2px",
               }}
             >
-              قلبي
+              Qalbee
+              <Box component="span" sx={{ color: "primary.main" }}>
+                .
+              </Box>
             </Typography>
             <Chip
               label="Members"

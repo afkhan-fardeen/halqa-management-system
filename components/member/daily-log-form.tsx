@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -29,6 +30,7 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { saveDailyLogSection } from "@/lib/actions/daily-log";
+import { buildSaveDailyLogSectionSchema } from "@/lib/validations/daily-log";
 import { DailyLogHmsShell } from "@/components/member/daily-log-hms-shell";
 import type { DailyLogForEdit } from "@/lib/queries/daily-log";
 import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
@@ -65,7 +67,7 @@ function defaultForm(g: Gender, dateYmd: string): FormState {
     quran: {
       quranType: "TILAWAT",
       quranSurah: QURAN_SURAH_PLACEHOLDER,
-      quranPages: 1,
+      quranPages: 0,
     },
     hadithLiterature: {
       hadithRead: false,
@@ -110,7 +112,7 @@ export function DailyLogForm({
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState(0);
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [pendingSection, setPendingSection] = useState<
     "salah" | "quran" | "hadith" | null
   >(null);
@@ -131,6 +133,9 @@ export function DailyLogForm({
   }, [initial, genderUnit, defaultDateYmd]);
 
   const [form, setForm] = useState<FormState>(base);
+  const formRef = useRef(form);
+  formRef.current = form;
+
   const [surahInput, setSurahInput] = useState(() =>
     base.quran.quranSurah === QURAN_SURAH_PLACEHOLDER
       ? ""
@@ -145,6 +150,12 @@ export function DailyLogForm({
         : base.quran.quranSurah,
     );
   }, [base]);
+
+  const [autoSaveReady, setAutoSaveReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setAutoSaveReady(true), 600);
+    return () => clearTimeout(t);
+  }, []);
 
   const draftHydrateKey = useMemo(
     () =>
@@ -261,57 +272,101 @@ export function DailyLogForm({
   function setSalah(p: (typeof PRAYERS)[number], v: string) {
     setForm((f) => ({
       ...f,
+      salatSaved: false,
       salah: { ...f.salah, [p]: v },
     }));
   }
 
-  function saveSection(section: "salah" | "quran" | "hadith") {
-    setPendingSection(section);
-    startTransition(async () => {
-      const payload =
+  const flushSection = useCallback(
+    (section: "salah" | "quran" | "hadith", opts?: { silent?: boolean }) => {
+      const silent = opts?.silent ?? false;
+      const f = formRef.current;
+      const schema = buildSaveDailyLogSectionSchema(genderUnit);
+      const parsed =
         section === "salah"
-          ? { section, date: form.date, salah: form.salah }
+          ? schema.safeParse({
+              section: "salah",
+              date: f.date,
+              salah: f.salah,
+            })
           : section === "quran"
-            ? { section, date: form.date, quran: form.quran }
-            : {
-                section,
-                date: form.date,
-                hadithLiterature: form.hadithLiterature,
-              };
+            ? schema.safeParse({
+                section: "quran",
+                date: f.date,
+                quran: f.quran,
+              })
+            : schema.safeParse({
+                section: "hadith",
+                date: f.date,
+                hadithLiterature: f.hadithLiterature,
+              });
 
-      const res = await saveDailyLogSection(payload);
-      setPendingSection(null);
-      if (res.error) {
-        toast.error("Couldn’t save", { description: res.error });
+      if (!parsed.success) {
         return;
       }
-      const nextSalat = section === "salah" ? true : form.salatSaved;
-      const nextQuran = section === "quran" ? true : form.quranSaved;
-      const nextHadith = section === "hadith" ? true : form.hadithSaved;
-      if (section === "salah") {
-        setForm((f) => ({ ...f, salatSaved: true }));
-      } else if (section === "quran") {
-        setForm((f) => ({ ...f, quranSaved: true }));
-      } else {
-        setForm((f) => ({ ...f, hadithSaved: true }));
-      }
-      if (nextSalat && nextQuran && nextHadith) {
-        clearDailyLogDraft(userId, form.date);
-      }
-      toast.success("Saved");
-      router.refresh();
-    });
-  }
+
+      setPendingSection(section);
+      startTransition(async () => {
+        const res = await saveDailyLogSection(parsed.data);
+        setPendingSection(null);
+        if (res.error) {
+          toast.error("Couldn’t save", { description: res.error });
+          return;
+        }
+        const nextSalat = section === "salah" ? true : f.salatSaved;
+        const nextQuran = section === "quran" ? true : f.quranSaved;
+        const nextHadith = section === "hadith" ? true : f.hadithSaved;
+        if (section === "salah") {
+          setForm((prev) => ({ ...prev, salatSaved: true }));
+        } else if (section === "quran") {
+          setForm((prev) => ({ ...prev, quranSaved: true }));
+        } else {
+          setForm((prev) => ({ ...prev, hadithSaved: true }));
+        }
+        if (nextSalat && nextQuran && nextHadith) {
+          clearDailyLogDraft(userId, f.date);
+        }
+        if (!silent) {
+          toast.success("Saved");
+        }
+        router.refresh();
+      });
+    },
+    [genderUnit, router, userId],
+  );
+
+  useEffect(() => {
+    if (!autoSaveReady) return;
+    const id = setTimeout(() => flushSection("salah", { silent: true }), 1500);
+    return () => clearTimeout(id);
+  }, [form.salah, form.date, autoSaveReady, flushSection]);
+
+  useEffect(() => {
+    if (!autoSaveReady) return;
+    const id = setTimeout(() => flushSection("quran", { silent: true }), 1500);
+    return () => clearTimeout(id);
+  }, [
+    form.quran.quranType,
+    form.quran.quranSurah,
+    form.quran.quranPages,
+    form.date,
+    autoSaveReady,
+    flushSection,
+  ]);
+
+  useEffect(() => {
+    if (!autoSaveReady) return;
+    const id = setTimeout(() => flushSection("hadith", { silent: true }), 1500);
+    return () => clearTimeout(id);
+  }, [form.hadithLiterature, form.date, autoSaveReady, flushSection]);
 
   const maleOpts = ["BA_JAMAAT", "MUNFARID", "QAZA"] as const;
   const femaleOpts = ["ON_TIME", "QAZA"] as const;
   const opts = genderUnit === "MALE" ? maleOpts : femaleOpts;
 
-  const busy = (s: "salah" | "quran" | "hadith") =>
-    pending && pendingSection === s;
-
-  const draftLabel =
-    draftStatus === "saving"
+  const draftLabel = pendingSection
+    ? `Saving ${pendingSection === "salah" ? "prayers" : pendingSection === "quran" ? "Quran" : "literature & hadith"}…`
+    : draftStatus === "saving"
       ? "Saving draft…"
       : lastSaved
         ? `Draft · ${lastSaved.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`
@@ -337,13 +392,13 @@ export function DailyLogForm({
             mb: 1,
           }}
         >
-          Daily log
+          Ehtisaab
         </Typography>
         <Typography variant="h5" component="h1" sx={{ fontWeight: 700, lineHeight: 1.2, mb: 0.5 }}>
           Today&apos;s report
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.55 }}>
-          Salah, Quran, and hadith — open each tab and save when ready.
+          Salah, Quran, and literature — changes save automatically a few seconds after you edit.
         </Typography>
 
         <div className="hms-daily-date-bar">
@@ -369,12 +424,12 @@ export function DailyLogForm({
           <span>{draftLabel}</span>
         </div>
 
-        <div className="hms-daily-tab-nav" role="tablist" aria-label="Daily log sections">
+        <div className="hms-daily-tab-nav" role="tablist" aria-label="Ehtisaab sections">
           {(
             [
               ["Salah", form.salatSaved],
               ["Quran", form.quranSaved],
-              ["Hadith", form.hadithSaved],
+              ["Lit. & Hadith", form.hadithSaved],
             ] as const
           ).map(([label, done], i) => (
             <button
@@ -464,17 +519,6 @@ export function DailyLogForm({
                   </div>
                 ))}
               </div>
-              <button
-                type="button"
-                className="hms-daily-save-btn"
-                disabled={busy("salah")}
-                onClick={() => saveSection("salah")}
-              >
-                {busy("salah") ? (
-                  <CircularProgress size={20} sx={{ color: "#fff" }} />
-                ) : null}
-                {busy("salah") ? "Saving…" : "Save prayers"}
-              </button>
             </Stack>
           </CardContent>
         </Card>
@@ -509,6 +553,7 @@ export function DailyLogForm({
                 onChange={(e) =>
                   setForm((f) => ({
                     ...f,
+                    quranSaved: false,
                     quran: {
                       ...f.quran,
                       quranType: e.target.value as FormState["quran"]["quranType"],
@@ -529,6 +574,7 @@ export function DailyLogForm({
                 setSurahInput(v);
                 setForm((f) => ({
                   ...f,
+                  quranSaved: false,
                   quran: {
                     ...f.quran,
                     quranSurah: v.trim() ? v : QURAN_SURAH_PLACEHOLDER,
@@ -546,33 +592,24 @@ export function DailyLogForm({
               )}
             />
             <TextField
-              label="Pages"
+              label="Pages (optional)"
               type="number"
-              inputProps={{ min: 1 }}
+              inputProps={{ min: 0 }}
               value={form.quran.quranPages}
               onChange={(e) =>
                 setForm((f) => ({
                   ...f,
+                  quranSaved: false,
                   quran: {
                     ...f.quran,
-                    quranPages: Number(e.target.value) || 1,
+                    quranPages: Math.max(0, Number(e.target.value) || 0),
                   },
                 }))
               }
               sx={{ maxWidth: 160 }}
               size="small"
+              helperText="0 if not tracking pages for this surah."
             />
-            <button
-              type="button"
-              className="hms-daily-save-btn"
-              disabled={busy("quran")}
-              onClick={() => saveSection("quran")}
-            >
-              {busy("quran") ? (
-                <CircularProgress size={20} sx={{ color: "#fff" }} />
-              ) : null}
-              {busy("quran") ? "Saving…" : "Save Quran"}
-            </button>
           </Stack>
         </CardContent>
       </Card>
@@ -581,7 +618,7 @@ export function DailyLogForm({
         {activeTab === 2 ? (
           <Card variant="outlined" sx={cardShellSx}>
         <CardHeader
-          title="Hadith & literature"
+          title="Literature & Hadith"
           titleTypographyProps={{ variant: "h6", fontWeight: 700 }}
           action={
             form.hadithSaved ? (
@@ -605,6 +642,7 @@ export function DailyLogForm({
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
+                      hadithSaved: false,
                       hadithLiterature: {
                         ...f.hadithLiterature,
                         hadithRead: e.target.checked,
@@ -624,6 +662,7 @@ export function DailyLogForm({
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
+                      hadithSaved: false,
                       hadithLiterature: {
                         ...f.hadithLiterature,
                         literatureSkipped: e.target.checked,
@@ -644,6 +683,7 @@ export function DailyLogForm({
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
+                      hadithSaved: false,
                       hadithLiterature: {
                         ...f.hadithLiterature,
                         bookTitle: e.target.value,
@@ -662,6 +702,7 @@ export function DailyLogForm({
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
+                      hadithSaved: false,
                       hadithLiterature: {
                         ...f.hadithLiterature,
                         bookDescription: e.target.value,
@@ -673,17 +714,6 @@ export function DailyLogForm({
                 />
               </>
             ) : null}
-            <button
-              type="button"
-              className="hms-daily-save-btn"
-              disabled={busy("hadith")}
-              onClick={() => saveSection("hadith")}
-            >
-              {busy("hadith") ? (
-                <CircularProgress size={20} sx={{ color: "#fff" }} />
-              ) : null}
-              {busy("hadith") ? "Saving…" : "Save hadith & literature"}
-            </button>
           </Stack>
         </CardContent>
       </Card>

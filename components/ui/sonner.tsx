@@ -8,8 +8,9 @@ import {
 } from "@/components/member/member-theme-provider";
 import { CheckCircle2, CircleAlert, Info, Loader2 } from "lucide-react";
 
-/** Horizontal center, ~30% of viewport height from the top (below status bar area on phones). */
-const TOAST_TOP_OFFSET = "calc(30vh + env(safe-area-inset-top, 0px))";
+const TOAST_BOTTOM_OFFSET =
+  "calc(16px + env(safe-area-inset-bottom, 0px))";
+const TOAST_LEFT_OFFSET = "calc(16px + env(safe-area-inset-left, 0px))";
 
 function readToastTheme(): "light" | "dark" {
   if (typeof window === "undefined") return "light";
@@ -55,9 +56,17 @@ export function Toaster() {
     <Sonner
       theme={theme}
       richColors={false}
-      position="top-center"
-      offset={mounted ? { top: TOAST_TOP_OFFSET } : { top: "30vh" }}
-      mobileOffset={mounted ? { top: TOAST_TOP_OFFSET } : { top: "30dvh" }}
+      position="bottom-left"
+      offset={
+        mounted
+          ? { bottom: TOAST_BOTTOM_OFFSET, left: TOAST_LEFT_OFFSET }
+          : { bottom: "16px", left: "16px" }
+      }
+      mobileOffset={
+        mounted
+          ? { bottom: TOAST_BOTTOM_OFFSET, left: TOAST_LEFT_OFFSET }
+          : { bottom: "16px", left: "16px" }
+      }
       gap={6}
       visibleToasts={5}
       toastOptions={{

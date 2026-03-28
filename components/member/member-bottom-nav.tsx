@@ -30,7 +30,7 @@ const items = [
   },
   {
     href: "/outreach",
-    label: "Contacts",
+    label: "Raabta",
     icon: ContactsOutlinedIcon,
     match: (p: string) => p.startsWith("/outreach"),
   },
@@ -150,7 +150,7 @@ export function MemberBottomNav() {
             component={Link}
             href="/submit"
             color="primary"
-            aria-label="Submit daily log"
+            aria-label="Open Ehtisaab daily report"
             sx={{
               width: 58,
               height: 58,
@@ -172,7 +172,7 @@ export function MemberBottomNav() {
               color: submitActive ? "primary.main" : "text.disabled",
             }}
           >
-            Log
+            Ehtisaab
           </Typography>
         </Box>
 

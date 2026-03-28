@@ -44,12 +44,20 @@ function DashboardSidebarPanel({
           component={Link}
           href="/dashboard"
           color="primary"
-          sx={{ fontWeight: 800, textDecoration: "none" }}
+          sx={{
+            fontWeight: 800,
+            textDecoration: "none",
+            fontFamily: "var(--font-hms-serif), 'DM Serif Display', serif",
+            display: "flex",
+            alignItems: "baseline",
+            gap: "2px",
+          }}
           onClick={() => onNavigate?.()}
-          dir="rtl"
-          lang="ar"
         >
-          قلبي
+          Qalbee
+          <Box component="span" sx={{ color: "primary.main" }}>
+            .
+          </Box>
         </Typography>
         <InboxLink href="/dashboard/notifications" unread={unread} />
       </Toolbar>
