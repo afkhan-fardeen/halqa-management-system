@@ -1,31 +1,105 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import {
   deactivateAttendanceProgram,
   regenerateAttendanceSessions,
   upsertAttendanceProgram,
 } from "@/lib/actions/attendance-programs";
+import {
+  parse24hTo12hParts,
+  todayYmdBahrain,
+  twelveHourPartsTo24h,
+  weekdayFromYmdBahrain,
+  type Meridiem,
+} from "@/lib/attendance/time-12h";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { HALQA_OPTIONS, type Halqa } from "@/lib/constants/halqas";
 import { toast } from "sonner";
 
-const WEEKDAYS = [
-  { value: "", label: "Weekday" },
-  { value: "0", label: "Sunday" },
-  { value: "1", label: "Monday" },
-  { value: "2", label: "Tuesday" },
-  { value: "3", label: "Wednesday" },
-  { value: "4", label: "Thursday" },
-  { value: "5", label: "Friday" },
-  { value: "6", label: "Saturday" },
-] as const;
-
 const KINDS = [
   { value: "DAWATI", label: "Dawati dars" },
   { value: "TARBIYATI", label: "Tarbiyati class" },
 ] as const;
+
+const WEEKDAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+const HOURS_12 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
+const MINUTES = Array.from({ length: 60 }, (_, i) => i);
+
+function TimeRow12h({
+  idPrefix,
+  label,
+  hour12,
+  minute,
+  meridiem,
+  onHour,
+  onMinute,
+  onMeridiem,
+}: {
+  idPrefix: string;
+  label: string;
+  hour12: number;
+  minute: number;
+  meridiem: Meridiem;
+  onHour: (v: number) => void;
+  onMinute: (v: number) => void;
+  onMeridiem: (v: Meridiem) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          id={`${idPrefix}-hour`}
+          value={hour12}
+          onChange={(e) => onHour(Number(e.target.value))}
+          className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          aria-label={`${label} hour`}
+        >
+          {HOURS_12.map((h) => (
+            <option key={h} value={h}>
+              {h}
+            </option>
+          ))}
+        </select>
+        <span className="text-muted-foreground text-sm">:</span>
+        <select
+          id={`${idPrefix}-min`}
+          value={minute}
+          onChange={(e) => onMinute(Number(e.target.value))}
+          className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          aria-label={`${label} minute`}
+        >
+          {MINUTES.map((m) => (
+            <option key={m} value={m}>
+              {String(m).padStart(2, "0")}
+            </option>
+          ))}
+        </select>
+        <select
+          id={`${idPrefix}-ap`}
+          value={meridiem}
+          onChange={(e) => onMeridiem(e.target.value as Meridiem)}
+          className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          aria-label={`${label} AM or PM`}
+        >
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+    </div>
+  );
+}
 
 export function AttendanceProgramForm({
   isAdmin,
@@ -41,9 +115,21 @@ export function AttendanceProgramForm({
   const [genderUnit, setGenderUnit] = useState("");
   const [kind, setKind] = useState<"DAWATI" | "TARBIYATI">("DAWATI");
   const [title, setTitle] = useState("");
-  const [weekday, setWeekday] = useState("5");
-  const [startTime, setStartTime] = useState("19:00");
-  const [endTime, setEndTime] = useState("20:30");
+
+  const initialDate = useMemo(() => todayYmdBahrain(), []);
+  const [referenceYmd, setReferenceYmd] = useState(initialDate);
+
+  const s0 = useMemo(() => parse24hTo12hParts("19:00"), []);
+  const e0 = useMemo(() => parse24hTo12hParts("20:30"), []);
+  const [startH, setStartH] = useState(s0.hour12);
+  const [startM, setStartM] = useState(s0.minute);
+  const [startAp, setStartAp] = useState<Meridiem>(s0.meridiem);
+  const [endH, setEndH] = useState(e0.hour12);
+  const [endM, setEndM] = useState(e0.minute);
+  const [endAp, setEndAp] = useState<Meridiem>(e0.meridiem);
+
+  const weekday = weekdayFromYmdBahrain(referenceYmd);
+  const weekdayLabel = WEEKDAY_NAMES[weekday] ?? "—";
 
   const effectiveHalqa = (isAdmin ? halqa : defaultHalqa) as Halqa | "";
   const effectiveGender = (isAdmin ? genderUnit : defaultGenderUnit) as
@@ -60,13 +146,23 @@ export function AttendanceProgramForm({
           toast.error("Select halqa and gender");
           return;
         }
+        const startTime = twelveHourPartsTo24h({
+          hour12: startH,
+          minute: startM,
+          meridiem: startAp,
+        });
+        const endTime = twelveHourPartsTo24h({
+          hour12: endH,
+          minute: endM,
+          meridiem: endAp,
+        });
         startTransition(async () => {
           const res = await upsertAttendanceProgram({
             halqa: effectiveHalqa as Halqa,
             genderUnit: effectiveGender,
             kind,
             title: title.trim() || null,
-            weekday: Number.parseInt(weekday, 10),
+            weekday,
             startTime,
             endTime,
             timezone: "Asia/Bahrain",
@@ -146,43 +242,43 @@ export function AttendanceProgramForm({
             placeholder="e.g. Main hall"
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="ap-weekday">Weekday</Label>
-          <select
-            id="ap-weekday"
-            value={weekday}
-            onChange={(e) => setWeekday(e.target.value)}
-            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-          >
-            {WEEKDAYS.filter((w) => w.value !== "").map((w) => (
-              <option key={w.value} value={w.value}>
-                {w.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="ap-start">Start (24h)</Label>
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="ap-repeat-date">Repeats every week on</Label>
           <input
-            id="ap-start"
+            id="ap-repeat-date"
+            type="date"
             required
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            placeholder="19:00"
+            value={referenceYmd}
+            onChange={(e) => setReferenceYmd(e.target.value)}
+            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 max-w-xs rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
           />
+          <p className="text-muted-foreground text-xs">
+            Calendar day in <strong>Asia/Bahrain</strong>. We use this day’s weekday (
+            <strong>{weekdayLabel}</strong>) for the recurring schedule.
+          </p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="ap-end">End (24h)</Label>
-          <input
-            id="ap-end"
-            required
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            placeholder="20:30"
-          />
-        </div>
+
+        <TimeRow12h
+          idPrefix="ap-start"
+          label="Start time"
+          hour12={startH}
+          minute={startM}
+          meridiem={startAp}
+          onHour={setStartH}
+          onMinute={setStartM}
+          onMeridiem={setStartAp}
+        />
+        <TimeRow12h
+          idPrefix="ap-end"
+          label="End time"
+          hour12={endH}
+          minute={endM}
+          meridiem={endAp}
+          onHour={setEndH}
+          onMinute={setEndM}
+          onMeridiem={setEndAp}
+        />
       </div>
       <Button type="submit" disabled={pending}>
         {pending ? "Saving…" : "Save program"}

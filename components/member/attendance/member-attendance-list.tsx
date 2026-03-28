@@ -21,6 +21,7 @@ import {
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import { submitAttendance } from "@/lib/actions/attendance-marks";
 import { attendanceKindLabel } from "@/lib/attendance/labels";
+import { formatSessionRangeBahrain12h } from "@/lib/attendance/time-12h";
 
 export type MemberAttendanceRow = {
   sessionId: string;
@@ -74,6 +75,10 @@ function SessionCard({
     month: "long",
     timeZone: "Asia/Bahrain",
   });
+  const timeLabel = formatSessionRangeBahrain12h(
+    new Date(row.startsAt),
+    new Date(row.endsAt),
+  );
 
   const focusId =
     highlightSessionId && row.sessionId === highlightSessionId
@@ -113,6 +118,9 @@ function SessionCard({
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {dateLabel}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {timeLabel}
             </Typography>
           </Box>
         </Box>

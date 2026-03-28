@@ -25,6 +25,7 @@ import { redirect } from "next/navigation";
 import { listAttendanceProgramsForStaff } from "@/lib/queries/attendance";
 import { attendanceKindLabel } from "@/lib/attendance/labels";
 import { formatHalqaLabel } from "@/lib/constants/halqas";
+import { formatTimeRange12hFrom24hStrings } from "@/lib/attendance/time-12h";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -111,7 +112,8 @@ export default async function DashboardAttendanceProgramsPage() {
                     <TableCell>{p.genderUnit}</TableCell>
                     <TableCell>{attendanceKindLabel(p.kind)}</TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
-                      {WEEKDAYS[p.weekday] ?? "—"} {p.startTime}–{p.endTime}
+                      {WEEKDAYS[p.weekday] ?? "—"}{" "}
+                      {formatTimeRange12hFrom24hStrings(p.startTime, p.endTime)}
                     </TableCell>
                     <TableCell>{p.isActive ? "Yes" : "No"}</TableCell>
                     <TableCell className="text-right">

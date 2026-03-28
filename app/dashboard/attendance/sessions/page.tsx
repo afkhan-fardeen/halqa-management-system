@@ -18,6 +18,7 @@ import {
 import { buttonVariants } from "@/components/ui/button-variants";
 import { isStaffRole } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
+import { formatSessionRangeBahrain12h } from "@/lib/attendance/time-12h";
 import {
   getAttendanceProgramByIdForStaff,
   listSessionsForProgramForStaff,
@@ -88,7 +89,7 @@ export default async function DashboardAttendanceSessionsListPage({
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
-                  <TableHead>Starts (UTC)</TableHead>
+                  <TableHead>Time (Bahrain)</TableHead>
                   <TableHead className="text-right">Detail</TableHead>
                 </TableRow>
               </TableHeader>
@@ -104,8 +105,8 @@ export default async function DashboardAttendanceSessionsListPage({
                         timeZone: "Asia/Bahrain",
                       })}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {s.startsAt.toISOString()}
+                    <TableCell className="text-sm">
+                      {formatSessionRangeBahrain12h(s.startsAt, s.endsAt)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Link

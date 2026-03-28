@@ -21,6 +21,7 @@ import { isStaffRole } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
 import { listMarksForSessionForStaff } from "@/lib/queries/attendance";
 import { attendanceProgramDisplayTitle } from "@/lib/attendance/labels";
+import { formatSessionRangeBahrain12h } from "@/lib/attendance/time-12h";
 
 export default async function DashboardAttendanceSessionDetailPage({
   params,
@@ -51,6 +52,10 @@ export default async function DashboardAttendanceSessionDetailPage({
     year: "numeric",
     timeZone: "Asia/Bahrain",
   });
+  const timeLabel = formatSessionRangeBahrain12h(
+    data.session.startsAt,
+    data.session.endsAt,
+  );
 
   return (
     <div className="space-y-6">
@@ -68,6 +73,7 @@ export default async function DashboardAttendanceSessionDetailPage({
           {title}
         </h1>
         <p className="text-muted-foreground text-sm">{dateLabel}</p>
+        <p className="text-muted-foreground text-sm">{timeLabel}</p>
       </div>
 
       <AttendanceSessionNudgeForm sessionId={data.session.id} />
