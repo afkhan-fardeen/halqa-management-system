@@ -57,6 +57,7 @@ Members use the home experience at `/`; staff (Admin, Incharge, Secretary) are r
 
 - NextAuth.js (Auth.js) with credentials and JWT sessions.
 - Passwords hashed with bcrypt.
+- **`/` is a public entry:** guests see the member shell with a **Sign in** CTA; protected routes still redirect to `/login`. Set `AUTH_URL` on Vercel to your production origin so sessions work.
 
 ## Registration approvals
 
