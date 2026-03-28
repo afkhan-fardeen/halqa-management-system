@@ -106,6 +106,8 @@ Use a hosted Postgres URL (e.g. Neon) in production via `DATABASE_URL`.
 
 6. **Redeploy** after changing env vars.
 
+**Edge vs Node:** This app uses **`proxy.ts`** (Next.js 16) for auth, not `middleware.ts`. Edge middleware cannot load `@/auth` (Node-only deps). If you see `unsupported modules: @/auth` on deploy, ensure **`middleware.ts` is not present** and **`proxy.ts`** is committed.
+
 ## PWA and Web Push
 
 - **Install:** Public page at `/install` (also linked from the login screen). Add PNG icons live under `public/icon-192.png` and `public/icon-512.png` (generated from `icon.svg` when needed).
