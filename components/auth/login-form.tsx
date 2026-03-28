@@ -4,18 +4,17 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import Link from "next/link";
-import { Alert, Button, Link as MuiLink, Stack, TextField, Typography } from "@mui/material";
-import { PasswordInput } from "@/components/auth/password-input";
 import {
   loginFormSchema,
   fieldErrorsFromZod,
 } from "@/lib/validations/auth-forms";
 import { toast } from "sonner";
 
-export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
+export function LoginForm({ callbackUrl = "/home" }: { callbackUrl?: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showPw, setShowPw] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -64,7 +63,7 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
       toast.error("Sign-in failed", {
         description:
           res.code === "credentials"
-            ? "Check email and password. Dev admin: run npm run db:seed (admin@example.com / ChangeMe123). If that user already exists, run npm run db:reset-admin-password."
+            ? "Check email and password."
             : "Wrong email or password, or your account is not active yet.",
       });
       return;
@@ -78,43 +77,90 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate>
-      <Stack spacing={2.5}>
-        {Object.keys(fieldErrors).length > 0 ? (
-          <Alert severity="error" variant="outlined">
-            Please fix the fields below.
-          </Alert>
-        ) : null}
-        <TextField
+    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+      {Object.keys(fieldErrors).length > 0 ? (
+        <p
+          className="rounded-lg border px-3 py-2 text-sm"
+          style={{
+            borderColor: "var(--hms-danger)",
+            background: "var(--hms-danger-bg)",
+            color: "var(--hms-danger)",
+          }}
+          role="alert"
+        >
+          Please fix the fields below.
+        </p>
+      ) : null}
+      <div className="hms-field">
+        <label className="hms-label" htmlFor="email">
+          Email
+        </label>
+        <input
           id="email"
           name="email"
           type="email"
-          label="Email"
-          placeholder="name@example.com"
           autoComplete="email"
+          placeholder="name@example.com"
           required
-          fullWidth
-          error={Boolean(fieldErrors.email)}
-          helperText={fieldErrors.email}
+          className={`hms-input ${fieldErrors.email ? "hms-input-error" : ""}`}
+          aria-invalid={Boolean(fieldErrors.email)}
         />
-        <PasswordInput
-          name="password"
-          label="Password"
-          placeholder="Enter your password"
-          required
-          error={Boolean(fieldErrors.password)}
-          helperText={fieldErrors.password}
-          autoComplete="current-password"
-        />
-        <Button type="submit" variant="contained" size="large" fullWidth disabled={pending} sx={{ py: 1.5 }}>
-          {pending ? "Signing in…" : "Sign in"}
-        </Button>
-        <Typography align="center" variant="body2">
-          <MuiLink component={Link} href="/forgot-password" color="inherit" underline="hover" fontWeight={600}>
-            Forgot password?
-          </MuiLink>
-        </Typography>
-      </Stack>
+        {fieldErrors.email ? (
+          <p className="text-xs" style={{ color: "var(--hms-danger)" }}>
+            {fieldErrors.email}
+          </p>
+        ) : null}
+      </div>
+      <div className="hms-field">
+        <label className="hms-label" htmlFor="password">
+          Password
+        </label>
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPw ? "text" : "password"}
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            required
+            className={`hms-input pr-11 ${fieldErrors.password ? "hms-input-error" : ""}`}
+            aria-invalid={Boolean(fieldErrors.password)}
+          />
+          <button
+            type="button"
+            tabIndex={-1}
+            className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent p-1"
+            style={{ color: "var(--hms-text3)" }}
+            onClick={() => setShowPw((s) => !s)}
+            aria-label={showPw ? "Hide password" : "Show password"}
+          >
+            {showPw ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </button>
+        </div>
+        {fieldErrors.password ? (
+          <p className="text-xs" style={{ color: "var(--hms-danger)" }}>
+            {fieldErrors.password}
+          </p>
+        ) : null}
+      </div>
+      <button type="submit" className="hms-submit-btn mt-1" disabled={pending}>
+        {pending ? "Signing in…" : "Sign in"}
+      </button>
+      <p className="text-center text-sm" style={{ color: "var(--hms-text2)" }}>
+        <Link href="/forgot-password" className="hms-form-link">
+          Forgot password?
+        </Link>
+      </p>
     </form>
   );
 }

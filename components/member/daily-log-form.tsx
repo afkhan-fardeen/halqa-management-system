@@ -11,7 +11,6 @@ import {
 import {
   Autocomplete,
   Box,
-  Button,
   Card,
   CardContent,
   CardHeader,
@@ -25,14 +24,12 @@ import {
   Select,
   Stack,
   TextField,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { alpha, useTheme } from "@mui/material/styles";
 import { saveDailyLogSection } from "@/lib/actions/daily-log";
+import { DailyLogHmsShell } from "@/components/member/daily-log-hms-shell";
 import type { DailyLogForEdit } from "@/lib/queries/daily-log";
 import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
 import { QURAN_SURAH_OPTIONS } from "@/lib/constants/quran-surahs";
@@ -86,58 +83,18 @@ function labelForOpt(o: string) {
   return "Qaza";
 }
 
-function selectedSalahSx(theme: import("@mui/material").Theme, opt: string) {
-  const common = {
-    fontWeight: 600,
-    borderWidth: 1,
-  };
-  switch (opt) {
-    case "BA_JAMAAT":
-      return {
-        ...common,
-        bgcolor: alpha(theme.palette.success.main, 0.2),
-        color: theme.palette.mode === "dark" ? "#6EE7B7" : theme.palette.success.dark,
-        borderColor: alpha(theme.palette.success.main, 0.55),
-        "&:hover": {
-          bgcolor: alpha(theme.palette.success.main, 0.28),
-        },
-      };
-    case "MUNFARID":
-      return {
-        ...common,
-        bgcolor: alpha(theme.palette.info.main, 0.22),
-        color:
-          theme.palette.mode === "dark"
-            ? "#93C5FD"
-            : theme.palette.info.dark ?? "#1D4ED8",
-        borderColor: alpha(theme.palette.info.main, 0.45),
-        "&:hover": {
-          bgcolor: alpha(theme.palette.info.main, 0.3),
-        },
-      };
-    case "QAZA":
-      return {
-        ...common,
-        bgcolor: alpha(theme.palette.error.main, 0.18),
-        color: theme.palette.mode === "dark" ? "#FCA5A5" : theme.palette.error.dark,
-        borderColor: alpha(theme.palette.error.main, 0.45),
-        "&:hover": {
-          bgcolor: alpha(theme.palette.error.main, 0.26),
-        },
-      };
-    case "ON_TIME":
-      return {
-        ...common,
-        bgcolor: alpha(theme.palette.primary.main, 0.2),
-        color: theme.palette.mode === "dark" ? "#FCD34D" : theme.palette.primary.dark,
-        borderColor: alpha(theme.palette.primary.main, 0.45),
-        "&:hover": {
-          bgcolor: alpha(theme.palette.primary.main, 0.28),
-        },
-      };
-    default:
-      return {};
-  }
+function optClassSuffix(o: string): "bj" | "mf" | "qz" | "ot" {
+  if (o === "BA_JAMAAT") return "bj";
+  if (o === "MUNFARID") return "mf";
+  if (o === "ON_TIME") return "ot";
+  return "qz";
+}
+
+function shortSalahLabel(o: string) {
+  if (o === "BA_JAMAAT") return "BJ";
+  if (o === "MUNFARID") return "MF";
+  if (o === "ON_TIME") return "OT";
+  return "Qaza";
 }
 
 export function DailyLogForm({
@@ -151,8 +108,8 @@ export function DailyLogForm({
   defaultDateYmd?: string;
   userId: string;
 }) {
-  const theme = useTheme();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState(0);
   const [pending, startTransition] = useTransition();
   const [pendingSection, setPendingSection] = useState<
     "salah" | "quran" | "hadith" | null
@@ -360,9 +317,16 @@ export function DailyLogForm({
         ? `Draft · ${lastSaved.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`
         : "Draft on device";
 
+  const cardShellSx = {
+    borderRadius: "var(--hms-radius)",
+    borderColor: "var(--hms-border)",
+    bgcolor: "var(--hms-bg3)",
+    boxShadow: "none",
+  };
+
   return (
-    <Stack spacing={3}>
-      <Box>
+    <DailyLogHmsShell>
+      <Stack spacing={0}>
         <Typography
           variant="overline"
           sx={{
@@ -370,62 +334,66 @@ export function DailyLogForm({
             fontWeight: 700,
             letterSpacing: "0.14em",
             display: "block",
-            mb: 0.75,
+            mb: 1,
           }}
         >
           Daily log
         </Typography>
-        <Stack
-          direction="row"
-          alignItems="flex-start"
-          justifyContent="space-between"
-          gap={2}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h5" component="h1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-              Today&apos;s log
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75, lineHeight: 1.55 }}>
-              Salah, Quran, and hadith — save each section when ready.
-            </Typography>
-          </Box>
-          <TextField
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 700, lineHeight: 1.2, mb: 0.5 }}>
+          Today&apos;s report
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.55 }}>
+          Salah, Quran, and hadith — open each tab and save when ready.
+        </Typography>
+
+        <div className="hms-daily-date-bar">
+          <span className="hms-daily-date-label">Date</span>
+          <input
             id="log-date"
-            label="Date"
             type="date"
+            className="hms-daily-date-input"
             value={form.date}
             onChange={onDateChange}
+            max={todayYmdLocal()}
             required
-            size="small"
-            slotProps={{ inputLabel: { shrink: true } }}
-            inputProps={{ max: todayYmdLocal() }}
-            sx={{ width: 158, flexShrink: 0 }}
+            aria-label="Log date"
           />
-        </Stack>
-      </Box>
+        </div>
 
-      <Box>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="flex-end"
-          spacing={0.75}
-          color="text.secondary"
-          sx={{ mb: 1, minHeight: 22 }}
-        >
+        <div className="hms-daily-draft-row">
           {draftStatus === "saving" ? (
-            <CircularProgress size={14} />
+            <CircularProgress size={14} sx={{ color: "var(--hms-text3)" }} />
           ) : (
-            <CloudUploadIcon sx={{ fontSize: 16, flexShrink: 0 }} />
+            <CloudUploadIcon sx={{ fontSize: 16, flexShrink: 0, color: "var(--hms-text3)" }} />
           )}
-          <Typography
-            variant="caption"
-            sx={{ fontWeight: 600, lineHeight: 1.35, fontSize: "0.75rem" }}
-          >
-            {draftLabel}
-          </Typography>
-        </Stack>
-        <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: 1 }}>
+          <span>{draftLabel}</span>
+        </div>
+
+        <div className="hms-daily-tab-nav" role="tablist" aria-label="Daily log sections">
+          {(
+            [
+              ["Salah", form.salatSaved],
+              ["Quran", form.quranSaved],
+              ["Hadith", form.hadithSaved],
+            ] as const
+          ).map(([label, done], i) => (
+            <button
+              key={label}
+              type="button"
+              role="tab"
+              className="hms-daily-tab"
+              data-active={activeTab === i ? "true" : "false"}
+              aria-selected={activeTab === i}
+              onClick={() => setActiveTab(i)}
+            >
+              <span className="hms-daily-tab-dot" data-done={done ? "true" : "false"} aria-hidden />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 0 ? (
+          <Card variant="outlined" sx={cardShellSx}>
           <CardHeader
             title="Prayers"
             titleTypographyProps={{ variant: "h6", fontWeight: 700 }}
@@ -443,66 +411,77 @@ export function DailyLogForm({
             sx={{ pb: 0 }}
           />
           <CardContent sx={{ pt: 2 }}>
-            <Stack spacing={2.25}>
-              {PRAYERS.map((p) => (
-                <Box key={p}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary" }}
-                  >
-                    {PRAYER_LABEL[p]}
-                  </Typography>
-                  <ToggleButtonGroup
-                    exclusive
-                    fullWidth
-                    size="small"
-                    value={form.salah[p]}
-                    onChange={(_, v) => {
-                      if (v != null) setSalah(p, v);
-                    }}
-                    sx={{ gap: 0.75, flexWrap: "wrap" }}
-                  >
-                    {opts.map((o) => (
-                      <ToggleButton
-                        key={o}
-                        value={o}
-                        sx={{
-                          flex: 1,
-                          minWidth: 0,
-                          textTransform: "none",
-                          fontSize: "0.8125rem",
-                          borderColor: "divider",
-                          "&.Mui-selected": selectedSalahSx(theme, o),
-                        }}
-                      >
-                        {labelForOpt(o)}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                </Box>
-              ))}
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                size="large"
+            <Stack spacing={2}>
+              {genderUnit === "MALE" ? (
+                <div className="hms-daily-legend">
+                  <div className="hms-daily-legend-item">
+                    <span className="hms-daily-legend-dot hms-daily-ld-bj" />
+                    Ba jamaat
+                  </div>
+                  <div className="hms-daily-legend-item">
+                    <span className="hms-daily-legend-dot hms-daily-ld-mf" />
+                    Munfarid
+                  </div>
+                  <div className="hms-daily-legend-item">
+                    <span className="hms-daily-legend-dot hms-daily-ld-qz" />
+                    Qaza
+                  </div>
+                </div>
+              ) : (
+                <div className="hms-daily-legend">
+                  <div className="hms-daily-legend-item">
+                    <span className="hms-daily-legend-dot hms-daily-ld-ot" />
+                    On time
+                  </div>
+                  <div className="hms-daily-legend-item">
+                    <span className="hms-daily-legend-dot hms-daily-ld-qz" />
+                    Qaza
+                  </div>
+                </div>
+              )}
+              <div className="hms-daily-prayer-table">
+                {PRAYERS.map((p) => (
+                  <div key={p} className="hms-daily-prayer-row">
+                    <span className="hms-daily-prayer-name">{PRAYER_LABEL[p]}</span>
+                    <div className="hms-daily-prayer-options">
+                      {opts.map((o) => {
+                        const sel = form.salah[p] === o;
+                        const suf = optClassSuffix(o);
+                        return (
+                          <button
+                            key={o}
+                            type="button"
+                            className={`hms-daily-opt${sel ? ` hms-daily-opt--${suf}` : ""}`}
+                            aria-pressed={sel}
+                            aria-label={`${PRAYER_LABEL[p]} ${labelForOpt(o)}`}
+                            onClick={() => setSalah(p, o)}
+                          >
+                            {shortSalahLabel(o)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="hms-daily-save-btn"
                 disabled={busy("salah")}
                 onClick={() => saveSection("salah")}
-                startIcon={
-                  busy("salah") ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : null
-                }
-                sx={{ mt: 0.5, fontWeight: 600 }}
               >
+                {busy("salah") ? (
+                  <CircularProgress size={20} sx={{ color: "#fff" }} />
+                ) : null}
                 {busy("salah") ? "Saving…" : "Save prayers"}
-              </Button>
+              </button>
             </Stack>
           </CardContent>
         </Card>
-      </Box>
+        ) : null}
 
-      <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: 1 }}>
+        {activeTab === 1 ? (
+          <Card variant="outlined" sx={cardShellSx}>
         <CardHeader
           title="Quran"
           titleTypographyProps={{ variant: "h6", fontWeight: 700 }}
@@ -583,27 +562,24 @@ export function DailyLogForm({
               sx={{ maxWidth: 160 }}
               size="small"
             />
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              size="large"
+            <button
+              type="button"
+              className="hms-daily-save-btn"
               disabled={busy("quran")}
               onClick={() => saveSection("quran")}
-              startIcon={
-                busy("quran") ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : null
-              }
-              sx={{ fontWeight: 600 }}
             >
+              {busy("quran") ? (
+                <CircularProgress size={20} sx={{ color: "#fff" }} />
+              ) : null}
               {busy("quran") ? "Saving…" : "Save Quran"}
-            </Button>
+            </button>
           </Stack>
         </CardContent>
       </Card>
+        ) : null}
 
-      <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: 1 }}>
+        {activeTab === 2 ? (
+          <Card variant="outlined" sx={cardShellSx}>
         <CardHeader
           title="Hadith & literature"
           titleTypographyProps={{ variant: "h6", fontWeight: 700 }}
@@ -697,25 +673,22 @@ export function DailyLogForm({
                 />
               </>
             ) : null}
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              size="large"
+            <button
+              type="button"
+              className="hms-daily-save-btn"
               disabled={busy("hadith")}
               onClick={() => saveSection("hadith")}
-              startIcon={
-                busy("hadith") ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : null
-              }
-              sx={{ fontWeight: 600 }}
             >
+              {busy("hadith") ? (
+                <CircularProgress size={20} sx={{ color: "#fff" }} />
+              ) : null}
               {busy("hadith") ? "Saving…" : "Save hadith & literature"}
-            </Button>
+            </button>
           </Stack>
         </CardContent>
       </Card>
-    </Stack>
+        ) : null}
+      </Stack>
+    </DailyLogHmsShell>
   );
 }

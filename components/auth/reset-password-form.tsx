@@ -3,8 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type FormEvent } from "react";
 import { resetPasswordWithToken } from "@/lib/actions/password-reset";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/auth/password-input";
 import {
   resetPasswordFormSchema,
@@ -48,12 +46,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-5" noValidate>
+    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="token" value={token} readOnly />
-      <div className="grid gap-2">
-        <Label htmlFor="password" className="text-sm font-medium">
-          New password
-        </Label>
+      <div className="hms-field">
         <PasswordInput
           id="password"
           name="password"
@@ -70,10 +65,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           }
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="confirm" className="text-sm font-medium">
-          Confirm password
-        </Label>
+      <div className="hms-field">
         <PasswordInput
           id="confirm"
           name="confirm"
@@ -86,13 +78,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
           helperText={fieldErrors.confirm}
         />
       </div>
-      <Button
-        type="submit"
-        className="h-12 w-full rounded-xl text-base font-semibold shadow-md"
-        disabled={pending}
-      >
+      <button type="submit" className="hms-submit-btn mt-1" disabled={pending}>
         {pending ? "Saving…" : "Update password"}
-      </Button>
+      </button>
     </form>
   );
 }

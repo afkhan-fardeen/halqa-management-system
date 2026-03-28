@@ -15,7 +15,7 @@ export default async function DashboardProfilePage() {
     redirect("/login");
   }
   if (session.user.role === "MEMBER") {
-    redirect("/");
+    redirect("/home");
   }
   const staffRole = session.user.role;
   if (!isStaffRole(staffRole)) {

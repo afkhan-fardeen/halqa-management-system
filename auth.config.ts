@@ -55,7 +55,7 @@ export const authConfig: NextAuthConfig = {
           (p === "/login" || p === "/register")
         ) {
           const url = request.nextUrl.clone();
-          url.pathname = isStaffRole(auth.user.role) ? "/dashboard" : "/";
+          url.pathname = isStaffRole(auth.user.role) ? "/dashboard" : "/home";
           return NextResponse.redirect(url);
         }
         return true;
@@ -76,7 +76,7 @@ export const authConfig: NextAuthConfig = {
       const { role } = auth.user;
 
       if (role === "MEMBER" && pathname.startsWith("/dashboard")) {
-        return NextResponse.redirect(new URL("/", request.url));
+        return NextResponse.redirect(new URL("/home", request.url));
       }
 
       if (isStaffRole(role) && !pathname.startsWith("/dashboard")) {

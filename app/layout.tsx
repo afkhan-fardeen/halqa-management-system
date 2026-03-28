@@ -1,11 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Roboto } from "next/font/google";
+import { DM_Sans, DM_Serif_Display, Geist_Mono, Roboto } from "next/font/google";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { SwUpdatePrompt } from "@/components/pwa/sw-update-prompt";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { MuiAppProvider } from "@/components/providers/mui-app-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+
+const hmsSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  display: "swap",
+  variable: "--font-hms-sans",
+});
+
+const hmsSerif = DM_Serif_Display({
+  weight: ["400"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-hms-serif",
+});
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -48,7 +62,6 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "Qalbee",
-    // Opaque status bar; works with light UI + viewport-fit=cover + safe-area padding.
     statusBarStyle: "default",
   },
 };
@@ -59,7 +72,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" className={`${roboto.variable} ${fontMono.variable} h-full`}>
+    <html
+      lang="en"
+      dir="ltr"
+      className={`${hmsSans.variable} ${hmsSerif.variable} ${roboto.variable} ${fontMono.variable} h-full`}
+    >
       <body
         className={`${roboto.className} bg-[#f5f5f5] text-gray-900 min-h-dvh flex flex-col antialiased [padding-left:env(safe-area-inset-left)] [padding-right:env(safe-area-inset-right)]`}
       >

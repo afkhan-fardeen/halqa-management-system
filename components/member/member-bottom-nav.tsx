@@ -17,10 +17,10 @@ const NAV_MAX_WIDTH_PX = 430;
 
 const items = [
   {
-    href: "/",
+    href: "/home",
     label: "Home",
     icon: HomeOutlinedIcon,
-    match: (p: string) => p === "/",
+    match: (p: string) => p === "/home",
   },
   {
     href: "/history",

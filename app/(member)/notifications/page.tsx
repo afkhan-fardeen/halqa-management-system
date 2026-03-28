@@ -1,10 +1,10 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { MemberPageShell } from "@/components/member/member-page-shell";
-import { MemberScreenHeader } from "@/components/member/member-screen-header";
 import { MarkAllReadButton } from "@/components/notifications/mark-all-read-button";
 import { NotificationInboxList } from "@/components/notifications/notification-inbox-list";
+import { NotificationsHmsShell } from "@/components/notifications/notifications-hms-shell";
 import { listNotificationsForCurrentUser } from "@/lib/queries/notifications";
-import { Card, CardContent, CardHeader, Typography } from "@mui/material";
 import { redirect } from "next/navigation";
 
 export default async function MemberNotificationsPage() {
@@ -18,31 +18,35 @@ export default async function MemberNotificationsPage() {
 
   return (
     <MemberPageShell>
-      <MemberScreenHeader
-        eyebrow="Inbox"
-        title="Notifications"
-        description="Registration updates and reminders. Daily reminders include a link to open your log."
-        action={hasUnread ? <MarkAllReadButton /> : undefined}
-      />
+      <NotificationsHmsShell>
+        <div className="hms-notif-wrap">
+          <div className="hms-notif-topbar">
+            <Link href="/home" className="hms-nt-back" aria-label="Back to home">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <span className="hms-notif-topbar-title">Notifications</span>
+            <span className="w-9 shrink-0" aria-hidden />
+          </div>
 
-      <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: 2 }}>
-        <CardHeader
-          sx={{ pb: 0 }}
-          title={
-            <Typography variant="h6" component="h2" fontWeight={700}>
-              Messages
-            </Typography>
-          }
-          subheader={
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Tap read on a row to clear it from your badge in the header.
-            </Typography>
-          }
-        />
-        <CardContent sx={{ pt: 2, px: { xs: 1.5, sm: 2 } }}>
+          {hasUnread ? (
+            <div className="hms-actions-row">
+              <MarkAllReadButton />
+            </div>
+          ) : null}
+
           <NotificationInboxList rows={rows} />
-        </CardContent>
-      </Card>
+        </div>
+      </NotificationsHmsShell>
     </MemberPageShell>
   );
 }

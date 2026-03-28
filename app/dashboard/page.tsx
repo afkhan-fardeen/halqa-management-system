@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { DashboardRefresh } from "@/components/dashboard/dashboard-refresh";
 import { getPendingRegistrationCount } from "@/lib/queries/pending-registrations";
 import { getDashboardOverview } from "@/lib/queries/dashboard-overview";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -31,14 +30,13 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="space-y-6">
-      <DashboardRefresh />
       <div>
         <h1 className="font-display text-2xl font-semibold tracking-tight">
           Overview
         </h1>
         <p className="text-muted-foreground text-sm">
-          Unit activity and key metrics. This page refreshes automatically about
-          every 30 seconds.
+          Unit activity and key metrics. The dashboard refreshes in the background
+          about every 8 seconds while this tab is visible.
         </p>
       </div>
 

@@ -3,6 +3,8 @@
  * Keep in sync with icons in `components/notifications/notification-type-icon.tsx`.
  */
 export const NOTIFICATION_TYPES = {
+  /** Staff: new member self-registration awaiting review (incharge/secretary/admin scope) */
+  PENDING_REGISTRATION_STAFF: "pending_registration_staff",
   /** Cron: member missing full daily log (salat + quran + hadith saved) today */
   DAILY_REMINDER: "daily_reminder",
   /** Staff approved self-registration */

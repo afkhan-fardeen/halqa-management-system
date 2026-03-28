@@ -1,10 +1,9 @@
 /**
- * Sets the password for the ADMIN user matching SEED_ADMIN_EMAIL (or admin@example.com).
- * Use when `npm run db:seed` was skipped because the user already existed with a wrong password.
+ * Sets the password for the ADMIN user matching SEED_ADMIN_EMAIL (default admin@qalbee.com).
  *
  *   npm run db:reset-admin-password
  *
- * Requires SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD in .env.local (same as seed).
+ * Defaults: admin@qalbee.com / password123 — override with SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD in `.env.local`.
  */
 import { config } from "dotenv";
 import { resolve } from "node:path";
@@ -19,9 +18,9 @@ async function main() {
   const { users } = await import("../lib/db/schema");
 
   const email = (
-    process.env.SEED_ADMIN_EMAIL ?? "admin@example.com"
+    process.env.SEED_ADMIN_EMAIL ?? "admin@qalbee.com"
   ).toLowerCase();
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123";
+  const password = process.env.SEED_ADMIN_PASSWORD ?? "password123";
 
   const [row] = await db
     .select({ id: users.id, role: users.role })

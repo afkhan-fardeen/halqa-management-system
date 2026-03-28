@@ -188,6 +188,8 @@ export const notifications = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     type: varchar("type", { length: 100 }).notNull(),
     message: text("message").notNull(),
+    /** In-app / push target path (e.g. /submit, /dashboard/registrations). */
+    actionUrl: varchar("action_url", { length: 512 }),
     read: boolean("read").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

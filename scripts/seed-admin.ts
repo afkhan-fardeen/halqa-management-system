@@ -17,9 +17,9 @@ async function main() {
   const { users } = await import("../lib/db/schema");
 
   const email = (
-    process.env.SEED_ADMIN_EMAIL ?? "admin@example.com"
+    process.env.SEED_ADMIN_EMAIL ?? "admin@qalbee.com"
   ).toLowerCase();
-  const password = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123";
+  const password = process.env.SEED_ADMIN_PASSWORD ?? "password123";
 
   const [existing] = await db
     .select({ id: users.id })

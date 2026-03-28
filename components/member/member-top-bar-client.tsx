@@ -44,7 +44,7 @@ export function MemberTopBarClient({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
             <Typography
               component={Link}
-              href="/"
+              href="/home"
               variant="h6"
               sx={{
                 fontFamily: (t) => t.typography.h6.fontFamily,

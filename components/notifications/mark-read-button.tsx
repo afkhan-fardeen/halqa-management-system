@@ -2,8 +2,6 @@
 
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@mui/material";
-import DoneIcon from "@mui/icons-material/Done";
 import { markNotificationRead } from "@/lib/actions/notifications";
 
 export function MarkReadButton({
@@ -16,11 +14,9 @@ export function MarkReadButton({
   const [pending, startTransition] = useTransition();
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outlined"
-      color="primary"
-      size="small"
+      className="hms-notif-read-btn inline-flex items-center gap-1"
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
@@ -30,17 +26,19 @@ export function MarkReadButton({
           toast.success("Marked as read");
         })
       }
-      startIcon={<DoneIcon sx={{ fontSize: 16 }} />}
-      sx={{
-        flexShrink: 0,
-        borderRadius: 999,
-        textTransform: "none",
-        fontWeight: 600,
-        px: 1.5,
-        minWidth: 0,
-      }}
     >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        aria-hidden
+      >
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
       {pending ? "…" : label}
-    </Button>
+    </button>
   );
 }

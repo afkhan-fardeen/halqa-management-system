@@ -1,5 +1,6 @@
 "use client";
 
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
@@ -7,7 +8,6 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
-import { Box } from "@mui/material";
 
 export function NotificationTypeIcon({ type }: { type: string }) {
   const t = type.toLowerCase();
@@ -15,7 +15,11 @@ export function NotificationTypeIcon({ type }: { type: string }) {
   let bg = "rgba(217, 119, 6, 0.16)";
   let fg = "#D97706";
 
-  if (t.includes("reject")) {
+  if (t.includes("pending_registration_staff")) {
+    Icon = PersonAddAltOutlinedIcon;
+    bg = "rgba(217, 119, 6, 0.18)";
+    fg = "#D97706";
+  } else if (t.includes("reject")) {
     Icon = CancelOutlinedIcon;
     bg = "rgba(239, 68, 68, 0.14)";
     fg = "#DC2626";
@@ -46,23 +50,15 @@ export function NotificationTypeIcon({ type }: { type: string }) {
   }
 
   return (
-    <Box
-      sx={{
-        width: 44,
-        height: 44,
-        borderRadius: "50%",
-        flexShrink: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        bgcolor: bg,
+    <div
+      className="hms-notif-icon-wrap"
+      style={{
+        background: bg,
         color: fg,
-        border: 1,
-        borderColor: "divider",
       }}
       aria-hidden
     >
-      <Icon sx={{ fontSize: 22 }} />
-    </Box>
+      <Icon style={{ fontSize: 20 }} />
+    </div>
   );
 }

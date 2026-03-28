@@ -7,16 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button-variants";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/auth/password-input";
-import {
-  authInputClassName,
-  authSelectClassName,
-} from "@/components/auth/auth-field-styles";
 import {
   registerSchema,
   fieldErrorsFromZod,
@@ -66,26 +57,29 @@ export function RegisterForm() {
 
   if (state.success) {
     return (
-      <div className="border-primary/15 bg-primary/5 space-y-5 rounded-2xl border px-5 py-8 text-center">
-        <div className="bg-primary/12 text-primary mx-auto flex size-16 items-center justify-center rounded-full">
+      <div
+        className="space-y-5 rounded-2xl border px-5 py-8 text-center"
+        style={{
+          borderColor: "var(--hms-border)",
+          background: "var(--hms-amber-pale)",
+        }}
+      >
+        <div
+          className="mx-auto flex size-16 items-center justify-center rounded-full"
+          style={{ background: "var(--hms-bg2)", color: "var(--hms-amber)" }}
+        >
           <CheckCircle2 className="size-9" strokeWidth={1.75} aria-hidden />
         </div>
         <div className="space-y-2">
-          <p className="text-foreground text-base font-semibold">
+          <p className="text-base font-semibold" style={{ color: "var(--hms-text)" }}>
             Request received
           </p>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            Your halqa Incharge or an administrator will review your request.
-            You&apos;ll get an email when your account is approved.
+          <p className="text-sm leading-relaxed" style={{ color: "var(--hms-text2)" }}>
+            Your halqa Incharge or an administrator will review your request. You&apos;ll get an email when your
+            account is approved.
           </p>
         </div>
-        <Link
-          href="/login"
-          className={cn(
-            buttonVariants({ size: "lg" }),
-            "inline-flex h-12 w-full justify-center rounded-xl text-base font-semibold",
-          )}
-        >
+        <Link href="/login" className="hms-submit-btn inline-flex w-full no-underline">
           Back to sign in
         </Link>
       </div>
@@ -93,51 +87,60 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-5" noValidate>
+    <form onSubmit={onSubmit} className="flex flex-col gap-3.5" noValidate>
       {state.error ? (
         <p
-          className="border-destructive/25 bg-destructive/5 text-destructive rounded-2xl border px-4 py-3 text-sm"
+          className="rounded-lg border px-3 py-2 text-sm"
+          style={{
+            borderColor: "var(--hms-danger)",
+            background: "var(--hms-danger-bg)",
+            color: "var(--hms-danger)",
+          }}
           role="alert"
         >
           {state.error}
         </p>
       ) : null}
-      <div className="grid gap-2">
-        <Label htmlFor="name" className="text-sm font-medium">
-          Full name
-        </Label>
-        <Input
-          id="name"
-          name="name"
-          autoComplete="name"
-          placeholder="Your full name"
-          required
-          aria-invalid={Boolean(fieldErrors.name)}
-          className={authInputClassName}
-        />
-        {fieldErrors.name ? (
-          <p className="text-destructive text-xs">{fieldErrors.name}</p>
-        ) : null}
+      <div className="grid gap-3.5 sm:grid-cols-2">
+        <div className="hms-field">
+          <label className="hms-label" htmlFor="name">
+            Full name
+          </label>
+          <input
+            id="name"
+            name="name"
+            autoComplete="name"
+            placeholder="Your full name"
+            required
+            className={`hms-input ${fieldErrors.name ? "hms-input-error" : ""}`}
+          />
+          {fieldErrors.name ? (
+            <p className="text-xs" style={{ color: "var(--hms-danger)" }}>
+              {fieldErrors.name}
+            </p>
+          ) : null}
+        </div>
+        <div className="hms-field">
+          <label className="hms-label" htmlFor="email">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="name@example.com"
+            required
+            className={`hms-input ${fieldErrors.email ? "hms-input-error" : ""}`}
+          />
+          {fieldErrors.email ? (
+            <p className="text-xs" style={{ color: "var(--hms-danger)" }}>
+              {fieldErrors.email}
+            </p>
+          ) : null}
+        </div>
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="email" className="text-sm font-medium">
-          Email
-        </Label>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="name@example.com"
-          required
-          aria-invalid={Boolean(fieldErrors.email)}
-          className={authInputClassName}
-        />
-        {fieldErrors.email ? (
-          <p className="text-destructive text-xs">{fieldErrors.email}</p>
-        ) : null}
-      </div>
-      <div className="grid gap-2">
+      <div className="hms-field">
         <PasswordInput
           id="password"
           name="password"
@@ -154,71 +157,72 @@ export function RegisterForm() {
           }
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="phone" className="text-sm font-medium">
+      <div className="hms-field">
+        <label className="hms-label" htmlFor="phone">
           Phone
-        </Label>
-        <Input
+        </label>
+        <input
           id="phone"
           name="phone"
           type="tel"
           autoComplete="tel"
           placeholder="+973 …"
           required
-          aria-invalid={Boolean(fieldErrors.phone)}
-          className={authInputClassName}
+          className={`hms-input ${fieldErrors.phone ? "hms-input-error" : ""}`}
         />
         {fieldErrors.phone ? (
-          <p className="text-destructive text-xs">{fieldErrors.phone}</p>
+          <p className="text-xs" style={{ color: "var(--hms-danger)" }}>
+            {fieldErrors.phone}
+          </p>
         ) : null}
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="halqa" className="text-sm font-medium">
-          Halqa
-        </Label>
-        <select
-          id="halqa"
-          name="halqa"
-          required
-          aria-invalid={Boolean(fieldErrors.halqa)}
-          className={authSelectClassName}
-        >
-          <option value="">Select halqa</option>
-          <option value="MANAMA">Manama</option>
-          <option value="RIFFA">Riffa</option>
-          <option value="MUHARRAQ">Muharraq</option>
-          <option value="UMM_AL_HASSAM">Umm Al Hassam</option>
-        </select>
-        {fieldErrors.halqa ? (
-          <p className="text-destructive text-xs">{fieldErrors.halqa}</p>
-        ) : null}
+      <div className="grid gap-3.5 sm:grid-cols-2">
+        <div className="hms-field">
+          <label className="hms-label" htmlFor="halqa">
+            Halqa
+          </label>
+          <select
+            id="halqa"
+            name="halqa"
+            required
+            className={`hms-select ${fieldErrors.halqa ? "hms-input-error" : ""}`}
+          >
+            <option value="">Select halqa</option>
+            <option value="MANAMA">Manama</option>
+            <option value="RIFFA">Riffa</option>
+            <option value="MUHARRAQ">Muharraq</option>
+            <option value="UMM_AL_HASSAM">Umm Al Hassam</option>
+          </select>
+          {fieldErrors.halqa ? (
+            <p className="text-xs" style={{ color: "var(--hms-danger)" }}>
+              {fieldErrors.halqa}
+            </p>
+          ) : null}
+        </div>
+        <div className="hms-field">
+          <label className="hms-label" htmlFor="genderUnit">
+            Gender
+          </label>
+          <select
+            id="genderUnit"
+            name="genderUnit"
+            required
+            className={`hms-select ${fieldErrors.genderUnit ? "hms-input-error" : ""}`}
+          >
+            <option value="">Select gender</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+          </select>
+          {fieldErrors.genderUnit ? (
+            <p className="text-xs" style={{ color: "var(--hms-danger)" }}>
+              {fieldErrors.genderUnit}
+            </p>
+          ) : null}
+        </div>
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="genderUnit" className="text-sm font-medium">
-          Gender
-        </Label>
-        <select
-          id="genderUnit"
-          name="genderUnit"
-          required
-          aria-invalid={Boolean(fieldErrors.genderUnit)}
-          className={authSelectClassName}
-        >
-          <option value="">Select gender</option>
-          <option value="MALE">Male</option>
-          <option value="FEMALE">Female</option>
-        </select>
-        {fieldErrors.genderUnit ? (
-          <p className="text-destructive text-xs">{fieldErrors.genderUnit}</p>
-        ) : null}
-      </div>
-      <Button
-        type="submit"
-        className="h-12 w-full rounded-xl text-base font-semibold shadow-md"
-        disabled={pending}
-      >
+      <button type="submit" className="hms-submit-btn mt-1" disabled={pending}>
         {pending ? "Submitting…" : "Submit request"}
-      </Button>
+      </button>
     </form>
   );
 }

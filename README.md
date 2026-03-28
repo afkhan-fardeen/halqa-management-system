@@ -36,7 +36,7 @@ Next.js app for tracking daily worship, outreach, and contributions across halqa
    npm run db:seed
    ```
 
-   Defaults: `admin@example.com` / `ChangeMe123` — override with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env.local`.
+   Defaults: `admin@qalbee.com` / `password123` — override with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env.local`.
 
    If seed says “user already exists” but login fails, run `npm run db:reset-admin-password` to set the password from those env vars.
 
@@ -51,13 +51,15 @@ Next.js app for tracking daily worship, outreach, and contributions across halqa
    npm run dev
    ```
 
-Members use the home experience at `/`; staff (Admin, Incharge, Secretary) are routed to `/dashboard`. New registrations stay **pending** until approved in **Dashboard → Registrations**.
+The **marketing site** is at `/` (public). **Active members** are redirected to **`/home`**; staff (Admin, Incharge, Secretary) signing in go to `/dashboard`. New registrations stay **pending** until approved in **Dashboard → Registrations**.
+
+**After pulling:** with Docker Postgres running, run `npm run db:migrate` so local schema matches (including `notifications.action_url`). If migrate fails with `ECONNREFUSED`, start the DB (`docker compose up -d`) and retry.
 
 ## Authentication
 
 - NextAuth.js (Auth.js) with credentials and JWT sessions.
 - Passwords hashed with bcrypt.
-- **`/` is a public entry:** guests see the member shell with a **Sign in** CTA; protected routes still redirect to `/login`. Set `AUTH_URL` on Vercel to your production origin so sessions work.
+- **`/` is the marketing landing** (public). **`/home`** is the member app shell (after sign-in). Protected member routes redirect to `/login` when needed. Set `AUTH_URL` on Vercel to your production origin so sessions work.
 
 ## Registration approvals
 

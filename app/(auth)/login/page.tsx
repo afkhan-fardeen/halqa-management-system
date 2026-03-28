@@ -3,7 +3,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { AuthPage } from "@/components/auth/auth-page";
 function safeCallbackUrl(raw: string | undefined): string {
   if (typeof raw !== "string" || !raw.startsWith("/") || raw.startsWith("//")) {
-    return "/";
+    return "/home";
   }
   return raw;
 }
@@ -18,15 +18,13 @@ export default async function LoginPage({
 
   return (
     <AuthPage
+      eyebrow="Welcome back"
       title="Sign in"
-      description="Welcome back. Sign in with your Qalbee account email and password."
+      description="Use your Qalbee account email and password."
       footer={
-        <p className="text-center text-sm text-stone-600 dark:text-stone-400">
+        <p className="text-sm" style={{ color: "var(--hms-text3)" }}>
           No account?{" "}
-          <Link
-            href="/register"
-            className="font-semibold text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
-          >
+          <Link href="/register" className="hms-form-link">
             Create an account
           </Link>
         </p>
