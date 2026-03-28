@@ -58,6 +58,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           id="password"
           name="password"
           label="New password"
+          placeholder="At least 8 characters, one number"
           autoComplete="new-password"
           required
           inputProps={{ minLength: 8 }}
@@ -77,6 +78,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           id="confirm"
           name="confirm"
           label="Confirm password"
+          placeholder="Re-enter your new password"
           autoComplete="new-password"
           required
           inputProps={{ minLength: 8 }}

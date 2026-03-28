@@ -81,7 +81,7 @@ export function MemberProfileContent({
         <Typography variant="h5" sx={{ mt: 1.5, fontWeight: 600 }}>
           {name || "Member"}
         </Typography>
-        <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
           {email}
         </Typography>
         <Stack direction="row" gap={1} flexWrap="wrap" justifyContent="center" sx={{ mt: 1.5 }}>
@@ -149,7 +149,7 @@ export function MemberProfileContent({
             </Typography>
             <Typography
               variant="caption"
-              color="text.disabled"
+              color="text.secondary"
               sx={{ textTransform: "uppercase", letterSpacing: 0.5, fontSize: 10 }}
             >
               {cell.label}
@@ -162,7 +162,7 @@ export function MemberProfileContent({
         <Typography
           variant="caption"
           sx={{
-            color: "text.disabled",
+            color: "text.secondary",
             letterSpacing: 0.8,
             textTransform: "uppercase",
             fontWeight: 600,
@@ -173,28 +173,65 @@ export function MemberProfileContent({
         >
           Account
         </Typography>
-        <Card variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+        <Card
+          variant="outlined"
+          sx={{
+            borderRadius: 2,
+            overflow: "hidden",
+            bgcolor: "background.paper",
+            borderColor: "divider",
+            boxShadow: (t) =>
+              t.palette.mode === "dark" ? "0 1px 0 rgba(255,255,255,0.06)" : undefined,
+          }}
+        >
           <List disablePadding>
             <ListItemButton disabled>
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <PersonOutlineIcon fontSize="small" color="primary" />
               </ListItemIcon>
-              <ListItemText primary="Name" secondary={name} />
+              <ListItemText
+                primary="Name"
+                secondary={name}
+                primaryTypographyProps={{
+                  variant: "body2",
+                  color: "text.secondary",
+                  fontWeight: 600,
+                }}
+                secondaryTypographyProps={{ variant: "body2", color: "text.primary" }}
+              />
             </ListItemButton>
             <Divider component="li" />
             <ListItemButton>
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <PhoneIphoneOutlinedIcon fontSize="small" color="primary" />
               </ListItemIcon>
-              <ListItemText primary="Phone" secondary={extras.phone || "—"} />
+              <ListItemText
+                primary="Phone"
+                secondary={extras.phone || "—"}
+                primaryTypographyProps={{
+                  variant: "body2",
+                  color: "text.secondary",
+                  fontWeight: 600,
+                }}
+                secondaryTypographyProps={{ variant: "body2", color: "text.primary" }}
+              />
             </ListItemButton>
             <Divider component="li" />
             <ListItemButton disabled>
               <ListItemIcon sx={{ minWidth: 40 }}>
-                <MosqueOutlinedIcon fontSize="small" />
+                <MosqueOutlinedIcon fontSize="small" color="primary" />
               </ListItemIcon>
-              <ListItemText primary="Halqa and gender" secondary={`${halqa} · ${gender}`} />
-              <Typography variant="caption" color="text.disabled">
+              <ListItemText
+                primary="Halqa and gender"
+                secondary={`${halqa} · ${gender}`}
+                primaryTypographyProps={{
+                  variant: "body2",
+                  color: "text.secondary",
+                  fontWeight: 600,
+                }}
+                secondaryTypographyProps={{ variant: "body2", color: "text.primary" }}
+              />
+              <Typography variant="caption" color="text.secondary">
                 Fixed
               </Typography>
             </ListItemButton>
@@ -206,7 +243,7 @@ export function MemberProfileContent({
         <Typography
           variant="caption"
           sx={{
-            color: "text.disabled",
+            color: "text.secondary",
             letterSpacing: 0.8,
             textTransform: "uppercase",
             fontWeight: 600,
@@ -223,7 +260,7 @@ export function MemberProfileContent({
         <Typography
           variant="caption"
           sx={{
-            color: "text.disabled",
+            color: "text.secondary",
             letterSpacing: 0.8,
             textTransform: "uppercase",
             fontWeight: 600,
@@ -234,17 +271,36 @@ export function MemberProfileContent({
         >
           Security
         </Typography>
-        <Card variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
+        <Card
+          variant="outlined"
+          sx={{
+            borderRadius: 2,
+            overflow: "hidden",
+            bgcolor: "background.paper",
+            borderColor: "divider",
+            boxShadow: (t) =>
+              t.palette.mode === "dark" ? "0 1px 0 rgba(255,255,255,0.06)" : undefined,
+          }}
+        >
           <List disablePadding>
             <ListItemButton component={Link} href="/forgot-password">
               <ListItemIcon sx={{ minWidth: 40 }}>
-                <LockOutlinedIcon fontSize="small" />
+                <LockOutlinedIcon fontSize="small" color="primary" />
               </ListItemIcon>
               <ListItemText
                 primary="Reset password"
                 secondary="We’ll email you a link to choose a new password"
+                primaryTypographyProps={{
+                  variant: "body2",
+                  color: "text.primary",
+                  fontWeight: 600,
+                }}
+                secondaryTypographyProps={{
+                  variant: "body2",
+                  color: "text.secondary",
+                }}
               />
-              <ChevronRightIcon fontSize="small" color="disabled" />
+              <ChevronRightIcon fontSize="small" sx={{ color: "action.active" }} />
             </ListItemButton>
           </List>
         </Card>
@@ -254,7 +310,7 @@ export function MemberProfileContent({
         <Typography
           variant="caption"
           sx={{
-            color: "text.disabled",
+            color: "text.secondary",
             letterSpacing: 0.8,
             textTransform: "uppercase",
             fontWeight: 600,
@@ -267,10 +323,21 @@ export function MemberProfileContent({
         </Typography>
         <Stack spacing={1}>
           {aiyanatHistory.slice(0, 6).map((row) => (
-            <Card key={row.id} variant="outlined" sx={{ borderRadius: 2, p: 2 }}>
+            <Card
+              key={row.id}
+              variant="outlined"
+              sx={{
+                borderRadius: 2,
+                p: 2,
+                bgcolor: "background.paper",
+                borderColor: "divider",
+                boxShadow: (t) =>
+                  t.palette.mode === "dark" ? "0 1px 0 rgba(255,255,255,0.06)" : undefined,
+              }}
+            >
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <Box>
-                  <Typography variant="body2" fontWeight={600}>
+                  <Typography variant="body2" fontWeight={600} color="text.primary">
                     {formatDisplayMonth(row.month)}
                   </Typography>
                 </Box>
@@ -311,11 +378,11 @@ export function MemberProfileContent({
       </Box>
 
       <Box sx={{ px: 0.5, pb: 2 }}>
-        <Typography variant="caption" color="text.disabled" sx={{ display: "block", lineHeight: 1.55 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", lineHeight: 1.55 }}>
           If your daily log is incomplete (Salah, Quran, and Hadith for today), you may receive
           in-app reminders and, when email is enabled, a reminder message by email.
         </Typography>
-        <Typography variant="caption" color="text.disabled" sx={{ display: "block", lineHeight: 1.55, mt: 1.25 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", lineHeight: 1.55, mt: 1.25 }}>
           Password resets are sent only to the email address on this account.
         </Typography>
       </Box>

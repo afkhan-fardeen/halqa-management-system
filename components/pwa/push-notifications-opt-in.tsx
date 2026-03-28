@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { FormControlLabel, Switch } from "@mui/material";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -47,8 +47,6 @@ export function PushNotificationsOptIn() {
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [testBusy, setTestBusy] = useState(false);
-  const [testMessage, setTestMessage] = useState<string | null>(null);
   const [insecureOrigin, setInsecureOrigin] = useState(false);
 
   useEffect(() => {
@@ -134,29 +132,6 @@ export function PushNotificationsOptIn() {
     }
   }, []);
 
-  const sendTest = useCallback(async () => {
-    setError(null);
-    setTestMessage(null);
-    setTestBusy(true);
-    try {
-      const res = await fetch("/api/push/test", { method: "POST" });
-      const data = (await res.json()) as { ok?: boolean; error?: string; devices?: number };
-      if (!res.ok) {
-        setError(data.error ?? "Test push failed.");
-        return;
-      }
-      setTestMessage(
-        data.devices != null
-          ? `Test sent to ${data.devices} device(s). Check your system notification tray.`
-          : "Test sent. Check your system notification tray.",
-      );
-    } catch {
-      setError("Could not send test.");
-    } finally {
-      setTestBusy(false);
-    }
-  }, []);
-
   const disable = useCallback(async () => {
     setError(null);
     setBusy(true);
@@ -179,6 +154,14 @@ export function PushNotificationsOptIn() {
     }
   }, []);
 
+  const onToggle = useCallback(
+    async (_: unknown, checked: boolean) => {
+      if (checked) await enable();
+      else await disable();
+    },
+    [enable, disable],
+  );
+
   if (!ready) {
     return (
       <div className={cardClassName()}>
@@ -189,7 +172,6 @@ export function PushNotificationsOptIn() {
   }
 
   if (!supported) {
-    // Plain HTTP to a LAN IP (e.g. http://192.168.x.x) is not a secure context — Chrome hides PushManager too.
     if (insecureOrigin) {
       return (
         <div className={cardClassName()}>
@@ -282,26 +264,27 @@ export function PushNotificationsOptIn() {
         <p className="mt-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
           Web Push needs a <strong>secure context</strong>: use <strong>http://localhost:3000</strong> or{" "}
           <strong>HTTPS</strong> in production. Opening the site as <strong>http://192.168.x.x</strong> (LAN IP)
-          over HTTP often blocks push — announcements and test push may not arrive.
+          over HTTP often blocks push — announcements may not arrive.
         </p>
       ) : null}
       {error ? <p className="text-destructive mt-2 text-xs">{error}</p> : null}
-      {testMessage ? <p className="text-muted-foreground mt-2 text-xs">{testMessage}</p> : null}
-      <div className="mt-3 flex flex-wrap gap-2">
-        {subscribed ? (
-          <>
-            <Button type="button" variant="secondary" size="sm" disabled={busy || testBusy} onClick={sendTest}>
-              Send test push
-            </Button>
-            <Button type="button" variant="outline" size="sm" disabled={busy || testBusy} onClick={disable}>
-              Turn off notifications
-            </Button>
-          </>
-        ) : (
-          <Button type="button" size="sm" disabled={busy} onClick={enable}>
-            Enable notifications
-          </Button>
-        )}
+      <div className="mt-3">
+        <FormControlLabel
+          control={
+            <Switch
+              checked={subscribed}
+              onChange={onToggle}
+              disabled={busy}
+              color="primary"
+              inputProps={{ "aria-label": "Enable device notifications" }}
+            />
+          }
+          label={
+            <span className="text-sm font-medium text-foreground">
+              {subscribed ? "Notifications on for this device" : "Off — tap to enable"}
+            </span>
+          }
+        />
       </div>
     </div>
   );

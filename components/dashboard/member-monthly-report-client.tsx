@@ -474,6 +474,7 @@ export function MemberMonthlyReportClient({
               {report.contactRows.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No contacts this month.</p>
               ) : (
+                <div className="w-full overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -496,6 +497,7 @@ export function MemberMonthlyReportClient({
                     ))}
                   </TableBody>
                 </Table>
+                </div>
               )}
             </CardContent>
           </Card>

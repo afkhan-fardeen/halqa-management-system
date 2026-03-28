@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { DM_Sans, Poppins } from "next/font/google";
 import { AuthBrand } from "@/components/auth/auth-brand";
+import { AuthThemeToggle } from "@/components/auth/auth-theme-toggle";
 import { MemberStyleRoot } from "@/components/member/member-style-root";
 
 const dmSans = DM_Sans({
@@ -29,6 +30,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               'var(--font-member-body), "DM Sans", system-ui, sans-serif',
           }}
         >
+          <AuthThemeToggle className="absolute right-3 top-3 z-20 sm:right-6 sm:top-4" />
           <div
             className="pointer-events-none absolute inset-0 bg-gradient-to-b from-stone-100/90 via-background to-amber-50/40 dark:from-stone-950 dark:via-background dark:to-stone-900/80"
             aria-hidden

@@ -47,7 +47,12 @@ const nav = [
   },
 ] as const;
 
-export function DashboardSidebarNav() {
+export function DashboardSidebarNav({
+  onNavigate,
+}: {
+  /** Called after a nav item is chosen (e.g. close mobile drawer). */
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
@@ -67,7 +72,8 @@ export function DashboardSidebarNav() {
             component={Link}
             href={href}
             selected={active}
-            sx={{ borderRadius: 1, mb: 0.25 }}
+            onClick={() => onNavigate?.()}
+            sx={{ borderRadius: 1, mb: 0.25, minHeight: 48 }}
           >
             <ListItemIcon sx={{ minWidth: 36 }}>
               <Icon className="size-4 shrink-0" aria-hidden />

@@ -8,8 +8,8 @@ import {
 } from "@/components/member/member-theme-provider";
 import { CheckCircle2, CircleAlert, Info, Loader2 } from "lucide-react";
 
-/** Above frosted bottom nav; keep loosely aligned with `MEMBER_BOTTOM_NAV_SPACER_CSS`. */
-const TOAST_BOTTOM_OFFSET_PX = 118;
+/** Horizontal center, ~30% of viewport height from the top (below status bar area on phones). */
+const TOAST_TOP_OFFSET = "calc(30vh + env(safe-area-inset-top, 0px))";
 
 function readToastTheme(): "light" | "dark" {
   if (typeof window === "undefined") return "light";
@@ -24,7 +24,7 @@ function readToastTheme(): "light" | "dark" {
     : "light";
 }
 
-/** Compact bottom-center “flair” toasts: amber-forward base, color accent bar, pill shape. */
+/** Compact top-center “flair” toasts: amber-forward base, color accent bar, pill shape. */
 export function Toaster() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
@@ -48,15 +48,16 @@ export function Toaster() {
 
   const flairBase =
     theme === "dark"
-      ? "group !w-[min(100%,240px)] !max-w-[240px] !rounded-full !border !border-amber-700/35 !bg-gradient-to-r !from-amber-950/90 !to-stone-900/95 !px-3 !py-2 !shadow-[0_-6px_22px_rgba(0,0,0,0.4)] !backdrop-blur-md !pl-3.5"
-      : "group !w-[min(100%,240px)] !max-w-[240px] !rounded-full !border !border-amber-200/80 !bg-gradient-to-r !from-amber-50/95 !to-stone-50/98 !px-3 !py-2 !shadow-[0_-6px_22px_rgba(217,119,6,0.12)] !backdrop-blur-md !pl-3.5";
+      ? "group !w-[min(100%,240px)] !max-w-[240px] !rounded-full !border !border-amber-700/35 !bg-gradient-to-r !from-amber-950/90 !to-stone-900/95 !px-3 !py-2 !shadow-[0_8px_28px_rgba(0,0,0,0.45)] !backdrop-blur-md !pl-3.5"
+      : "group !w-[min(100%,240px)] !max-w-[240px] !rounded-full !border !border-amber-200/80 !bg-gradient-to-r !from-amber-50/95 !to-stone-50/98 !px-3 !py-2 !shadow-[0_8px_28px_rgba(217,119,6,0.14)] !backdrop-blur-md !pl-3.5";
 
   return (
     <Sonner
       theme={theme}
       richColors={false}
-      position="bottom-center"
-      offset={mounted ? TOAST_BOTTOM_OFFSET_PX : 20}
+      position="top-center"
+      offset={mounted ? { top: TOAST_TOP_OFFSET } : { top: "30vh" }}
+      mobileOffset={mounted ? { top: TOAST_TOP_OFFSET } : { top: "30dvh" }}
       gap={6}
       visibleToasts={5}
       toastOptions={{

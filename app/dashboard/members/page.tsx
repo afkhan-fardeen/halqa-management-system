@@ -131,6 +131,7 @@ export default async function DashboardMembersPage({
           {rows.length === 0 ? (
             <p className="text-muted-foreground text-sm">No members found.</p>
           ) : (
+            <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -184,6 +185,7 @@ export default async function DashboardMembersPage({
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
 
           {totalPages > 1 ? (

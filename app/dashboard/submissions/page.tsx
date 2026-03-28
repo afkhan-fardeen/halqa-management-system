@@ -163,6 +163,7 @@ export default async function DashboardSubmissionsPage({
           {logs.rows.length === 0 ? (
             <p className="text-muted-foreground text-sm">No logs in range.</p>
           ) : (
+            <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -194,6 +195,7 @@ export default async function DashboardSubmissionsPage({
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
           {logPages > 1 ? (
             <div className="text-muted-foreground flex items-center justify-between text-sm">
@@ -246,6 +248,7 @@ export default async function DashboardSubmissionsPage({
               No contacts in range.
             </p>
           ) : (
+            <div className="w-full overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -270,6 +273,7 @@ export default async function DashboardSubmissionsPage({
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
           {contactPages > 1 ? (
             <div className="text-muted-foreground flex items-center justify-between text-sm">

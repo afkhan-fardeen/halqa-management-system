@@ -113,7 +113,7 @@ Use a hosted Postgres URL (e.g. Neon) in production via `DATABASE_URL`.
 
 ## PWA and Web Push
 
-- **Install:** Public page at `/install` (also linked from the login screen). Add PNG icons live under `public/icon-192.png` and `public/icon-512.png` (generated from `icon.svg` when needed).
+- **Install:** Public page at `/install`. PWA icons and manifest-related assets live under `public/icons_and_manifest/` (URLs `/icons_and_manifest/...`). Add `icon-192.png` and `icon-512.png` next to `icon.svg`; optional extra sizes in `public/icons_and_manifest/icons/`. Legacy paths `/icon.svg`, `/icon-192.png`, `/icon-512.png` redirect to the new folder.
 - **Service worker:** `public/sw.js` registers from the root layout. It caches same-origin static assets only (`/_next/static`, fonts, manifest, images); **`/api/*` is never cached**. Updates show an in-app “Update and reload” prompt before activating a new worker.
 - **Web Push (optional):** Set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` in `.env.local` (see `.env.example`). Run `npx web-push generate-vapid-keys` to create keys. Without VAPID, the app still works; subscribe UI and push delivery are skipped.
 - **Database:** `push_subscriptions` stores per-device subscription endpoints (migration `0004_push_subscriptions`). Apply with `npm run db:migrate` after pulling.

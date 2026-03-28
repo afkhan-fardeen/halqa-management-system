@@ -90,7 +90,7 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
           name="email"
           type="email"
           label="Email"
-          placeholder="you@example.com"
+          placeholder="name@example.com"
           autoComplete="email"
           required
           fullWidth
@@ -100,6 +100,7 @@ export function LoginForm({ callbackUrl = "/" }: { callbackUrl?: string }) {
         <PasswordInput
           name="password"
           label="Password"
+          placeholder="Enter your password"
           required
           error={Boolean(fieldErrors.password)}
           helperText={fieldErrors.password}

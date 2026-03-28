@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { PWA_ASSETS } from "@/lib/constants/pwa-assets";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -17,25 +18,25 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["lifestyle", "productivity"],
     icons: [
       {
-        src: "/icon-192.png",
+        src: PWA_ASSETS.icon192,
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icon-512.png",
+        src: PWA_ASSETS.icon512,
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icon-512.png",
+        src: PWA_ASSETS.icon512,
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
       },
       {
-        src: "/icon.svg",
+        src: PWA_ASSETS.iconSvg,
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",

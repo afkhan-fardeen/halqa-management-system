@@ -110,6 +110,7 @@ export function RegisterForm() {
           id="name"
           name="name"
           autoComplete="name"
+          placeholder="Your full name"
           required
           aria-invalid={Boolean(fieldErrors.name)}
           className={authInputClassName}
@@ -127,6 +128,7 @@ export function RegisterForm() {
           name="email"
           type="email"
           autoComplete="email"
+          placeholder="name@example.com"
           required
           aria-invalid={Boolean(fieldErrors.email)}
           className={authInputClassName}
@@ -136,13 +138,11 @@ export function RegisterForm() {
         ) : null}
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="password" className="text-sm font-medium">
-          Password
-        </Label>
         <PasswordInput
           id="password"
           name="password"
           label="Password"
+          placeholder="At least 8 characters, one number"
           autoComplete="new-password"
           required
           inputProps={{ minLength: 8 }}
@@ -163,6 +163,7 @@ export function RegisterForm() {
           name="phone"
           type="tel"
           autoComplete="tel"
+          placeholder="+973 …"
           required
           aria-invalid={Boolean(fieldErrors.phone)}
           className={authInputClassName}

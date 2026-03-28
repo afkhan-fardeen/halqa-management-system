@@ -21,19 +21,15 @@ export default async function LoginPage({
       title="Sign in"
       description="Welcome back. Sign in with your Qalbee account email and password."
       footer={
-        <div className="space-y-2 text-center text-sm text-gray-600">
-          <p>
-            No account?{" "}
-            <Link href="/register" className="font-semibold text-[#1565c0] underline-offset-2 hover:underline">
-              Create an account
-            </Link>
-          </p>
-          <p>
-            <Link href="/install" className="font-semibold text-[#1565c0] underline-offset-2 hover:underline">
-              Install the app
-            </Link>
-          </p>
-        </div>
+        <p className="text-center text-sm text-stone-600 dark:text-stone-400">
+          No account?{" "}
+          <Link
+            href="/register"
+            className="font-semibold text-indigo-600 underline-offset-2 hover:underline dark:text-indigo-400"
+          >
+            Create an account
+          </Link>
+        </p>
       }
     >
       <LoginForm callbackUrl={callbackUrl} />

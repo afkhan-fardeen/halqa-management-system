@@ -75,6 +75,7 @@ export function ForgotPasswordForm() {
           name="email"
           type="email"
           autoComplete="email"
+          placeholder="name@example.com"
           required
           aria-invalid={Boolean(fieldErrors.email)}
           className={authInputClassName}

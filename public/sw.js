@@ -3,7 +3,7 @@
  * Qalbee PWA service worker — updates, safe static caching, Web Push.
  * Bump CACHE_VERSION when changing caching behavior so clients refresh.
  */
-const CACHE_VERSION = "qalbee-v2";
+const CACHE_VERSION = "qalbee-v3";
 const STATIC_CACHE = `qalbee-static-${CACHE_VERSION}`;
 
 self.addEventListener("message", (event) => {
@@ -85,8 +85,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/icon-192.png",
-      badge: "/icon-192.png",
+      icon: "/icons_and_manifest/icon-192.png",
+      badge: "/icons_and_manifest/icon-192.png",
       data: { url: data.url || "/notifications" },
     }),
   );
