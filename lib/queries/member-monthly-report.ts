@@ -205,6 +205,8 @@ export type MemberMonthlyReportData = {
     daysLiteratureSkipped: number;
     /** Days with a book title logged (not skipped). */
     daysLiteratureWithBook: number;
+    /** Days where the Quran section was saved for that daily log. */
+    daysWithQuranSaved: number;
     /** Quran type counts among days with quran saved. */
     quranByType: QuranTypeTotals;
   };
@@ -315,10 +317,12 @@ export async function getMemberMonthlyReport(
   let daysHadithNo = 0;
   let daysLiteratureSkipped = 0;
   let daysLiteratureWithBook = 0;
+  let daysWithQuranSaved = 0;
 
   for (const log of logRows) {
     addPrayerRowToTotals(log, prayerByStatus);
     if (log.quranSaved) {
+      daysWithQuranSaved += 1;
       if (log.quranType === "TILAWAT") quranByType.TILAWAT += 1;
       else if (log.quranType === "TAFSEER") quranByType.TAFSEER += 1;
       else quranByType.BOTH += 1;
@@ -412,6 +416,7 @@ export async function getMemberMonthlyReport(
       daysHadithNo,
       daysLiteratureSkipped,
       daysLiteratureWithBook,
+      daysWithQuranSaved,
       quranByType,
     },
     contactByStatus,

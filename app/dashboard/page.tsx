@@ -29,14 +29,16 @@ export default async function DashboardHomePage() {
         : "—";
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-8">
+      <div className="space-y-1.5">
         <h1 className="font-display text-2xl font-semibold tracking-tight">
           Overview
         </h1>
-        <p className="text-muted-foreground text-sm">
-          Unit activity and key metrics. The dashboard refreshes in the background
-          about every 8 seconds while this tab is visible.
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          Unit activity and key metrics for your scope.
+        </p>
+        <p className="text-muted-foreground text-xs">
+          Figures reload periodically while this tab stays open.
         </p>
       </div>
 

@@ -50,16 +50,6 @@ const FEATURES = [
     ),
   },
   {
-    title: "Live dashboard",
-    desc: "Incharges see real-time submission rates, prayer stats, and missing members.",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <path d="M3 9h18M9 21V9" />
-      </svg>
-    ),
-  },
-  {
     title: "Smart reminders",
     desc: "Daily submission reminders at 8 PM if you haven't logged yet. Aiyanat alerts on the 25th.",
     icon: (
@@ -187,11 +177,6 @@ export function MarketingLandingClient() {
           <div>
             <div className="hms-hero-stat-val">&lt; 60s</div>
             <div className="hms-hero-stat-lbl">To submit daily</div>
-          </div>
-          <div style={{ width: 1, background: "var(--hms-border)" }} aria-hidden />
-          <div>
-            <div className="hms-hero-stat-val">Live</div>
-            <div className="hms-hero-stat-lbl">Dashboard updates</div>
           </div>
         </div>
       </section>

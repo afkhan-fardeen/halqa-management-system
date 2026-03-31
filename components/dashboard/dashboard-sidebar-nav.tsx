@@ -218,6 +218,9 @@ export function DashboardSidebarNav({
                     minHeight: description ? 52 : 44,
                     py: description ? 0.75 : 0.5,
                     px: 1.25,
+                    "&:not(.Mui-selected):hover": {
+                      bgcolor: "action.hover",
+                    },
                     "&.Mui-selected": {
                       bgcolor: (t) =>
                         t.palette.mode === "dark"

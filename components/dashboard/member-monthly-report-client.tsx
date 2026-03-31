@@ -3,11 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
-  Legend,
   Line,
   LineChart,
   Pie,
@@ -47,17 +44,6 @@ const PRAYER_PIE_COLORS: Record<string, string> = {
   Munfarid: "#2563eb",
   Qaza: "#dc2626",
   "On time": "#d97706",
-};
-
-const QURAN_TYPE_COLORS: Record<string, string> = {
-  Tilawat: "#4f46e5",
-  Tafseer: "#7c3aed",
-  Both: "#0d9488",
-};
-
-const CONTACT_PIE_COLORS: Record<string, string> = {
-  Muslim: "#059669",
-  "Non-Muslim": "#0284c7",
 };
 
 function currentMonthYyyyMm(): string {
@@ -110,8 +96,6 @@ export function MemberMonthlyReportClient({
     return report.dailySeries.map((d) => ({
       day: d.ymd.slice(8).replace(/^0/, ""),
       quran: d.quranPages,
-      contacts: d.contactCount,
-      qaza: d.qazaCount,
     }));
   }, [report]);
 
@@ -123,25 +107,6 @@ export function MemberMonthlyReportClient({
       { name: "Munfarid", value: p.MUNFARID },
       { name: "Qaza", value: p.QAZA },
       { name: "On time", value: p.ON_TIME },
-    ].filter((x) => x.value > 0);
-  }, [report]);
-
-  const quranTypePieData = useMemo(() => {
-    if (!report) return [];
-    const q = report.summary.quranByType;
-    return [
-      { name: "Tilawat", value: q.TILAWAT },
-      { name: "Tafseer", value: q.TAFSEER },
-      { name: "Both", value: q.BOTH },
-    ].filter((x) => x.value > 0);
-  }, [report]);
-
-  const contactPieData = useMemo(() => {
-    if (!report) return [];
-    const c = report.contactByStatus;
-    return [
-      { name: "Muslim", value: c.MUSLIM },
-      { name: "Non-Muslim", value: c.NON_MUSLIM },
     ].filter((x) => x.value > 0);
   }, [report]);
 
@@ -177,9 +142,7 @@ export function MemberMonthlyReportClient({
       <Card className="shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Selection</CardTitle>
-          <CardDescription>
-            Updates the URL so you can bookmark or share this view.
-          </CardDescription>
+          <CardDescription>Month, member, and exports.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
           <div className="grid gap-1">
@@ -261,175 +224,117 @@ export function MemberMonthlyReportClient({
               Month totals
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <Kpi title="Days with log" value={`${report.summary.daysWithLog} / ${report.summary.daysInMonth}`} />
-              <Kpi title="Quran pages (total)" value={String(report.summary.totalQuranPages)} />
-              <Kpi title="Ba jamaat (slots)" value={String(report.summary.prayerByStatus.BA_JAMAAT)} />
-              <Kpi title="Munfarid (slots)" value={String(report.summary.prayerByStatus.MUNFARID)} />
-              <Kpi title="Qaza (slots)" value={String(report.summary.prayerByStatus.QAZA)} />
-              <Kpi title="On time (slots)" value={String(report.summary.prayerByStatus.ON_TIME)} />
-              <Kpi title="Qaza (prayer count)" value={String(report.summary.totalQazaPrayers)} />
-              <Kpi title="Hadith — yes (days)" value={String(report.summary.daysHadithYes)} />
-              <Kpi title="Hadith — no (days)" value={String(report.summary.daysHadithNo)} />
-              <Kpi title="Literature skipped (days)" value={String(report.summary.daysLiteratureSkipped)} />
-              <Kpi title="Literature with book (days)" value={String(report.summary.daysLiteratureWithBook)} />
-              <Kpi title="Outreach contacts" value={String(report.summary.totalContacts)} />
+              <Kpi
+                title="Days with log"
+                value={`${report.summary.daysWithLog} / ${report.summary.daysInMonth}`}
+              />
+              <Kpi
+                title="Ba jamaat (total)"
+                value={String(report.summary.prayerByStatus.BA_JAMAAT)}
+              />
+              <Kpi
+                title="Munfarid (total)"
+                value={String(report.summary.prayerByStatus.MUNFARID)}
+              />
+              <Kpi
+                title="Qaza (total)"
+                value={String(report.summary.prayerByStatus.QAZA)}
+              />
+              <Kpi
+                title="On time (total)"
+                value={String(report.summary.prayerByStatus.ON_TIME)}
+              />
+              <Kpi
+                title="Quran pages (total)"
+                value={String(report.summary.totalQuranPages)}
+              />
+              <Kpi
+                title="Days with Quran logged"
+                value={String(report.summary.daysWithQuranSaved)}
+              />
+              <Kpi
+                title="Hadith — yes (days)"
+                value={String(report.summary.daysHadithYes)}
+              />
+              <Kpi
+                title="Hadith — no (days)"
+                value={String(report.summary.daysHadithNo)}
+              />
+              <Kpi
+                title="Literature — with book (days)"
+                value={String(report.summary.daysLiteratureWithBook)}
+              />
+              <Kpi
+                title="Literature — skipped (days)"
+                value={String(report.summary.daysLiteratureSkipped)}
+              />
+              <Kpi
+                title="Outreach contacts"
+                value={String(report.summary.totalContacts)}
+              />
             </div>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Trend — Quran & outreach</CardTitle>
-                <CardDescription>Daily Quran pages, contacts, and Qaza count over the month.</CardDescription>
+                <CardTitle className="text-lg">Quran pages by day</CardTitle>
+                <CardDescription>Daily total pages for this month.</CardDescription>
               </CardHeader>
-              <CardContent className="flex h-[320px] w-full min-w-0 flex-col p-6 pt-0">
-                <div className="min-h-[240px] min-w-0 flex-1">
+              <CardContent className="flex h-[300px] w-full min-w-0 flex-col p-6 pt-0">
+                <div className="min-h-[220px] min-w-0 flex-1">
                   <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={lineData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                    <Tooltip contentStyle={{ fontSize: 12 }} />
-                    <Legend />
-                    <Line type="monotone" dataKey="quran" name="Quran pages" stroke={accentLine} strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="contacts" name="Contacts" stroke="#64748b" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="qaza" name="Qaza (prayers)" stroke="#ea580c" strokeWidth={2} dot={false} />
-                  </LineChart>
-                </ResponsiveContainer>
+                    <LineChart data={lineData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                      <Tooltip contentStyle={{ fontSize: 12 }} />
+                      <Line
+                        type="monotone"
+                        dataKey="quran"
+                        name="Quran pages"
+                        stroke={accentLine}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
 
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle className="text-lg">Stacked activity</CardTitle>
-                <CardDescription>Per-day Quran pages vs contacts (bars).</CardDescription>
+                <CardTitle className="text-lg">Prayer status mix</CardTitle>
+                <CardDescription>Counts across saved salat for the month.</CardDescription>
               </CardHeader>
-              <CardContent className="flex h-[320px] w-full min-w-0 flex-col overflow-x-auto p-6 pt-0">
-                <div className="min-h-[240px] min-w-[400px] flex-1">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={400}>
-                  <BarChart data={lineData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="day" tick={{ fontSize: 10 }} interval={2} />
-                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                    <Tooltip contentStyle={{ fontSize: 12 }} />
-                    <Legend />
-                    <Bar dataKey="quran" name="Quran pages" stackId="a" fill={accentLine} radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="contacts" name="Contacts" stackId="a" fill="#94a3b8" radius={[2, 2, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Prayer status</CardTitle>
-                <CardDescription>All five prayers × days (saved salat).</CardDescription>
-              </CardHeader>
-              <CardContent className="flex h-[260px] flex-col p-6 pt-0">
+              <CardContent className="flex h-[300px] flex-col p-6 pt-0">
                 {prayerPieData.length === 0 ? (
                   <p className="text-muted-foreground text-sm">No saved salat data this month.</p>
                 ) : (
-                  <div className="min-h-[200px] min-w-0 flex-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={prayerPieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={88}
-                        label={({ name, percent }) =>
-                          `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
-                        }
-                      >
-                        {prayerPieData.map((entry) => (
-                          <Cell key={entry.name} fill={PRAYER_PIE_COLORS[entry.name] ?? "#64748b"} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(v) => [typeof v === "number" ? v : Number(v), "Slots"]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Quran type</CardTitle>
-                <CardDescription>Days with Quran section saved.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex h-[260px] flex-col p-6 pt-0">
-                {quranTypePieData.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No Quran entries saved this month.</p>
-                ) : (
-                  <div className="min-h-[200px] min-w-0 flex-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={quranTypePieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={88}
-                        label={({ name, percent }) =>
-                          `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
-                        }
-                      >
-                        {quranTypePieData.map((entry) => (
-                          <Cell key={entry.name} fill={QURAN_TYPE_COLORS[entry.name] ?? "#64748b"} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(v) => [typeof v === "number" ? v : Number(v), "Days"]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base">Outreach</CardTitle>
-                <CardDescription>Contacts by category.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex h-[260px] flex-col p-6 pt-0">
-                {contactPieData.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No contacts this month.</p>
-                ) : (
-                  <div className="min-h-[200px] min-w-0 flex-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={contactPieData}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={88}
-                        label={({ name, percent }) =>
-                          `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
-                        }
-                      >
-                        {contactPieData.map((entry) => (
-                          <Cell key={entry.name} fill={CONTACT_PIE_COLORS[entry.name] ?? "#64748b"} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(v) => [typeof v === "number" ? v : Number(v), "Contacts"]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="min-h-[220px] min-w-0 flex-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={prayerPieData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={88}
+                          label={({ name, percent }) =>
+                            `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                          }
+                        >
+                          {prayerPieData.map((entry) => (
+                            <Cell key={entry.name} fill={PRAYER_PIE_COLORS[entry.name] ?? "#64748b"} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(v) => [typeof v === "number" ? v : Number(v), "Prayers"]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
                 )}
               </CardContent>
@@ -439,11 +344,11 @@ export function MemberMonthlyReportClient({
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg">Aiyanat ({report.month})</CardTitle>
-              <CardDescription>Payment status for this calendar month.</CardDescription>
+              <CardDescription>Payment for this calendar month.</CardDescription>
             </CardHeader>
             <CardContent>
               {report.aiyanat ? (
-                <ul className="space-y-1 text-sm">
+                <ul className="space-y-2 text-sm">
                   <li>
                     <span className="text-muted-foreground">Status: </span>
                     {report.aiyanat.status === "PAID" ? "Paid" : "Not paid"}
@@ -467,36 +372,36 @@ export function MemberMonthlyReportClient({
 
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Outreach contacts</CardTitle>
-              <CardDescription>All contacts logged this month.</CardDescription>
+              <CardTitle className="text-lg">Contacts this month</CardTitle>
+              <CardDescription>All outreach contacts logged in the selected month.</CardDescription>
             </CardHeader>
             <CardContent>
               {report.contactRows.length === 0 ? (
                 <p className="text-muted-foreground text-sm">No contacts this month.</p>
               ) : (
-                <div className="w-full overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Log date</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {report.contactRows.map((c) => (
-                      <TableRow key={c.id}>
-                        <TableCell>{c.logDate}</TableCell>
-                        <TableCell>{c.name}</TableCell>
-                        <TableCell>{c.phone}</TableCell>
-                        <TableCell>{c.location}</TableCell>
-                        <TableCell>{c.status}</TableCell>
+                <div className="max-h-[min(28rem,70vh)] w-full overflow-auto rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Log date</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Status</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {report.contactRows.map((c) => (
+                        <TableRow key={c.id}>
+                          <TableCell>{c.logDate}</TableCell>
+                          <TableCell>{c.name}</TableCell>
+                          <TableCell>{c.phone}</TableCell>
+                          <TableCell>{c.location}</TableCell>
+                          <TableCell>{c.status}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>
