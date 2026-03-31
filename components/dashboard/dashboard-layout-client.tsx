@@ -1,76 +1,50 @@
 "use client";
 
-import MenuIcon from "@mui/icons-material/Menu";
 import Link from "next/link";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { InboxLink } from "@/components/notifications/inbox-link";
 import { DashboardRefresh } from "@/components/dashboard/dashboard-refresh";
 import { PushNotificationWelcomeModal } from "@/components/pwa/push-notification-welcome-modal";
 import { DashboardSidebarNav } from "@/components/dashboard/dashboard-sidebar-nav";
 import {
-  AppBar,
-  Box,
-  Drawer,
-  IconButton,
-  Paper,
-  Toolbar,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+  StaffDashboardHeader,
+  type StaffHeaderUser,
+} from "@/components/dashboard/staff-dashboard-header";
+import { cn } from "@/lib/utils";
 
-/** Sidebar width — fits grouped nav + session attendance labels */
-const drawerWidth = 304;
-
-function DashboardSidebarPanel({
-  unread,
+function StaffSidebarChrome({
   isAdmin,
   onNavigate,
 }: {
-  unread: number;
   isAdmin: boolean;
   onNavigate?: () => void;
 }) {
   return (
     <>
-      <Toolbar
-        sx={{
-          gap: 1,
-          justifyContent: "space-between",
-          borderBottom: 1,
-          borderColor: "divider",
-          flexShrink: 0,
-        }}
-      >
-        <Typography
-          variant="h6"
-          component={Link}
+      <div className="mb-4 px-3 py-6">
+        <Link
           href="/dashboard"
-          color="primary"
-          sx={{
-            fontWeight: 800,
-            textDecoration: "none",
-            fontFamily: "var(--font-hms-serif), 'DM Serif Display', serif",
-            display: "flex",
-            alignItems: "baseline",
-            gap: "2px",
-          }}
+          className="block font-staff-headline text-xl font-black tracking-tighter text-blue-700 dark:text-blue-400"
           onClick={() => onNavigate?.()}
         >
           Qalbee
-          <Box component="span" sx={{ color: "primary.main" }}>
-            .
-          </Box>
-        </Typography>
-        <InboxLink href="/dashboard/notifications" unread={unread} />
-      </Toolbar>
-      <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-        <DashboardSidebarNav isAdmin={isAdmin} onNavigate={onNavigate} />
-      </Box>
-      <Box sx={{ mt: "auto", flexShrink: 0, borderTop: 1, borderColor: "divider", p: 1 }}>
-        <SignOutButton className="w-full" />
-      </Box>
+        </Link>
+        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          Management Suite
+        </p>
+      </div>
+      <DashboardSidebarNav isAdmin={isAdmin} onNavigate={onNavigate} />
+      <div className="mt-auto flex flex-col gap-1 border-t border-slate-200/80 pt-4 dark:border-slate-800">
+        <Link
+          href="/about"
+          className="flex items-center gap-3 px-3 py-2 text-sm text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+          onClick={() => onNavigate?.()}
+        >
+          <span className="material-symbols-outlined text-[20px]">help</span>
+          Help
+        </Link>
+        <SignOutButton variant="staffSidebar" />
+      </div>
     </>
   );
 }
@@ -78,122 +52,82 @@ function DashboardSidebarPanel({
 export function DashboardLayoutClient({
   unread,
   isAdmin,
+  user,
+  shellClassName,
   children,
 }: {
   unread: number;
   isAdmin: boolean;
+  user: StaffHeaderUser;
+  shellClassName?: string;
   children: ReactNode;
 }) {
-  const theme = useTheme();
-  const isMdUp = useMediaQuery(theme.breakpoints.up("md"), { defaultMatches: false });
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   useEffect(() => {
-    if (isMdUp) setMobileOpen(false);
-  }, [isMdUp]);
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = () => {
+      if (mq.matches) setMobileOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
-  const sidebarPaperSx = {
-    display: "flex",
-    flexDirection: "column" as const,
-    width: drawerWidth,
-    borderRight: 1,
-    borderColor: "divider",
-    bgcolor: "grey.50",
-    height: "100%",
-    minHeight: "100dvh",
-    boxSizing: "border-box" as const,
-  };
+  const asideClass =
+    "flex h-full min-h-0 w-64 flex-col border-r border-slate-200/80 bg-slate-100 p-4 dark:border-slate-800 dark:bg-slate-900";
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100dvh" }}>
-      <Paper
-        component="aside"
-        elevation={0}
-        square
-        sx={{
-          ...sidebarPaperSx,
-          display: { xs: "none", md: "flex" },
-        }}
-      >
-        <DashboardSidebarPanel unread={unread} isAdmin={isAdmin} />
-      </Paper>
+    <div
+      data-staff-dashboard
+      className={cn("min-h-dvh bg-staff-background text-staff-on-surface dark:bg-slate-950", shellClassName)}
+    >
+      {/* Desktop sidebar */}
+      <aside className={cn(asideClass, "fixed left-0 top-0 z-50 hidden min-h-dvh md:flex")}>
+        <StaffSidebarChrome isAdmin={isAdmin} />
+      </aside>
 
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={closeMobile}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": {
-            ...sidebarPaperSx,
-            pt: "env(safe-area-inset-top, 0px)",
-            pb: "env(safe-area-inset-bottom, 0px)",
-          },
+      {/* Mobile drawer */}
+      {mobileOpen ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-[60] bg-black/40 md:hidden"
+          aria-label="Close menu"
+          onClick={closeMobile}
+        />
+      ) : null}
+      <aside
+        className={cn(
+          asideClass,
+          "fixed left-0 top-0 z-[70] min-h-dvh transition-transform duration-200 ease-out md:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none",
+        )}
+        style={{
+          paddingTop: "max(1rem, env(safe-area-inset-top))",
+          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
         }}
+        aria-hidden={!mobileOpen}
       >
-        <DashboardSidebarPanel unread={unread} isAdmin={isAdmin} onNavigate={closeMobile} />
-      </Drawer>
+        <StaffSidebarChrome isAdmin={isAdmin} onNavigate={closeMobile} />
+      </aside>
 
-      <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <AppBar
-          position="sticky"
-          color="inherit"
-          elevation={1}
-          sx={{
-            display: { md: "none" },
-            pt: "env(safe-area-inset-top, 0px)",
-          }}
+      <div className="flex min-h-dvh flex-col md:ml-64">
+        <StaffDashboardHeader
+          unread={unread}
+          user={user}
+          showMobileMenuButton
+          onOpenMobileNav={() => setMobileOpen(true)}
+        />
+        <main
+          className="flex-1 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 md:px-8 md:py-8"
         >
-          <Toolbar
-            disableGutters
-            sx={{
-              px: 1.5,
-              gap: 1,
-              alignItems: "center",
-              minHeight: { xs: 56, sm: 64 },
-            }}
-          >
-            <IconButton
-              color="inherit"
-              edge="start"
-              aria-label="Open navigation menu"
-              onClick={() => setMobileOpen(true)}
-              sx={{ mr: 0.5 }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              variant="subtitle1"
-              component={Link}
-              href="/dashboard"
-              fontWeight={800}
-              color="text.primary"
-              sx={{ flex: 1, textDecoration: "none", minWidth: 0 }}
-              noWrap
-            >
-              Dashboard
-            </Typography>
-            <InboxLink href="/dashboard/notifications" unread={unread} />
-            <SignOutButton variant="ghost" />
-          </Toolbar>
-        </AppBar>
-        <Box
-          component="main"
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            p: { xs: 1.5, sm: 2, md: 3 },
-            pb: { xs: "max(1.5rem, env(safe-area-inset-bottom))", md: 3 },
-          }}
-        >
-          <DashboardRefresh />
-          <Box sx={{ mx: "auto", width: "100%", maxWidth: 1152 }}>{children}</Box>
-        </Box>
-      </Box>
+          <div className="mx-auto w-full max-w-7xl">
+            <DashboardRefresh />
+            {children}
+          </div>
+        </main>
+      </div>
       <PushNotificationWelcomeModal audience="staff" />
-    </Box>
+    </div>
   );
 }

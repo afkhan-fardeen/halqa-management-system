@@ -2,24 +2,11 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { adminSendPasswordResetEmail } from "@/lib/actions/password-reset";
 import { deactivateMember } from "@/lib/actions/member-admin";
-import { listMembersForStaff } from "@/lib/queries/members-directory";
-import { buttonVariants } from "@/components/ui/button-variants";
+import {
+  getMemberDirectoryKpis,
+  listMembersForStaff,
+} from "@/lib/queries/members-directory";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { isStaffRole } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
 import { redirect } from "next/navigation";
@@ -28,6 +15,10 @@ const PAGE_SIZE = 25;
 
 function currentMonthYyyyMm() {
   return new Date().toISOString().slice(0, 7);
+}
+
+function formatNumber(n: number) {
+  return n.toLocaleString();
 }
 
 export default async function DashboardMembersPage({
@@ -42,12 +33,15 @@ export default async function DashboardMembersPage({
 
   const sp = await searchParams;
   const page = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
-  const { rows, total } = await listMembersForStaff({
-    q: sp.q,
-    status: sp.status,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  const [kpis, { rows, total }] = await Promise.all([
+    getMemberDirectoryKpis({ q: sp.q }),
+    listMembersForStaff({
+      q: sp.q,
+      status: sp.status,
+      page,
+      pageSize: PAGE_SIZE,
+    }),
+  ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -66,36 +60,43 @@ export default async function DashboardMembersPage({
   if (sp.status) q.set("status", sp.status);
 
   const exportMembersHref = `/api/export/members?${q.toString()}`;
+  const startIdx = total === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const endIdx = Math.min(safePage * PAGE_SIZE, total);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Members
+    <div className="space-y-8 md:space-y-10">
+      <div className="mb-6 md:mb-10">
+        <h1 className="font-staff-headline text-3xl font-extrabold tracking-tight text-staff-on-surface sm:text-4xl">
+          Member directory
         </h1>
-        <Link
-          href={exportMembersHref}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-fit")}
-        >
-          Export CSV
-        </Link>
+        <p className="mt-2 max-w-2xl text-staff-on-surface-variant">
+          Search by name or email. Scoped to your halqa and gender unless you are admin.
+        </p>
       </div>
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Member directory</CardTitle>
-          <CardDescription>
-            Search by name or email. Scoped to your halqa and gender unless you are admin.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
+        <KpiCard label="Total members" value={formatNumber(kpis.total)} />
+        <KpiCard
+          label="Active"
+          value={formatNumber(kpis.active)}
+          accent="text-emerald-600"
+        />
+        <KpiCard label="Pending" value={formatNumber(kpis.pending)} />
+        <KpiCard label="Deactivated" value={formatNumber(kpis.deactivated)} />
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-staff-outline-variant/10 p-6 md:flex-row md:items-center md:justify-between">
           <form
-            className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end"
+            className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
             method="get"
             action="/dashboard/members"
           >
             <div className="grid gap-1">
-              <label className="text-muted-foreground text-xs" htmlFor="q">
+              <label
+                className="text-[0.65rem] font-bold uppercase tracking-wider text-staff-on-surface-variant"
+                htmlFor="q"
+              >
                 Search
               </label>
               <input
@@ -103,18 +104,21 @@ export default async function DashboardMembersPage({
                 name="q"
                 defaultValue={sp.q ?? ""}
                 placeholder="Name or email"
-                className="border-input bg-background h-9 min-w-[200px] rounded-md border px-3 text-sm"
+                className="h-10 min-w-[200px] rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface placeholder:text-staff-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-staff-primary/25"
               />
             </div>
             <div className="grid gap-1">
-              <label className="text-muted-foreground text-xs" htmlFor="status">
+              <label
+                className="text-[0.65rem] font-bold uppercase tracking-wider text-staff-on-surface-variant"
+                htmlFor="status"
+              >
                 Status
               </label>
               <select
                 id="status"
                 name="status"
                 defaultValue={sp.status ?? ""}
-                className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+                className="h-10 rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25"
               >
                 <option value="">All</option>
                 <option value="PENDING">Pending</option>
@@ -123,106 +127,233 @@ export default async function DashboardMembersPage({
                 <option value="DEACTIVATED">Deactivated</option>
               </select>
             </div>
-            <Button type="submit" size="sm">
+            <input type="hidden" name="page" value="1" />
+            <Button
+              type="submit"
+              size="sm"
+              className="h-10 rounded-lg bg-staff-primary px-4 font-bold text-staff-on-primary shadow-sm hover:opacity-90"
+            >
               Apply
             </Button>
           </form>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={exportMembersHref}
+              className="rounded-lg px-4 py-2 text-sm font-bold text-staff-on-surface transition-colors hover:bg-staff-surface-container"
+            >
+              Export CSV
+            </Link>
+          </div>
+        </div>
 
-          {rows.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No members found.</p>
-          ) : (
-            <div className="w-full overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Halqa</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-medium">{r.name}</TableCell>
-                    <TableCell>{r.email}</TableCell>
-                    <TableCell>{r.halqa.replaceAll("_", " ")}</TableCell>
-                    <TableCell>{r.genderUnit}</TableCell>
-                    <TableCell>{r.status}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex flex-wrap justify-end gap-2">
-                        <Link
-                          href={`/dashboard/reports/monthly?memberId=${encodeURIComponent(r.id)}&month=${encodeURIComponent(currentMonthYyyyMm())}`}
-                          className={cn(
-                            buttonVariants({ variant: "secondary", size: "sm" }),
-                          )}
-                        >
-                          Monthly report
-                        </Link>
-                        {r.status !== "DEACTIVATED" ? (
-                          <form action={deactivateMember}>
+        {rows.length === 0 ? (
+          <p className="p-8 text-sm text-staff-on-surface-variant">No members found.</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-staff-surface-container-low/50">
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                      Member
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                      Halqa / unit
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                      Status
+                    </th>
+                    <th className="hidden px-6 py-4 text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant md:table-cell">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-staff-outline-variant/10">
+                  {rows.map((r) => (
+                    <tr
+                      key={r.id}
+                      className="group hover:bg-staff-surface-container-low/30 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-staff-on-surface">
+                            {r.name}
+                          </span>
+                          <span className="text-xs text-staff-on-surface-variant md:hidden">
+                            {r.email}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-staff-on-surface-variant">
+                        {r.halqa.replaceAll("_", " ")} · {r.genderUnit}
+                      </td>
+                      <td className="px-6 py-4">
+                        <StatusPill status={r.status} />
+                      </td>
+                      <td className="hidden px-6 py-4 text-sm text-staff-on-surface-variant md:table-cell">
+                        {r.email}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex flex-wrap justify-end gap-1 sm:gap-2 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+                          <Link
+                            href={`/dashboard/reports/monthly?memberId=${encodeURIComponent(r.id)}&month=${encodeURIComponent(currentMonthYyyyMm())}`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-staff-primary transition-colors hover:bg-staff-surface-container"
+                            title="Monthly report"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">
+                              insert_chart
+                            </span>
+                            <span className="sr-only">Monthly report</span>
+                          </Link>
+                          <form action={adminSendPasswordResetEmail} className="inline">
                             <input type="hidden" name="userId" value={r.id} />
-                            <Button
+                            <button
                               type="submit"
-                              variant="destructive"
-                              size="sm"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-staff-on-surface-variant transition-colors hover:bg-staff-surface-container"
+                              title="Send password reset email"
                             >
-                              Deactivate
-                            </Button>
+                              <span className="material-symbols-outlined text-[20px]">
+                                restart_alt
+                              </span>
+                              <span className="sr-only">Reset email</span>
+                            </button>
                           </form>
-                        ) : null}
-                        <form action={adminSendPasswordResetEmail}>
-                          <input type="hidden" name="userId" value={r.id} />
-                          <Button type="submit" variant="outline" size="sm">
-                            Reset email
-                          </Button>
-                        </form>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                          {r.status !== "DEACTIVATED" ? (
+                            <form action={deactivateMember} className="inline">
+                              <input type="hidden" name="userId" value={r.id} />
+                              <button
+                                type="submit"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-staff-error transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
+                                title="Deactivate member"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">
+                                  person_off
+                                </span>
+                                <span className="sr-only">Deactivate</span>
+                              </button>
+                            </form>
+                          ) : null}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
 
-          {totalPages > 1 ? (
-            <div className="text-muted-foreground flex items-center justify-between text-sm">
-              <Link
-                href={`/dashboard/members?${new URLSearchParams({
-                  ...(sp.q ? { q: sp.q } : {}),
-                  ...(sp.status ? { status: sp.status } : {}),
-                  page: String(safePage - 1),
-                }).toString()}`}
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  safePage <= 1 && "pointer-events-none opacity-40",
-                )}
-              >
-                Previous
-              </Link>
-              <span>
-                Page {safePage} / {totalPages}
-              </span>
-              <Link
-                href={`/dashboard/members?${new URLSearchParams({
-                  ...(sp.q ? { q: sp.q } : {}),
-                  ...(sp.status ? { status: sp.status } : {}),
-                  page: String(safePage + 1),
-                }).toString()}`}
-                className={cn(
-                  buttonVariants({ variant: "ghost", size: "sm" }),
-                  safePage >= totalPages && "pointer-events-none opacity-40",
-                )}
-              >
-                Next
-              </Link>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+            {totalPages > 1 ? (
+              <div className="flex flex-col gap-3 border-t border-staff-outline-variant/10 bg-staff-surface-container-low/20 p-6 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs text-staff-on-surface-variant">
+                  Showing{" "}
+                  <span className="font-bold text-staff-on-surface">
+                    {formatNumber(startIdx)}–{formatNumber(endIdx)}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-bold text-staff-on-surface">
+                    {formatNumber(total)}
+                  </span>{" "}
+                  members
+                </p>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/dashboard/members?${new URLSearchParams({
+                      ...(sp.q ? { q: sp.q } : {}),
+                      ...(sp.status ? { status: sp.status } : {}),
+                      page: String(safePage - 1),
+                    }).toString()}`}
+                    className={cn(
+                      "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-staff-outline-variant/20 text-staff-on-surface-variant transition-colors hover:bg-staff-surface-container",
+                      safePage <= 1 && "pointer-events-none opacity-40",
+                    )}
+                    aria-label="Previous page"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                  </Link>
+                  <span className="px-2 text-xs font-bold text-staff-on-surface">
+                    {safePage} / {totalPages}
+                  </span>
+                  <Link
+                    href={`/dashboard/members?${new URLSearchParams({
+                      ...(sp.q ? { q: sp.q } : {}),
+                      ...(sp.status ? { status: sp.status } : {}),
+                      page: String(safePage + 1),
+                    }).toString()}`}
+                    className={cn(
+                      "inline-flex h-8 w-8 items-center justify-center rounded-lg border border-staff-outline-variant/20 text-staff-on-surface-variant transition-colors hover:bg-staff-surface-container",
+                      safePage >= totalPages && "pointer-events-none opacity-40",
+                    )}
+                    aria-label="Next page"
+                  >
+                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                  </Link>
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
     </div>
+  );
+}
+
+function KpiCard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
+      <p className="mb-2 text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
+        {label}
+      </p>
+      <div className="flex items-end justify-between gap-2">
+        <h3
+          className={cn(
+            "font-staff-headline text-3xl font-bold text-staff-on-surface",
+            accent,
+          )}
+        >
+          {value}
+        </h3>
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    ACTIVE:
+      "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200",
+    PENDING:
+      "bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
+    REJECTED: "bg-red-50 text-red-800 dark:bg-red-950/40 dark:text-red-200",
+    DEACTIVATED:
+      "bg-staff-surface-container-high text-staff-on-surface-variant",
+  };
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-xs font-semibold",
+        styles[status] ?? "bg-staff-tertiary-container text-staff-on-tertiary-container",
+      )}
+    >
+      <span
+        className={cn(
+          "h-2 w-2 rounded-full",
+          status === "ACTIVE" && "bg-emerald-500",
+          status === "PENDING" && "bg-amber-500",
+          status === "REJECTED" && "bg-red-500",
+          status === "DEACTIVATED" && "bg-staff-outline-variant",
+        )}
+      />
+      {status}
+    </span>
   );
 }

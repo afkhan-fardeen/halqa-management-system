@@ -50,6 +50,26 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Staff dashboard shell (resolve on [data-staff-dashboard] subtree) */
+  --color-staff-primary: var(--staff-primary);
+  --color-staff-primary-dim: var(--staff-primary-dim);
+  --color-staff-on-surface: var(--staff-on-surface);
+  --color-staff-on-surface-variant: var(--staff-on-surface-variant);
+  --color-staff-surface-container: var(--staff-surface-container);
+  --color-staff-surface-container-high: var(--staff-surface-container-high);
+  --color-staff-surface-container-low: var(--staff-surface-container-low);
+  --color-staff-surface-container-lowest: var(--staff-surface-container-lowest);
+  --color-staff-background: var(--staff-background);
+  --color-staff-outline-variant: var(--staff-outline-variant);
+  --color-staff-error: var(--staff-error);
+  --color-staff-on-primary-container: var(--staff-on-primary-container);
+  --color-staff-primary-container: var(--staff-primary-container);
+  --color-staff-secondary-container: var(--staff-secondary-container);
+  --color-staff-on-secondary-container: var(--staff-on-secondary-container);
+  --color-staff-tertiary: var(--staff-tertiary);
+  --color-staff-tertiary-container: var(--staff-tertiary-container);
+  --color-staff-on-tertiary-container: var(--staff-on-tertiary-container);
 }
 
 :root {
@@ -245,6 +265,50 @@
 /* Member PWA: slightly rounder cards without forking the whole system */
 [data-shell="member"] {
   --radius: 0.875rem;
+}
+
+/* Staff dashboard: tokens aligned with code.html reference */
+[data-staff-dashboard] {
+  --staff-primary: #0053db;
+  --staff-primary-dim: #0048c1;
+  --staff-on-surface: #2a3439;
+  --staff-on-surface-variant: #566166;
+  --staff-surface-container: #e8eff3;
+  --staff-surface-container-high: #e1e9ee;
+  --staff-surface-container-low: #f0f4f7;
+  --staff-surface-container-lowest: #ffffff;
+  --staff-background: #f7f9fb;
+  --staff-outline-variant: #a9b4b9;
+  --staff-error: #9f403d;
+  --staff-on-primary-container: #0048bf;
+  --staff-primary-container: #dbe1ff;
+  --staff-secondary-container: #d3e4fe;
+  --staff-on-secondary-container: #435368;
+  --staff-tertiary: #605c78;
+  --staff-tertiary-container: #e3dbfd;
+  --staff-on-tertiary-container: #514d68;
+  font-family: var(--font-staff-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+[data-staff-dashboard] .font-staff-headline {
+  font-family: var(--font-staff-headline), ui-sans-serif, system-ui, sans-serif;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
 @import "./hms-ui.css";

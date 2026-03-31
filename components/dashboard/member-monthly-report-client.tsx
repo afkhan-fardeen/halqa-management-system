@@ -17,13 +17,6 @@ import {
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button-variants";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -46,8 +39,19 @@ const PRAYER_PIE_COLORS: Record<string, string> = {
   "On time": "#d97706",
 };
 
+const LINE_STROKE = "#0053db";
+
 function currentMonthYyyyMm(): string {
   return new Date().toISOString().slice(0, 7);
+}
+
+function formatMonthHeading(yyyyMm: string): string {
+  if (!/^\d{4}-\d{2}$/.test(yyyyMm)) return yyyyMm;
+  const [y, m] = yyyyMm.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, 1).toLocaleString("en", {
+    month: "long",
+    year: "numeric",
+  });
 }
 
 function buildExportHref(
@@ -77,19 +81,6 @@ export function MemberMonthlyReportClient({
   error: string | null;
 }) {
   const router = useRouter();
-  const themeClass =
-    role === "SECRETARY"
-      ? "border-teal-600/40 bg-teal-50/40 dark:border-teal-700/50 dark:bg-teal-950/25"
-      : role === "ADMIN"
-        ? "border-slate-500/30 bg-slate-50/50 dark:border-slate-600/40 dark:bg-slate-950/30"
-        : "border-blue-700/35 bg-blue-50/40 dark:border-blue-600/45 dark:bg-blue-950/25";
-
-  const accentLine =
-    role === "SECRETARY"
-      ? "#0d9488"
-      : role === "ADMIN"
-        ? "#64748b"
-        : "#1565c0";
 
   const lineData = useMemo(() => {
     if (!report) return [];
@@ -120,50 +111,59 @@ export function MemberMonthlyReportClient({
   }
 
   return (
-    <div className={cn("space-y-6 rounded-xl border p-4 md:p-6", themeClass)}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="space-y-8 md:space-y-10">
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
+          <h1 className="font-staff-headline text-3xl font-extrabold leading-tight tracking-tight text-staff-on-surface sm:text-[2.2rem] md:text-[2.75rem]">
             Monthly member report
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="mt-2 max-w-2xl text-staff-on-surface-variant">
             {role === "ADMIN"
               ? "All halqas — pick an active member and month."
               : "Your halqa — pick an active member and month."}
           </p>
           {counterpart ? (
-            <p className="text-muted-foreground mt-2 text-sm font-medium">
+            <p className="mt-2 text-sm font-medium text-staff-on-surface-variant">
               {counterpart.roleLabel}: {counterpart.name}
             </p>
           ) : null}
         </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 rounded-xl bg-staff-surface-container-low px-4 py-2">
+            <span className="material-symbols-outlined text-staff-primary text-[22px]">
+              calendar_month
+            </span>
+            <span className="font-semibold text-staff-on-surface">
+              {formatMonthHeading(month || currentMonthYyyyMm())}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <Card className="shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Selection</CardTitle>
-          <CardDescription>Month, member, and exports.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
-          <div className="grid gap-1">
-            <label className="text-muted-foreground text-xs" htmlFor="month">
+      <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm md:p-8">
+        <label className="mb-4 block text-[0.6875rem] font-bold uppercase tracking-wider text-staff-on-surface-variant/80">
+          Month &amp; member
+        </label>
+        <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
+          <div className="grid min-w-[160px] gap-1">
+            <label className="text-xs text-staff-on-surface-variant" htmlFor="month">
               Month
             </label>
             <input
               id="month"
               type="month"
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+              className="h-10 rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25"
               value={month || currentMonthYyyyMm()}
               onChange={(e) => navigate({ month: e.target.value })}
             />
           </div>
           <div className="grid min-w-[220px] flex-1 gap-1">
-            <label className="text-muted-foreground text-xs" htmlFor="member">
+            <label className="text-xs text-staff-on-surface-variant" htmlFor="member">
               Member
             </label>
             <select
               id="member"
-              className="border-input bg-background h-9 rounded-md border px-3 text-sm"
+              className="h-10 rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25"
               value={memberId}
               onChange={(e) => navigate({ memberId: e.target.value })}
             >
@@ -179,113 +179,180 @@ export function MemberMonthlyReportClient({
             <div className="flex flex-wrap gap-2">
               <Link
                 href={buildExportHref(memberId, month, "csv")}
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "h-10 rounded-lg border-staff-outline-variant/30 font-bold",
+                )}
               >
                 Export CSV
               </Link>
               <Link
                 href={buildExportHref(memberId, month, "xlsx")}
-                className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "h-10 rounded-lg border-staff-outline-variant/30 font-bold",
+                )}
               >
                 Export Excel
               </Link>
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {error ? (
-        <p className="text-destructive text-sm font-medium" role="alert">
+        <p className="text-sm font-medium text-red-600 dark:text-red-400" role="alert">
           {error}
         </p>
       ) : null}
 
       {!memberId ? (
-        <p className="text-muted-foreground text-sm">
-          Choose a member to load prayer, Quran, outreach, and Aiyanat for the
-          selected month.
+        <p className="text-sm text-staff-on-surface-variant">
+          Choose a member to load prayer, Quran, outreach, and Aiyanat for the selected month.
         </p>
       ) : null}
 
       {report ? (
         <>
-          <Card className="shadow-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">{report.member.name}</CardTitle>
-              <CardDescription>
-                {report.member.email} · {report.member.halqa.replaceAll("_", " ")} ·{" "}
-                {report.member.genderUnit}
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <div className="grid grid-cols-12 gap-8">
+            <div className="col-span-12 space-y-6 lg:col-span-4">
+              <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm md:p-8">
+                <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface">
+                  {report.member.name}
+                </h2>
+                <p className="mt-1 text-sm text-staff-on-surface-variant">
+                  {report.member.email}
+                </p>
+                <p className="mt-2 text-sm text-staff-on-surface-variant">
+                  {report.member.halqa.replaceAll("_", " ")} · {report.member.genderUnit}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Link
+                  href={buildExportHref(memberId, month, "csv")}
+                  className="flex flex-col items-center justify-center rounded-xl bg-staff-surface-container-lowest p-6 shadow-sm transition-all hover:bg-staff-surface-container-high"
+                >
+                  <span className="material-symbols-outlined mb-2 text-staff-primary text-2xl">
+                    share
+                  </span>
+                  <span className="text-xs font-bold text-staff-on-surface">Export CSV</span>
+                </Link>
+                <Link
+                  href={buildExportHref(memberId, month, "xlsx")}
+                  className="flex flex-col items-center justify-center rounded-xl bg-staff-surface-container-lowest p-6 shadow-sm transition-all hover:bg-staff-surface-container-high"
+                >
+                  <span className="material-symbols-outlined mb-2 text-staff-primary text-2xl">
+                    table_chart
+                  </span>
+                  <span className="text-xs font-bold text-staff-on-surface">Export Excel</span>
+                </Link>
+              </div>
+            </div>
 
-          <div>
-            <h2 className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wide">
-              Month totals
-            </h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              <Kpi
-                title="Days with log"
-                value={`${report.summary.daysWithLog} / ${report.summary.daysInMonth}`}
-              />
-              <Kpi
-                title="Ba jamaat (total)"
-                value={String(report.summary.prayerByStatus.BA_JAMAAT)}
-              />
-              <Kpi
-                title="Munfarid (total)"
-                value={String(report.summary.prayerByStatus.MUNFARID)}
-              />
-              <Kpi
-                title="Qaza (total)"
-                value={String(report.summary.prayerByStatus.QAZA)}
-              />
-              <Kpi
-                title="On time (total)"
-                value={String(report.summary.prayerByStatus.ON_TIME)}
-              />
-              <Kpi
-                title="Quran pages (total)"
-                value={String(report.summary.totalQuranPages)}
-              />
-              <Kpi
-                title="Days with Quran logged"
-                value={String(report.summary.daysWithQuranSaved)}
-              />
-              <Kpi
-                title="Hadith — yes (days)"
-                value={String(report.summary.daysHadithYes)}
-              />
-              <Kpi
-                title="Hadith — no (days)"
-                value={String(report.summary.daysHadithNo)}
-              />
-              <Kpi
-                title="Literature — with book (days)"
-                value={String(report.summary.daysLiteratureWithBook)}
-              />
-              <Kpi
-                title="Literature — skipped (days)"
-                value={String(report.summary.daysLiteratureSkipped)}
-              />
-              <Kpi
-                title="Outreach contacts"
-                value={String(report.summary.totalContacts)}
-              />
+            <div className="col-span-12 lg:col-span-8">
+              <div className="rounded-xl bg-staff-surface-container-low/50 p-6 md:p-8">
+                <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="font-staff-headline text-2xl font-bold text-staff-on-surface">
+                    Month totals
+                  </h2>
+                  <span className="rounded-full bg-staff-surface-container-lowest px-3 py-1 text-sm font-medium text-staff-on-surface-variant">
+                    {report.summary.daysInMonth} days in month
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <MetricTile
+                    icon="history_edu"
+                    iconBg="bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300"
+                    label="Days with log"
+                    value={`${report.summary.daysWithLog} / ${report.summary.daysInMonth}`}
+                  />
+                  <MetricTile
+                    icon="groups_2"
+                    iconBg="bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300"
+                    label="Ba jamaat (total)"
+                    value={String(report.summary.prayerByStatus.BA_JAMAAT)}
+                  />
+                  <MetricTile
+                    icon="person"
+                    iconBg="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                    label="Munfarid (total)"
+                    value={String(report.summary.prayerByStatus.MUNFARID)}
+                  />
+                  <MetricTile
+                    icon="event_busy"
+                    iconBg="bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-300"
+                    label="Qaza (total)"
+                    value={String(report.summary.prayerByStatus.QAZA)}
+                    highlight
+                  />
+                  <MetricTile
+                    icon="schedule"
+                    iconBg="bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
+                    label="On time (total)"
+                    value={String(report.summary.prayerByStatus.ON_TIME)}
+                  />
+                  <MetricTile
+                    icon="auto_stories"
+                    iconBg="bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300"
+                    label="Quran pages (total)"
+                    value={String(report.summary.totalQuranPages)}
+                  />
+                  <MetricTile
+                    icon="menu_book"
+                    iconBg="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300"
+                    label="Days with Quran logged"
+                    value={String(report.summary.daysWithQuranSaved)}
+                  />
+                  <MetricTile
+                    icon="thumb_up"
+                    iconBg="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                    label="Hadith — yes (days)"
+                    value={String(report.summary.daysHadithYes)}
+                  />
+                  <MetricTile
+                    icon="thumb_down"
+                    iconBg="bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300"
+                    label="Hadith — no (days)"
+                    value={String(report.summary.daysHadithNo)}
+                  />
+                  <MetricTile
+                    icon="library_books"
+                    iconBg="bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300"
+                    label="Literature — with book (days)"
+                    value={String(report.summary.daysLiteratureWithBook)}
+                  />
+                  <MetricTile
+                    icon="book_2"
+                    iconBg="bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
+                    label="Literature — skipped (days)"
+                    value={String(report.summary.daysLiteratureSkipped)}
+                  />
+                  <MetricTile
+                    icon="contacts"
+                    iconBg="bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300"
+                    label="Outreach contacts"
+                    value={String(report.summary.totalContacts)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Quran pages by day</CardTitle>
-                <CardDescription>Daily total pages for this month.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex h-[300px] w-full min-w-0 flex-col p-6 pt-0">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
+              <div className="mb-6">
+                <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
+                  Quran pages by day
+                </h3>
+                <p className="text-sm text-staff-on-surface-variant">
+                  Daily total pages for this month.
+                </p>
+              </div>
+              <div className="flex h-[300px] w-full min-w-0 flex-col">
                 <div className="min-h-[220px] min-w-0 flex-1">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={lineData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-staff-outline-variant/30" />
                       <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                       <Tooltip contentStyle={{ fontSize: 12 }} />
@@ -293,24 +360,28 @@ export function MemberMonthlyReportClient({
                         type="monotone"
                         dataKey="quran"
                         name="Quran pages"
-                        stroke={accentLine}
+                        stroke={LINE_STROKE}
                         strokeWidth={2}
                         dot={false}
                       />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Prayer status mix</CardTitle>
-                <CardDescription>Counts across saved salat for the month.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex h-[300px] flex-col p-6 pt-0">
+            <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
+              <div className="mb-6">
+                <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
+                  Prayer status mix
+                </h3>
+                <p className="text-sm text-staff-on-surface-variant">
+                  Counts across saved salat for the month.
+                </p>
+              </div>
+              <div className="flex h-[300px] flex-col">
                 {prayerPieData.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">No saved salat data this month.</p>
+                  <p className="text-sm text-staff-on-surface-variant">No saved salat data this month.</p>
                 ) : (
                   <div className="min-h-[220px] min-w-0 flex-1">
                     <ResponsiveContainer width="100%" height="100%">
@@ -327,7 +398,10 @@ export function MemberMonthlyReportClient({
                           }
                         >
                           {prayerPieData.map((entry) => (
-                            <Cell key={entry.name} fill={PRAYER_PIE_COLORS[entry.name] ?? "#64748b"} />
+                            <Cell
+                              key={entry.name}
+                              fill={PRAYER_PIE_COLORS[entry.name] ?? "#64748b"}
+                            />
                           ))}
                         </Pie>
                         <Tooltip
@@ -337,88 +411,119 @@ export function MemberMonthlyReportClient({
                     </ResponsiveContainer>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Aiyanat ({report.month})</CardTitle>
-              <CardDescription>Payment for this calendar month.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {report.aiyanat ? (
-                <ul className="space-y-2 text-sm">
+          <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
+            <div className="mb-4">
+              <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
+                Aiyanat ({report.month})
+              </h3>
+              <p className="text-sm text-staff-on-surface-variant">Payment for this calendar month.</p>
+            </div>
+            {report.aiyanat ? (
+              <ul className="space-y-2 text-sm text-staff-on-surface">
+                <li>
+                  <span className="text-staff-on-surface-variant">Status: </span>
+                  {report.aiyanat.status === "PAID" ? "Paid" : "Not paid"}
+                </li>
+                <li>
+                  <span className="text-staff-on-surface-variant">Amount: </span>
+                  {report.aiyanat.amount}
+                </li>
+                {report.aiyanat.paymentDate ? (
                   <li>
-                    <span className="text-muted-foreground">Status: </span>
-                    {report.aiyanat.status === "PAID" ? "Paid" : "Not paid"}
+                    <span className="text-staff-on-surface-variant">Payment date: </span>
+                    {report.aiyanat.paymentDate}
                   </li>
-                  <li>
-                    <span className="text-muted-foreground">Amount: </span>
-                    {report.aiyanat.amount}
-                  </li>
-                  {report.aiyanat.paymentDate ? (
-                    <li>
-                      <span className="text-muted-foreground">Payment date: </span>
-                      {report.aiyanat.paymentDate}
-                    </li>
-                  ) : null}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground text-sm">No Aiyanat row for this month.</p>
-              )}
-            </CardContent>
-          </Card>
+                ) : null}
+              </ul>
+            ) : (
+              <p className="text-sm text-staff-on-surface-variant">No Aiyanat row for this month.</p>
+            )}
+          </div>
 
-          <Card className="shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Contacts this month</CardTitle>
-              <CardDescription>All outreach contacts logged in the selected month.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {report.contactRows.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No contacts this month.</p>
-              ) : (
-                <div className="max-h-[min(28rem,70vh)] w-full overflow-auto rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Log date</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Status</TableHead>
+          <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
+            <div className="mb-4">
+              <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
+                Contacts this month
+              </h3>
+              <p className="text-sm text-staff-on-surface-variant">
+                All outreach contacts logged in the selected month.
+              </p>
+            </div>
+            {report.contactRows.length === 0 ? (
+              <p className="text-sm text-staff-on-surface-variant">No contacts this month.</p>
+            ) : (
+              <div className="max-h-[min(28rem,70vh)] w-full overflow-auto rounded-md border border-staff-outline-variant/15">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Log date</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {report.contactRows.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell>{c.logDate}</TableCell>
+                        <TableCell>{c.name}</TableCell>
+                        <TableCell>{c.phone}</TableCell>
+                        <TableCell>{c.location}</TableCell>
+                        <TableCell>{c.status}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {report.contactRows.map((c) => (
-                        <TableRow key={c.id}>
-                          <TableCell>{c.logDate}</TableCell>
-                          <TableCell>{c.name}</TableCell>
-                          <TableCell>{c.phone}</TableCell>
-                          <TableCell>{c.location}</TableCell>
-                          <TableCell>{c.status}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
         </>
       ) : null}
     </div>
   );
 }
 
-function Kpi({ title, value }: { title: string; value: string }) {
+function MetricTile({
+  icon,
+  iconBg,
+  label,
+  value,
+  highlight,
+}: {
+  icon: string;
+  iconBg: string;
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="space-y-1 pb-2 pt-4">
-        <CardDescription className="text-xs leading-tight">{title}</CardDescription>
-        <CardTitle className="text-xl font-semibold tabular-nums">{value}</CardTitle>
-      </CardHeader>
-    </Card>
+    <div
+      className={cn(
+        "rounded-xl bg-staff-surface-container-lowest p-6 shadow-sm transition-shadow hover:shadow-md",
+        highlight && "border-l-4 border-red-200 dark:border-red-900/50",
+      )}
+    >
+      <div className="mb-4 flex items-center justify-between">
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-full",
+            iconBg,
+          )}
+        >
+          <span className="material-symbols-outlined text-[22px]">{icon}</span>
+        </div>
+      </div>
+      <div className="font-staff-headline mb-1 text-3xl font-black text-staff-on-surface sm:text-4xl">
+        {value}
+      </div>
+      <div className="text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
+        {label}
+      </div>
+    </div>
   );
 }
