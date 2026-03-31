@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StaffPageHeader } from "@/components/dashboard/staff-page-section";
 import { getPendingRegistrationCount } from "@/lib/queries/pending-registrations";
 import { getDashboardOverview } from "@/lib/queries/dashboard-overview";
 import { cn } from "@/lib/utils";
@@ -29,15 +30,10 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="space-y-10 md:space-y-12">
-      <section className="mb-8 md:mb-12">
-        <h1 className="font-staff-headline text-3xl font-extrabold tracking-tight text-staff-on-surface sm:text-[2.2rem] md:text-[2.75rem] md:leading-tight">
-          Overview
-        </h1>
-        <p className="mt-2 max-w-2xl text-base text-staff-on-surface-variant md:text-lg">
-          Unit activity and key metrics for your scope. Figures reload periodically
-          while this tab stays open.
-        </p>
-      </section>
+      <StaffPageHeader
+        title="Overview"
+        description="Unit activity and key metrics for your scope. Figures reload periodically while this tab stays open."
+      />
 
       <div className="mb-10 grid grid-cols-12 gap-6 md:gap-8 lg:mb-16">
         {/* Today */}
@@ -172,7 +168,7 @@ export default async function DashboardHomePage() {
                   Submissions &amp; contacts
                 </p>
                 <p className="text-[11px] text-staff-on-surface-variant">
-                  Logs &amp; outreach
+                  Logs &amp; contacts
                 </p>
               </div>
             </Link>

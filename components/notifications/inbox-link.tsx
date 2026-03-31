@@ -33,7 +33,7 @@ export function InboxLink({
           className,
         )}
       >
-        <span className="material-symbols-outlined text-[22px]">
+        <span className="material-symbols-outlined text-[22px] leading-none">
           {unread > 0 ? "notifications_active" : "notifications"}
         </span>
         {unread > 0 ? (

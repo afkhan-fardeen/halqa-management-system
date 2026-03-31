@@ -208,7 +208,7 @@ export function MemberMonthlyReportClient({
 
       {!memberId ? (
         <p className="text-sm text-staff-on-surface-variant">
-          Choose a member to load prayer, Quran, outreach, and Aiyanat for the selected month.
+          Choose a member to load prayer, Quran, contacts, and Aiyanat for the selected month.
         </p>
       ) : null}
 
@@ -330,7 +330,7 @@ export function MemberMonthlyReportClient({
                   <MetricTile
                     icon="contacts"
                     iconBg="bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300"
-                    label="Outreach contacts"
+                    label="Contacts"
                     value={String(report.summary.totalContacts)}
                   />
                 </div>
@@ -450,7 +450,7 @@ export function MemberMonthlyReportClient({
                 Contacts this month
               </h3>
               <p className="text-sm text-staff-on-surface-variant">
-                All outreach contacts logged in the selected month.
+                All contacts logged in the selected month.
               </p>
             </div>
             {report.contactRows.length === 0 ? (

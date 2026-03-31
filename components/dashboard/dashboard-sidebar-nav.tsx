@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { StaffNavIcon } from "@/components/dashboard/staff-nav-icon";
 import { getStaffNavSections, isNavItemActive } from "@/lib/dashboard/staff-nav-config";
 import { cn } from "@/lib/utils";
 
@@ -39,25 +40,18 @@ export function DashboardSidebarNav({
                     href={href}
                     onClick={() => onNavigate?.()}
                     className={cn(
-                      "flex min-h-11 items-start gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      "flex min-h-11 gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      description ? "items-start" : "items-center",
                       active
                         ? "bg-white text-blue-700 shadow-sm dark:bg-slate-800 dark:text-blue-300"
                         : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-200",
                     )}
                   >
-                    <span
-                      className={cn(
-                        "material-symbols-outlined mt-0.5 shrink-0 text-[1.25rem] leading-none",
-                        active ? "text-blue-700 dark:text-blue-300" : "text-slate-500 dark:text-slate-400",
-                      )}
-                      aria-hidden
-                    >
-                      {icon}
-                    </span>
-                    <span className="min-w-0 flex-1">
+                    <StaffNavIcon name={icon} active={active} />
+                    <span className="min-w-0 flex-1 py-0.5 leading-none">
                       <span className="block leading-tight">{label}</span>
                       {description ? (
-                        <span className="mt-0.5 block text-[0.7rem] font-normal leading-snug text-slate-500 dark:text-slate-500">
+                        <span className="mt-1 block text-[0.7rem] font-normal leading-snug text-slate-500 dark:text-slate-500">
                           {description}
                         </span>
                       ) : null}

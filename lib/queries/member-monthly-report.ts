@@ -210,7 +210,7 @@ export type MemberMonthlyReportData = {
     /** Quran type counts among days with quran saved. */
     quranByType: QuranTypeTotals;
   };
-  /** Contact outreach totals by status for pie chart. */
+  /** Contact totals by status for pie chart. */
   contactByStatus: { MUSLIM: number; NON_MUSLIM: number };
   dailySeries: MemberMonthlyDailyPoint[];
   contactRows: MemberMonthlyContactRow[];

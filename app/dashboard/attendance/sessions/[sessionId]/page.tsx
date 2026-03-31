@@ -2,12 +2,9 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { AttendanceSessionNudgeForm } from "@/components/dashboard/attendance-session-nudge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  StaffPageHeader,
+  StaffPanel,
+} from "@/components/dashboard/staff-page-section";
 import {
   Table,
   TableBody,
@@ -38,7 +35,7 @@ export default async function DashboardAttendanceSessionDetailPage({
   const data = await listMarksForSessionForStaff(sessionId, session.user);
   if ("error" in data) {
     return (
-      <p className="text-destructive text-sm">
+      <p className="text-sm text-red-600 dark:text-red-400">
         {data.error === "Not found" ? "Session not found." : data.error}
       </p>
     );
@@ -58,60 +55,61 @@ export default async function DashboardAttendanceSessionDetailPage({
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
+    <div className="space-y-8">
+      <div>
         <Link
           href={`/dashboard/attendance/sessions?program=${data.program.id}`}
           className={buttonVariants({
             variant: "link",
-            className: "text-muted-foreground h-auto p-0 text-sm",
+            className:
+              "h-auto p-0 text-sm text-staff-on-surface-variant hover:text-staff-primary",
           })}
         >
           ← Sessions
         </Link>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          {title}
-        </h1>
-        <p className="text-muted-foreground text-sm">{dateLabel}</p>
-        <p className="text-muted-foreground text-sm">{timeLabel}</p>
       </div>
+
+      <StaffPageHeader
+        title={title}
+        description={
+          <>
+            <span className="block">{dateLabel}</span>
+            <span className="block">{timeLabel}</span>
+          </>
+        }
+      />
 
       <AttendanceSessionNudgeForm sessionId={data.session.id} />
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Member marks</CardTitle>
-          <CardDescription>
-            Active members in this halqa and gender unit; those without a row have not marked yet.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Member</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Note</TableHead>
+      <StaffPanel
+        title="Member marks"
+        description="Active members in this halqa and gender unit; those without a row have not marked yet."
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Member</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Note</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.marks.map((m) => (
+              <TableRow key={m.userId}>
+                <TableCell className="font-medium">{m.memberName}</TableCell>
+                <TableCell>{m.status ?? "—"}</TableCell>
+                <TableCell className="text-xs text-staff-on-surface-variant">
+                  {m.status === "LATE" && m.lateReason
+                    ? m.lateReason
+                    : m.status === "ABSENT" && m.absentReason
+                      ? m.absentReason
+                      : "—"}
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.marks.map((m) => (
-                <TableRow key={m.userId}>
-                  <TableCell className="font-medium">{m.memberName}</TableCell>
-                  <TableCell>{m.status ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
-                    {m.status === "LATE" && m.lateReason
-                      ? m.lateReason
-                      : m.status === "ABSENT" && m.absentReason
-                        ? m.absentReason
-                        : "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            ))}
+          </TableBody>
+        </Table>
+      </StaffPanel>
     </div>
   );
 }

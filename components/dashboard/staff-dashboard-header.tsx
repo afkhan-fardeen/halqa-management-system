@@ -2,10 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { InboxLink } from "@/components/notifications/inbox-link";
+import { StaffDashboardSearch } from "@/components/dashboard/staff-dashboard-search";
 import { initials, staffRoleLabel } from "@/lib/utils/profile-display";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types/next-auth";
+
+function StaffSearchFallback() {
+  return (
+    <div className="flex h-10 max-w-md min-w-0 flex-1 items-center gap-3 rounded-full bg-staff-surface-container px-4 py-2 dark:bg-slate-800/80">
+      <span className="material-symbols-outlined shrink-0 text-[22px] leading-none text-staff-on-surface-variant">
+        search
+      </span>
+      <div className="h-4 min-w-[8rem] flex-1 rounded bg-staff-surface-container-high/40" />
+    </div>
+  );
+}
 
 export type StaffHeaderUser = {
   name: string | null;
@@ -44,22 +57,12 @@ export function StaffDashboardHeader({
             aria-label="Open navigation menu"
             onClick={onOpenMobileNav}
           >
-            <span className="material-symbols-outlined text-2xl">menu</span>
+            <span className="material-symbols-outlined text-2xl leading-none">menu</span>
           </button>
         ) : null}
-        <div className="flex max-w-md flex-1 items-center gap-3 rounded-full bg-staff-surface-container px-4 py-2 dark:bg-slate-800/80">
-          <span className="material-symbols-outlined shrink-0 text-staff-on-surface-variant text-[22px]">
-            search
-          </span>
-          <input
-            type="search"
-            readOnly
-            disabled
-            placeholder="Search members, reports…"
-            className="w-full min-w-0 border-0 bg-transparent text-sm text-staff-on-surface placeholder:text-staff-on-surface-variant/50 focus:ring-0 disabled:cursor-not-allowed"
-            aria-label="Search (coming soon)"
-          />
-        </div>
+        <Suspense fallback={<StaffSearchFallback />}>
+          <StaffDashboardSearch />
+        </Suspense>
       </div>
       <div className="flex shrink-0 items-center gap-3 md:gap-6">
         <InboxLink href="/dashboard/notifications" unread={unread} variant="staff" />
@@ -68,7 +71,7 @@ export function StaffDashboardHeader({
           className="inline-flex h-10 w-10 items-center justify-center rounded-full text-staff-on-surface-variant transition-colors hover:bg-staff-surface-container-high dark:hover:bg-slate-800"
           aria-label="Profile settings"
         >
-          <span className="material-symbols-outlined text-[22px]">settings</span>
+          <span className="material-symbols-outlined text-[22px] leading-none">settings</span>
         </Link>
         <div className="hidden h-8 w-px bg-staff-outline-variant/30 sm:block" />
         <div className="flex max-w-[min(40vw,12rem)] items-center gap-2 sm:gap-3">

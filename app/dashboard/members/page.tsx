@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { StaffPageHeader } from "@/components/dashboard/staff-page-section";
 import { adminSendPasswordResetEmail } from "@/lib/actions/password-reset";
 import { deactivateMember } from "@/lib/actions/member-admin";
 import {
@@ -65,14 +66,10 @@ export default async function DashboardMembersPage({
 
   return (
     <div className="space-y-8 md:space-y-10">
-      <div className="mb-6 md:mb-10">
-        <h1 className="font-staff-headline text-3xl font-extrabold tracking-tight text-staff-on-surface sm:text-4xl">
-          Member directory
-        </h1>
-        <p className="mt-2 max-w-2xl text-staff-on-surface-variant">
-          Search by name or email. Scoped to your halqa and gender unless you are admin.
-        </p>
-      </div>
+      <StaffPageHeader
+        title="Member directory"
+        description="Search by name or email. Scoped to your halqa and gender unless you are admin."
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
         <KpiCard label="Total members" value={formatNumber(kpis.total)} />

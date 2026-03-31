@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  StaffPageHeader,
+  StaffPanel,
+} from "@/components/dashboard/staff-page-section";
 import {
   Table,
   TableBody,
@@ -43,7 +40,7 @@ export default async function DashboardAttendanceSessionsListPage({
   const p = await getAttendanceProgramByIdForStaff(programId, session.user);
   if ("error" in p) {
     return (
-      <p className="text-destructive text-sm">
+      <p className="text-sm text-red-600 dark:text-red-400">
         {p.error === "Not found" ? "Program not found." : p.error}
       </p>
     );
@@ -51,81 +48,78 @@ export default async function DashboardAttendanceSessionsListPage({
 
   const sessions = await listSessionsForProgramForStaff(programId, session.user);
   if ("error" in sessions) {
-    return <p className="text-destructive text-sm">{sessions.error}</p>;
+    return <p className="text-sm text-red-600 dark:text-red-400">{sessions.error}</p>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
+    <div className="space-y-8">
+      <div>
         <Link
           href="/dashboard/attendance/programs"
           className={buttonVariants({
             variant: "link",
-            className: "text-muted-foreground h-auto p-0 text-sm",
+            className:
+              "h-auto p-0 text-sm text-staff-on-surface-variant hover:text-staff-primary",
           })}
         >
           ← Programs
         </Link>
-        <h1 className="font-display text-2xl font-semibold tracking-tight">
-          Sessions
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Choose a session to view marks and notify members.
-        </p>
       </div>
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Upcoming & recent</CardTitle>
-          <CardDescription>
-            Program ID: {programId.slice(0, 8)}…
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {sessions.sessions.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No sessions materialized yet. Save the program or use Refresh sessions.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Time (Bahrain)</TableHead>
-                  <TableHead className="text-right">Detail</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sessions.sessions.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell>
-                      {s.sessionDate.toLocaleDateString("en-GB", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        timeZone: "Asia/Bahrain",
+      <StaffPageHeader
+        title="Sessions"
+        description="Choose a session to view marks and notify members."
+      />
+
+      <StaffPanel
+        title="Upcoming & recent"
+        description={`Program ID: ${programId.slice(0, 8)}…`}
+      >
+        {sessions.sessions.length === 0 ? (
+          <p className="text-sm text-staff-on-surface-variant">
+            No sessions materialized yet. Save the program or use Refresh sessions.
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Time (Bahrain)</TableHead>
+                <TableHead className="text-right">Detail</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.sessions.map((s) => (
+                <TableRow key={s.id}>
+                  <TableCell>
+                    {s.sessionDate.toLocaleDateString("en-GB", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      timeZone: "Asia/Bahrain",
+                    })}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {formatSessionRangeBahrain12h(s.startsAt, s.endsAt)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Link
+                      href={`/dashboard/attendance/sessions/${s.id}`}
+                      className={buttonVariants({
+                        variant: "link",
+                        className: "h-auto p-0 text-sm",
                       })}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {formatSessionRangeBahrain12h(s.startsAt, s.endsAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link
-                        href={`/dashboard/attendance/sessions/${s.id}`}
-                        className={buttonVariants({
-                          variant: "link",
-                          className: "h-auto p-0 text-sm",
-                        })}
-                      >
-                        Open →
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                    >
+                      Open →
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </StaffPanel>
     </div>
   );
 }

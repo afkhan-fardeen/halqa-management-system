@@ -82,7 +82,7 @@ const reportsSection: StaffNavSection = {
     {
       href: "/dashboard/submissions",
       label: "Submissions",
-      description: "Logs & outreach",
+      description: "Logs & contacts",
       icon: "folder_open",
     },
   ],

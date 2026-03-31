@@ -1,18 +1,15 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import {
+  StaffPageHeader,
+  StaffPanel,
+} from "@/components/dashboard/staff-page-section";
+import {
   listContactsForStaff,
   listDailyLogsForStaff,
 } from "@/lib/queries/submissions-staff";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -26,6 +23,9 @@ import { cn } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
 const PAGE_SIZE = 40;
+
+const staffInput =
+  "h-10 rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25 dark:bg-slate-800/80";
 
 export default async function DashboardSubmissionsPage({
   searchParams,
@@ -79,126 +79,145 @@ export default async function DashboardSubmissionsPage({
     format: "xlsx",
   }).toString()}`;
 
+  const exportActions = (
+    <div className="flex flex-wrap gap-2">
+      <Link
+        href={exportSub}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "border-staff-outline-variant/30 font-semibold",
+        )}
+      >
+        Logs CSV
+      </Link>
+      <Link
+        href={exportSubXlsx}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "border-staff-outline-variant/30 font-semibold",
+        )}
+      >
+        Logs XLSX
+      </Link>
+      <Link
+        href={exportContact}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "border-staff-outline-variant/30 font-semibold",
+        )}
+      >
+        Contacts CSV
+      </Link>
+      <Link
+        href={exportContactXlsx}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "border-staff-outline-variant/30 font-semibold",
+        )}
+      >
+        Contacts XLSX
+      </Link>
+    </div>
+  );
+
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Submissions & contacts
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Read-only. Filter by date range (optional).
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={exportSub}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Logs CSV
-          </Link>
-          <Link
-            href={exportSubXlsx}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Logs XLSX
-          </Link>
-          <Link
-            href={exportContact}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Contacts CSV
-          </Link>
-          <Link
-            href={exportContactXlsx}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Contacts XLSX
-          </Link>
-        </div>
-      </div>
+      <StaffPageHeader
+        title="Submissions & contacts"
+        description="Read-only. Filter by date range (optional)."
+        action={exportActions}
+      />
 
-      <form
-        className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end"
-        method="get"
-        action="/dashboard/submissions"
+      <StaffPanel>
+        <form
+          className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end"
+          method="get"
+          action="/dashboard/submissions"
+        >
+          <div className="grid gap-1">
+            <label
+              className="text-[0.65rem] font-bold uppercase tracking-wider text-staff-on-surface-variant"
+              htmlFor="from"
+            >
+              From
+            </label>
+            <input
+              id="from"
+              name="from"
+              type="date"
+              defaultValue={sp.from ?? ""}
+              className={staffInput}
+            />
+          </div>
+          <div className="grid gap-1">
+            <label
+              className="text-[0.65rem] font-bold uppercase tracking-wider text-staff-on-surface-variant"
+              htmlFor="to"
+            >
+              To
+            </label>
+            <input
+              id="to"
+              name="to"
+              type="date"
+              defaultValue={sp.to ?? ""}
+              className={staffInput}
+            />
+          </div>
+          <Button
+            type="submit"
+            size="sm"
+            className="h-10 rounded-lg bg-staff-primary font-bold text-staff-on-primary hover:opacity-90"
+          >
+            Apply
+          </Button>
+        </form>
+      </StaffPanel>
+
+      <StaffPanel
+        title="Daily logs"
+        description={`${logs.total} entr${logs.total === 1 ? "y" : "ies"} (paged)`}
       >
-        <div className="grid gap-1">
-          <label className="text-muted-foreground text-xs" htmlFor="from">
-            From
-          </label>
-          <input
-            id="from"
-            name="from"
-            type="date"
-            defaultValue={sp.from ?? ""}
-            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
-          />
-        </div>
-        <div className="grid gap-1">
-          <label className="text-muted-foreground text-xs" htmlFor="to">
-            To
-          </label>
-          <input
-            id="to"
-            name="to"
-            type="date"
-            defaultValue={sp.to ?? ""}
-            className="border-input bg-background h-9 rounded-md border px-3 text-sm"
-          />
-        </div>
-        <Button type="submit" size="sm">
-          Apply
-        </Button>
-      </form>
-
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Daily logs</CardTitle>
-          <CardDescription>
-            {logs.total} entr{logs.total === 1 ? "y" : "ies"} (paged)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <div className="space-y-4">
           {logs.rows.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No logs in range.</p>
+            <p className="text-sm text-staff-on-surface-variant">No logs in range.</p>
           ) : (
             <div className="w-full overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Halqa</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead className="text-right">Quran pages</TableHead>
-                  <TableHead>Hadith</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {logs.rows.map((r) => (
-                  <TableRow key={r.logId}>
-                    <TableCell>{r.date}</TableCell>
-                    <TableCell>
-                      <div>{r.memberName}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {r.memberEmail}
-                      </div>
-                    </TableCell>
-                    <TableCell>{r.halqa.replaceAll("_", " ")}</TableCell>
-                    <TableCell>{r.genderUnit}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {r.quranPages}
-                    </TableCell>
-                    <TableCell>{r.hadith ? "Yes" : "No"}</TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Halqa</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead className="text-right">Quran pages</TableHead>
+                    <TableHead>Hadith</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {logs.rows.map((r) => (
+                    <TableRow key={r.logId}>
+                      <TableCell>{r.date}</TableCell>
+                      <TableCell>
+                        <div>{r.memberName}</div>
+                        <div className="text-xs text-staff-on-surface-variant">
+                          {r.memberEmail}
+                        </div>
+                      </TableCell>
+                      <TableCell>{r.halqa.replaceAll("_", " ")}</TableCell>
+                      <TableCell>{r.genderUnit}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {r.quranPages}
+                      </TableCell>
+                      <TableCell>{r.hadith ? "Yes" : "No"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
           {logPages > 1 ? (
-            <div className="text-muted-foreground flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm text-staff-on-surface-variant">
               <Link
                 href={`/dashboard/submissions?${new URLSearchParams({
                   ...(sp.from ? { from: sp.from } : {}),
@@ -232,51 +251,46 @@ export default async function DashboardSubmissionsPage({
               </Link>
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
+      </StaffPanel>
 
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Contacts</CardTitle>
-          <CardDescription>
-            {contacts.total} contact{contacts.total === 1 ? "" : "s"} (paged)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <StaffPanel
+        title="Contacts"
+        description={`${contacts.total} contact${contacts.total === 1 ? "" : "s"} (paged)`}
+      >
+        <div className="space-y-4">
           {contacts.rows.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              No contacts in range.
-            </p>
+            <p className="text-sm text-staff-on-surface-variant">No contacts in range.</p>
           ) : (
             <div className="w-full overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Log date</TableHead>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {contacts.rows.map((r) => (
-                  <TableRow key={r.id}>
-                    <TableCell>{r.logDate}</TableCell>
-                    <TableCell>{r.memberName}</TableCell>
-                    <TableCell>{r.contactName}</TableCell>
-                    <TableCell>{r.phone}</TableCell>
-                    <TableCell>{r.location}</TableCell>
-                    <TableCell>{r.status}</TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Log date</TableHead>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {contacts.rows.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell>{r.logDate}</TableCell>
+                      <TableCell>{r.memberName}</TableCell>
+                      <TableCell>{r.contactName}</TableCell>
+                      <TableCell>{r.phone}</TableCell>
+                      <TableCell>{r.location}</TableCell>
+                      <TableCell>{r.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
           {contactPages > 1 ? (
-            <div className="text-muted-foreground flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm text-staff-on-surface-variant">
               <Link
                 href={`/dashboard/submissions?${new URLSearchParams({
                   ...(sp.from ? { from: sp.from } : {}),
@@ -310,8 +324,8 @@ export default async function DashboardSubmissionsPage({
               </Link>
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+        </div>
+      </StaffPanel>
     </div>
   );
 }

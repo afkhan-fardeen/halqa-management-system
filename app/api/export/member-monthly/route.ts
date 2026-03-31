@@ -55,8 +55,8 @@ export async function GET(req: Request) {
       ["Quran type — Tilawat (days)", q.TILAWAT],
       ["Quran type — Tafseer (days)", q.TAFSEER],
       ["Quran type — Both (days)", q.BOTH],
-      ["Outreach — Muslim", report.contactByStatus.MUSLIM],
-      ["Outreach — Non-Muslim", report.contactByStatus.NON_MUSLIM],
+      ["Contact — Muslim", report.contactByStatus.MUSLIM],
+      ["Contact — Non-Muslim", report.contactByStatus.NON_MUSLIM],
       ["Total contacts", report.summary.totalContacts],
     ];
     if (report.aiyanat) {
