@@ -35,8 +35,8 @@ const fontMono = Geist_Mono({
 });
 
 /** Match `app/manifest.ts` theme_color for browser chrome + Android task switcher. */
-const THEME_LIGHT = "#4338ca";
-const THEME_DARK = "#312e81";
+const THEME_LIGHT = "#008080";
+const THEME_DARK = "#004c4c";
 
 export const viewport: Viewport = {
   width: "device-width",

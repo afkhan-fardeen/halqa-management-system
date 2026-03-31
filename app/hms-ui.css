@@ -5,6 +5,8 @@
   --hms-amber-pale: #e8f4f4;
   --hms-amber-light: #66b2b2;
   --hms-amber-dark: #004c4c;
+  /* Teal RGB for rgba(...) overlays (matches --hms-amber #008080) */
+  --hms-accent-rgb: 0, 128, 128;
   --hms-bg: #fafaf9;
   --hms-bg2: #f5f5f4;
   --hms-bg3: #ffffff;
@@ -184,7 +186,7 @@
   inset: 0;
   background: radial-gradient(
     ellipse 60% 50% at 50% 0%,
-    rgba(217, 119, 6, 0.08) 0%,
+    rgba(0, 128, 128, 0.08) 0%,
     transparent 70%
   );
   pointer-events: none;
@@ -209,7 +211,7 @@
   gap: 6px;
   padding: 5px 14px;
   border-radius: 100px;
-  border: 1px solid rgba(217, 119, 6, 0.25);
+  border: 1px solid rgba(0, 128, 128, 0.25);
   background: var(--hms-amber-pale);
   font-size: 12px;
   font-weight: 500;
@@ -366,7 +368,7 @@
   transition: border-color 0.2s, transform 0.2s;
 }
 .hms-feature-card:hover {
-  border-color: rgba(217, 119, 6, 0.3);
+  border-color: rgba(0, 128, 128, 0.3);
   transform: translateY(-2px);
 }
 .hms-feature-icon {
@@ -374,7 +376,7 @@
   height: 40px;
   border-radius: 10px;
   background: var(--hms-amber-pale);
-  border: 1px solid rgba(217, 119, 6, 0.15);
+  border: 1px solid rgba(0, 128, 128, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -464,7 +466,7 @@
   height: 32px;
   border-radius: 50%;
   background: var(--hms-amber-pale);
-  border: 1px solid rgba(217, 119, 6, 0.2);
+  border: 1px solid rgba(0, 128, 128, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -516,7 +518,7 @@
   transition: border-color 0.2s;
 }
 .hms-role-card:hover {
-  border-color: rgba(217, 119, 6, 0.3);
+  border-color: rgba(0, 128, 128, 0.3);
 }
 .hms-role-tag {
   display: inline-block;
@@ -743,7 +745,7 @@
 }
 .hms-input:focus {
   border-color: var(--hms-amber);
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.1);
 }
 .hms-input-error {
   border-color: var(--hms-danger);
@@ -766,7 +768,7 @@
 }
 .hms-select:focus {
   border-color: var(--hms-amber);
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.1);
 }
 .hms-submit-btn {
   width: 100%;
@@ -866,7 +868,7 @@
 }
 .hms-filter-pill[data-active="true"] {
   background: var(--hms-amber-pale);
-  border-color: rgba(217, 119, 6, 0.3);
+  border-color: rgba(0, 128, 128, 0.3);
   color: var(--hms-amber-dark);
 }
 .hms-root[data-theme="dark"] .hms-filter-pill[data-active="true"] {
@@ -1025,7 +1027,7 @@
   cursor: pointer;
 }
 .hms-daily-date-input:focus {
-  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25);
+  box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.25);
 }
 .hms-daily-draft-row {
   display: flex;

@@ -10,6 +10,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
@@ -18,7 +19,7 @@ import type { PrayerChip } from "@/lib/utils/prayer-display";
 import { formatDisplayMonth } from "@/lib/utils/member-display";
 
 function chipSx(chip: PrayerChip) {
-  /** Match daily log: Ba jamaat = green, Munfarid = blue, Qaza = red, On time = amber */
+  /** Match daily log: Ba jamaat = green, Munfarid = blue, Qaza = red, On time = teal */
   if (chip === "BJ") {
     return {
       bgcolor: (t: import("@mui/material").Theme) =>
@@ -30,9 +31,14 @@ function chipSx(chip: PrayerChip) {
   if (chip === "OT") {
     return {
       bgcolor: (t: import("@mui/material").Theme) =>
-        t.palette.mode === "dark" ? "rgba(217, 119, 6, 0.22)" : "#FEF3C7",
+        alpha(
+          t.palette.primary.main,
+          t.palette.mode === "dark" ? 0.22 : 0.15,
+        ),
       color: (t: import("@mui/material").Theme) =>
-        t.palette.mode === "dark" ? "#FCD34D" : "#92400E",
+        t.palette.mode === "dark"
+          ? t.palette.primary.light
+          : t.palette.primary.dark,
     };
   }
   if (chip === "MF") {
@@ -93,9 +99,10 @@ export function MemberHomeContent({
             borderColor: "primary.main",
             borderWidth: 1,
             bgcolor: (t) =>
-              t.palette.mode === "dark"
-                ? "rgba(217, 119, 6, 0.12)"
-                : "rgba(217, 119, 6, 0.08)",
+              alpha(
+                t.palette.primary.main,
+                t.palette.mode === "dark" ? 0.12 : 0.08,
+              ),
             borderRadius: 2,
           }}
         >
@@ -321,9 +328,10 @@ export function MemberHomeContent({
                         ? "primary.main"
                         : p.state === "today"
                           ? (t) =>
-                              t.palette.mode === "dark"
-                                ? "rgba(217,119,6,0.2)"
-                                : "rgba(217,119,6,0.12)"
+                              alpha(
+                                t.palette.primary.main,
+                                t.palette.mode === "dark" ? 0.2 : 0.12,
+                              )
                           : "action.hover",
                     color:
                       p.state === "done"
@@ -530,11 +538,18 @@ export function MemberHomeContent({
                     bgcolor:
                       data.currentAiyanat.status === "PAID"
                         ? (t) => (t.palette.mode === "dark" ? "#064E3B" : "#D1FAE5")
-                        : (t) => (t.palette.mode === "dark" ? "#451A03" : "#FEF3C7"),
+                        : (t) =>
+                            alpha(
+                              t.palette.primary.main,
+                              t.palette.mode === "dark" ? 0.2 : 0.12,
+                            ),
                     color:
                       data.currentAiyanat.status === "PAID"
                         ? (t) => (t.palette.mode === "dark" ? "#6EE7B7" : "#065F46")
-                        : (t) => (t.palette.mode === "dark" ? "#FCD34D" : "#92400E"),
+                        : (t) =>
+                            t.palette.mode === "dark"
+                              ? t.palette.primary.light
+                              : t.palette.primary.dark,
                   }}
                 />
               </>

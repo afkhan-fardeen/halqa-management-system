@@ -189,7 +189,7 @@ export function PushNotificationsOptIn() {
         Get alerts on this device when you receive in-app messages (install the app for best results).
       </p>
       {insecureOrigin ? (
-        <p className="mt-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">
+        <p className="mt-2 rounded border border-teal-200 bg-teal-50 px-2 py-1.5 text-xs text-teal-900 dark:border-teal-800 dark:bg-teal-950/40 dark:text-teal-100">
           Web Push needs a <strong>secure context</strong>: use <strong>http://localhost:3000</strong> or{" "}
           <strong>HTTPS</strong> in production. Opening the site as <strong>http://192.168.x.x</strong> (LAN IP)
           over HTTP often blocks push — announcements may not arrive.

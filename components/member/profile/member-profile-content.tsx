@@ -15,6 +15,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -96,10 +97,13 @@ export function MemberProfileContent({
               py: 0.5,
               borderRadius: 999,
               bgcolor: (t) =>
-                t.palette.mode === "dark" ? "rgba(217,119,6,0.2)" : "rgba(217,119,6,0.12)",
+                alpha(
+                  t.palette.primary.main,
+                  t.palette.mode === "dark" ? 0.2 : 0.12,
+                ),
               color: "primary.main",
               border: 1,
-              borderColor: "rgba(217,119,6,0.25)",
+              borderColor: (t) => alpha(t.palette.primary.main, 0.25),
             }}
           >
             Member

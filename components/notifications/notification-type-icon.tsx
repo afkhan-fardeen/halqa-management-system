@@ -13,13 +13,13 @@ import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlin
 export function NotificationTypeIcon({ type }: { type: string }) {
   const t = type.toLowerCase();
   let Icon = NotificationsNoneOutlinedIcon;
-  let bg = "rgba(217, 119, 6, 0.16)";
-  let fg = "#D97706";
+  let bg = "rgba(0, 128, 128, 0.16)";
+  let fg = "#008080";
 
   if (t.includes("pending_registration_staff")) {
     Icon = PersonAddAltOutlinedIcon;
-    bg = "rgba(217, 119, 6, 0.18)";
-    fg = "#D97706";
+    bg = "rgba(0, 128, 128, 0.18)";
+    fg = "#008080";
   } else if (t.includes("reject")) {
     Icon = CancelOutlinedIcon;
     bg = "rgba(239, 68, 68, 0.14)";
@@ -38,8 +38,8 @@ export function NotificationTypeIcon({ type }: { type: string }) {
     fg = "#2563EB";
   } else if (t.includes("reminder")) {
     Icon = NotificationsNoneOutlinedIcon;
-    bg = "rgba(217, 119, 6, 0.18)";
-    fg = "#D97706";
+    bg = "rgba(0, 128, 128, 0.18)";
+    fg = "#008080";
   } else if (t.includes("welcome") || t.includes("demo")) {
     Icon = AutoAwesomeOutlinedIcon;
     bg = "rgba(120, 113, 108, 0.14)";
