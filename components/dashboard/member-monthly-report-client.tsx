@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   CartesianGrid,
   Cell,
@@ -26,18 +27,17 @@ import {
 } from "@/components/ui/table";
 import type { StaffRole } from "@/lib/auth/roles";
 import { cn } from "@/lib/utils";
+import { upsertMemberMonthlyStaffNote } from "@/lib/actions/member-monthly-notes";
 import type { MemberMonthlyReportData } from "@/lib/queries/member-monthly-report";
+import {
+  prayerPieFromRows,
+  prayerRowsForGender,
+} from "@/lib/utils/monthly-report-prayer-display";
+import { Button } from "@/components/ui/button";
 
 type Counterpart = { name: string; roleLabel: "Secretary" | "Incharge" } | null;
 
 type PickerRow = { id: string; name: string; email: string };
-
-const PRAYER_PIE_COLORS: Record<string, string> = {
-  "Ba jamaat": "#059669",
-  Munfarid: "#2563eb",
-  Qaza: "#dc2626",
-  "On time": "#d97706",
-};
 
 const LINE_STROKE = "#0053db";
 
@@ -90,16 +90,24 @@ export function MemberMonthlyReportClient({
     }));
   }, [report]);
 
-  const prayerPieData = useMemo(() => {
+  const prayerRows = useMemo(() => {
     if (!report) return [];
-    const p = report.summary.prayerByStatus;
-    return [
-      { name: "Ba jamaat", value: p.BA_JAMAAT },
-      { name: "Munfarid", value: p.MUNFARID },
-      { name: "Qaza", value: p.QAZA },
-      { name: "On time", value: p.ON_TIME },
-    ].filter((x) => x.value > 0);
+    return prayerRowsForGender(
+      report.summary.prayerByStatus,
+      report.member.genderUnit,
+    );
   }, [report]);
+
+  const prayerPieData = useMemo(
+    () => prayerPieFromRows(prayerRows),
+    [prayerRows],
+  );
+
+  const isEmptyMonth = Boolean(
+    report &&
+      report.summary.daysWithLog === 0 &&
+      report.contactRows.length === 0,
+  );
 
   function navigate(next: { month?: string; memberId?: string }) {
     const q = new URLSearchParams();
@@ -214,6 +222,30 @@ export function MemberMonthlyReportClient({
 
       {report ? (
         <>
+          {isEmptyMonth ? (
+            <div
+              className="rounded-xl border border-staff-outline-variant/20 bg-staff-surface-container-low/80 px-5 py-4 shadow-sm"
+              role="status"
+            >
+              <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface">
+                No data for this month
+              </h2>
+              <p className="mt-1 text-sm text-staff-on-surface-variant">
+                No daily logs or contacts were recorded for this member in{" "}
+                {formatMonthHeading(month || currentMonthYyyyMm())}. You can still add a staff note
+                below.
+              </p>
+            </div>
+          ) : null}
+
+          <MemberStaffNoteCard
+            memberId={memberId}
+            month={month}
+            body={report.staffNote?.body ?? ""}
+            updatedAtIso={report.staffNote?.updatedAt ?? null}
+            updatedByName={report.staffNote?.updatedByName ?? null}
+          />
+
           <div className="grid grid-cols-12 gap-8">
             <div className="col-span-12 space-y-6 lg:col-span-4">
               <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm md:p-8">
@@ -266,31 +298,16 @@ export function MemberMonthlyReportClient({
                     label="Days with log"
                     value={`${report.summary.daysWithLog} / ${report.summary.daysInMonth}`}
                   />
-                  <MetricTile
-                    icon="groups_2"
-                    iconBg="bg-indigo-100 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-300"
-                    label="Ba jamaat (total)"
-                    value={String(report.summary.prayerByStatus.BA_JAMAAT)}
-                  />
-                  <MetricTile
-                    icon="person"
-                    iconBg="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                    label="Munfarid (total)"
-                    value={String(report.summary.prayerByStatus.MUNFARID)}
-                  />
-                  <MetricTile
-                    icon="event_busy"
-                    iconBg="bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-300"
-                    label="Qaza (total)"
-                    value={String(report.summary.prayerByStatus.QAZA)}
-                    highlight
-                  />
-                  <MetricTile
-                    icon="schedule"
-                    iconBg="bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-                    label="On time (total)"
-                    value={String(report.summary.prayerByStatus.ON_TIME)}
-                  />
+                  {prayerRows.map((row) => (
+                    <MetricTile
+                      key={row.key}
+                      icon={row.icon}
+                      iconBg={row.iconBg}
+                      label={row.label}
+                      value={String(row.value)}
+                      highlight={row.key === "QAZA"}
+                    />
+                  ))}
                   <MetricTile
                     icon="auto_stories"
                     iconBg="bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300"
@@ -398,10 +415,7 @@ export function MemberMonthlyReportClient({
                           }
                         >
                           {prayerPieData.map((entry) => (
-                            <Cell
-                              key={entry.name}
-                              fill={PRAYER_PIE_COLORS[entry.name] ?? "#64748b"}
-                            />
+                            <Cell key={entry.name} fill={entry.fill ?? "#64748b"} />
                           ))}
                         </Pie>
                         <Tooltip
@@ -484,6 +498,88 @@ export function MemberMonthlyReportClient({
           </div>
         </>
       ) : null}
+    </div>
+  );
+}
+
+function formatStaffNoteTimestamp(iso: string | null) {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function MemberStaffNoteCard({
+  memberId,
+  month,
+  body: initialBody,
+  updatedAtIso,
+  updatedByName,
+}: {
+  memberId: string;
+  month: string;
+  body: string;
+  updatedAtIso: string | null;
+  updatedByName: string | null;
+}) {
+  const router = useRouter();
+  const [body, setBody] = useState(initialBody);
+  const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setBody(initialBody);
+  }, [initialBody, memberId, month]);
+
+  return (
+    <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm md:p-8">
+      <div className="mb-4">
+        <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface">Staff note</h2>
+        <p className="mt-1 text-sm text-staff-on-surface-variant">
+          Private note for this member and month. Visible to staff in scope.
+        </p>
+      </div>
+      <textarea
+        className="min-h-[120px] w-full resize-y rounded-lg border-0 bg-staff-surface-container-low px-3 py-2 text-sm text-staff-on-surface placeholder:text-staff-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-staff-primary/25"
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder="Add context for this month…"
+        aria-label="Staff note for this month"
+      />
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-staff-on-surface-variant">
+          {updatedAtIso ? (
+            <>
+              Last updated {formatStaffNoteTimestamp(updatedAtIso)}
+              {updatedByName ? ` · ${updatedByName}` : ""}
+            </>
+          ) : (
+            "Not saved yet."
+          )}
+        </p>
+        <Button
+          type="button"
+          className="shrink-0 rounded-lg font-bold"
+          disabled={pending}
+          onClick={() => {
+            startTransition(async () => {
+              const r = await upsertMemberMonthlyStaffNote(memberId, month, body);
+              if (r.ok) {
+                toast.success("Staff note saved");
+                router.refresh();
+              } else {
+                toast.error(r.error);
+              }
+            });
+          }}
+        >
+          {pending ? "Saving…" : "Save note"}
+        </Button>
+      </div>
     </div>
   );
 }

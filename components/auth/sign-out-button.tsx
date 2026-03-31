@@ -6,11 +6,27 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { cn } from "@/lib/utils";
 
 type Props = {
-  variant?: "default" | "outline" | "ghost" | "staffSidebar";
+  variant?: "default" | "outline" | "ghost" | "staffSidebar" | "staffSidebarCollapsed";
   className?: string;
 };
 
 export function SignOutButton({ variant = "outline", className }: Props) {
+  if (variant === "staffSidebarCollapsed") {
+    return (
+      <button
+        type="button"
+        className={cn(
+          "inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-200/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-200",
+          className,
+        )}
+        aria-label="Sign out"
+        onClick={() => signOut({ callbackUrl: "/login" })}
+      >
+        <span className="material-symbols-outlined text-[20px]">logout</span>
+      </button>
+    );
+  }
+
   if (variant === "staffSidebar") {
     return (
       <button

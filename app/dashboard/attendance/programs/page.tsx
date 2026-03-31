@@ -91,7 +91,14 @@ export default async function DashboardAttendanceProgramsPage() {
 
       <StaffPanel
         title="Programs in scope"
-        description="Open a session to see member marks and send reminders."
+        description={
+          <>
+            Open sessions to see member marks and send reminders. Use{" "}
+            <span className="font-semibold text-staff-on-surface">Deactivate (archive)</span> when a
+            program should no longer accept new sessions — you can still delete individual sessions
+            afterward.
+          </>
+        }
       >
         {list.programs.length === 0 ? (
           <p className="text-sm text-staff-on-surface-variant">No programs yet.</p>

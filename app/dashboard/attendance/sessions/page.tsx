@@ -16,6 +16,7 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { isStaffRole } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
 import { formatSessionRangeBahrain12h } from "@/lib/attendance/time-12h";
+import { AttendanceDeleteSessionButton } from "@/components/dashboard/attendance-delete-session-button";
 import {
   getAttendanceProgramByIdForStaff,
   listSessionsForProgramForStaff,
@@ -85,7 +86,7 @@ export default async function DashboardAttendanceSessionsListPage({
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>Time (Bahrain)</TableHead>
-                <TableHead className="text-right">Detail</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -104,15 +105,22 @@ export default async function DashboardAttendanceSessionsListPage({
                     {formatSessionRangeBahrain12h(s.startsAt, s.endsAt)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link
-                      href={`/dashboard/attendance/sessions/${s.id}`}
-                      className={buttonVariants({
-                        variant: "link",
-                        className: "h-auto p-0 text-sm",
-                      })}
-                    >
-                      Open →
-                    </Link>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <Link
+                        href={`/dashboard/attendance/sessions/${s.id}`}
+                        className={buttonVariants({
+                          variant: "link",
+                          className: "h-auto p-0 text-sm",
+                        })}
+                      >
+                        Open →
+                      </Link>
+                      <AttendanceDeleteSessionButton
+                        sessionId={s.id}
+                        programId={programId}
+                        variant="list"
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

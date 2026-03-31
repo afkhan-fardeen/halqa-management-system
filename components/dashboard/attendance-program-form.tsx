@@ -177,7 +177,11 @@ export function AttendanceProgramRowActions({
         size="sm"
         disabled={pending}
         onClick={() => {
-          if (!confirm("Deactivate this program? New members will not see new sessions.")) {
+          if (
+            !confirm(
+              "Archive (deactivate) this program? It will stop appearing for new sessions; existing sessions stay until you delete them individually.",
+            )
+          ) {
             return;
           }
           startTransition(async () => {
@@ -189,8 +193,9 @@ export function AttendanceProgramRowActions({
             }
           });
         }}
+        title="Stops new sessions; does not delete past sessions"
       >
-        Deactivate
+        Deactivate (archive)
       </Button>
     </div>
   );

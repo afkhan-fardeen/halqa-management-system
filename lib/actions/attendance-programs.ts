@@ -13,7 +13,10 @@ import {
 } from "@/lib/validations/attendance";
 import { db } from "@/lib/db";
 import { attendancePrograms, attendanceSessions } from "@/lib/db/schema";
-import { getAttendanceProgramByIdForStaff } from "@/lib/queries/attendance";
+import {
+  getAttendanceProgramByIdForStaff,
+  getAttendanceSessionWithProgramForStaff,
+} from "@/lib/queries/attendance";
 
 export type AttendanceProgramActionState =
   | { ok: true; programId: string }
@@ -152,6 +155,37 @@ export async function createAttendanceSession(
     console.error("[createAttendanceSession]", e);
     return { ok: false, error: "Could not add session." };
   }
+
+  revalidatePath("/dashboard/attendance/programs");
+  revalidatePath("/dashboard/attendance/sessions");
+  revalidatePath("/attendance");
+  return { ok: true };
+}
+
+export async function deleteAttendanceSession(
+  sessionId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  if (!staff.ok) {
+    return { ok: false, error: staff.error };
+  }
+
+  const bundle = await getAttendanceSessionWithProgramForStaff(
+    sessionId,
+    staff.session.user,
+  );
+  if ("error" in bundle) {
+    const err = bundle.error;
+    if (err === "Not found") {
+      return { ok: false, error: "Session not found." };
+    }
+    if (err === "Forbidden") {
+      return { ok: false, error: "You cannot delete this session." };
+    }
+    return { ok: false, error: err };
+  }
+
+  await db.delete(attendanceSessions).where(eq(attendanceSessions.id, sessionId));
 
   revalidatePath("/dashboard/attendance/programs");
   revalidatePath("/dashboard/attendance/sessions");

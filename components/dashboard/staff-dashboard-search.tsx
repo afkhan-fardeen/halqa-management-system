@@ -40,7 +40,7 @@ function StaffDashboardSearchInner() {
     return (
       <button
         type="button"
-        className="flex max-w-md flex-1 items-center gap-2 rounded-full border border-transparent bg-staff-surface-container px-3 py-2 text-left text-sm text-staff-on-surface-variant transition-colors hover:bg-staff-surface-container-high dark:bg-slate-800/80 dark:hover:bg-slate-800"
+        className="flex min-h-10 max-w-md min-w-0 flex-1 items-center gap-2 rounded-full border border-transparent bg-staff-surface-container px-3 py-2 text-left text-sm text-staff-on-surface-variant transition-colors hover:bg-staff-surface-container-high dark:bg-slate-800/80 dark:hover:bg-slate-800"
         aria-expanded={false}
         aria-label="Open member search"
         onClick={() => setExpanded(true)}
@@ -53,7 +53,7 @@ function StaffDashboardSearchInner() {
 
   return (
     <form
-      className="flex max-w-md min-w-0 flex-1 items-center gap-2 rounded-full bg-staff-surface-container px-3 py-2 dark:bg-slate-800/80"
+      className="flex min-h-10 max-w-md min-w-0 flex-1 items-center gap-2 rounded-full bg-staff-surface-container px-3 py-2 dark:bg-slate-800/80"
       role="search"
       onSubmit={(e) => {
         e.preventDefault();

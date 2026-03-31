@@ -16,6 +16,7 @@ import {
 import { buttonVariants } from "@/components/ui/button-variants";
 import { isStaffRole } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
+import { AttendanceDeleteSessionButton } from "@/components/dashboard/attendance-delete-session-button";
 import { listMarksForSessionForStaff } from "@/lib/queries/attendance";
 import { attendanceProgramDisplayTitle } from "@/lib/attendance/labels";
 import { formatSessionRangeBahrain12h } from "@/lib/attendance/time-12h";
@@ -76,6 +77,13 @@ export default async function DashboardAttendanceSessionDetailPage({
             <span className="block">{dateLabel}</span>
             <span className="block">{timeLabel}</span>
           </>
+        }
+        action={
+          <AttendanceDeleteSessionButton
+            sessionId={data.session.id}
+            programId={data.program.id}
+            variant="detail"
+          />
         }
       />
 

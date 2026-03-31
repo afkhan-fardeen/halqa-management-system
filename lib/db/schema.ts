@@ -382,6 +382,28 @@ export const attendanceReminderSent = pgTable(
   ],
 );
 
+/** Staff-only note per member per calendar month (yyyy-mm). */
+export const memberMonthlyStaffNotes = pgTable(
+  "member_monthly_staff_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    memberId: uuid("member_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    month: varchar("month", { length: 7 }).notNull(),
+    body: text("body").notNull(),
+    updatedBy: uuid("updated_by").references(() => users.id, { onDelete: "set null" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("member_monthly_staff_notes_member_id_month_unique").on(
+      table.memberId,
+      table.month,
+    ),
+    index("member_monthly_staff_notes_member_id_idx").on(table.memberId),
+  ],
+);
+
 /** Member-submitted app feedback (fixes, ideas) — visible to admins in the dashboard. */
 export const memberFeedback = pgTable(
   "member_feedback",

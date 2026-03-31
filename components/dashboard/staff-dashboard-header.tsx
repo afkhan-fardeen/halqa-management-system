@@ -11,7 +11,7 @@ import type { UserRole } from "@/types/next-auth";
 
 function StaffSearchFallback() {
   return (
-    <div className="flex h-10 max-w-md min-w-0 flex-1 items-center gap-3 rounded-full bg-staff-surface-container px-4 py-2 dark:bg-slate-800/80">
+    <div className="flex min-h-10 max-w-md min-w-0 flex-1 items-center gap-3 rounded-full bg-staff-surface-container px-4 py-2 dark:bg-slate-800/80">
       <span className="material-symbols-outlined shrink-0 text-[22px] leading-none text-staff-on-surface-variant">
         search
       </span>
@@ -45,7 +45,7 @@ export function StaffDashboardHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 flex w-full items-center justify-between gap-4 border-b border-slate-200/80 bg-slate-50/80 px-4 py-3 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 md:px-8 md:py-4",
+        "sticky top-0 z-30 flex w-full min-h-[3.25rem] items-center justify-between gap-4 border-b border-slate-200/80 bg-slate-50/80 px-4 py-3 shadow-sm backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-900/80 md:min-h-[3.5rem] md:px-8 md:py-4",
         "pt-[max(0.75rem,env(safe-area-inset-top))]",
       )}
     >
