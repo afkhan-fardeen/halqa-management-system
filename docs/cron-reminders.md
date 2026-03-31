@@ -24,15 +24,9 @@ The “today” date uses the server’s local calendar (`todayYmdLocal()`), so 
 
 Call the endpoint **once per day** (or more often if you want retries; duplicate in-app rows and duplicate emails are prevented as above).
 
-**Vercel Cron example** (`vercel.json`):
+**Default:** this repo’s `vercel.json` does **not** schedule legacy reminders. Prefer [`/api/cron/ehtisaab-nudges`](cron-ehtisaab-nudges.md) for Bahrain-time nudges, or call this route manually / from an external daily cron if you enable `ENABLE_LEGACY_DAILY_REMINDER=true`.
 
-```json
-{
-  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 18 * * *" }]
-}
-```
-
-Set `CRON_SECRET` in the project environment and configure the cron to send the bearer token (per Vercel docs for secured cron routes).
+**On Vercel Hobby**, if you add a cron, use **at most once per day** per job (e.g. `0 18 * * *`). Set `CRON_SECRET` in the project environment.
 
 **Manual / external scheduler:** `curl` with the header:
 

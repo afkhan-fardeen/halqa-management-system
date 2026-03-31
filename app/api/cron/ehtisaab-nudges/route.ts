@@ -7,19 +7,17 @@ import { dailyLogs, ehtisaabNudgeSent, users } from "@/lib/db/schema";
 import {
   getCachedBahrainTimings,
   isNowInTriggerWindow,
-  MORNING_SLOT,
   NUDGE_WINDOW_MS,
   parseOffsetMinutes,
   PRAYER_NUDGE_SLOTS,
-  triggerMsForMorning0930,
   triggerMsForPrayer,
 } from "@/lib/prayer/ehtisaab-nudge-schedule";
 import { parseYmdToUtcDate, todayYmdBahrain } from "@/lib/utils/date";
 
 /**
- * Up to 6 nudges per member per Bahrain day: 5 after adhan + offset, 1 at 09:30.
+ * Up to 5 nudges per member per Bahrain day: one after adhan + offset for each of Fajr, Dhuhr, Asr, Maghrib, Isha.
  * Deduped via `ehtisaab_nudge_sent`. Skips members who already saved full daily log today.
- * Schedule: Vercel cron every 5 min or external hit with CRON_SECRET.
+ * Not scheduled on Vercel by default — call via external cron (~every 5 min) or manual GET with CRON_SECRET.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -73,23 +71,13 @@ export async function GET(req: Request) {
   for (const m of members) {
     if (completed.has(m.id)) continue;
 
-    const slotDefs = [
-      ...PRAYER_NUDGE_SLOTS.map((p) => ({
-        slot: p.slot,
-        triggerMs: triggerMsForPrayer(dayYmd, timings, p.aladhanKey, offsetMin),
-        message: `Reminder: add your ehtisaab for ${p.label} when you can.`,
-        type: NOTIFICATION_TYPES.EHTISAAB_PRAYER_NUDGE as string,
-        pushTitle: "Salah — Ehtisaab",
-      })),
-      {
-        slot: MORNING_SLOT,
-        triggerMs: triggerMsForMorning0930(dayYmd),
-        message:
-          "Reminder: fill today’s ehtisaab (Salah, Quran, and literature) when you can.",
-        type: NOTIFICATION_TYPES.EHTISAAB_MORNING_NUDGE as string,
-        pushTitle: "Ehtisaab",
-      },
-    ];
+    const slotDefs = PRAYER_NUDGE_SLOTS.map((p) => ({
+      slot: p.slot,
+      triggerMs: triggerMsForPrayer(dayYmd, timings, p.aladhanKey, offsetMin),
+      message: `Reminder: add your ehtisaab for ${p.label} when you can.`,
+      type: NOTIFICATION_TYPES.EHTISAAB_PRAYER_NUDGE as string,
+      pushTitle: "Salah — Ehtisaab",
+    }));
 
     for (const item of slotDefs) {
       if (!isNowInTriggerWindow(nowMs, item.triggerMs, NUDGE_WINDOW_MS)) {

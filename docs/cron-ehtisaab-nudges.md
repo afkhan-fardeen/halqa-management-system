@@ -1,15 +1,12 @@
-# Ehtisaab nudge cron (`/api/cron/ehtisaab-nudges`)
+# Ehtisaab nudges (`/api/cron/ehtisaab-nudges`)
 
-Sends up to **six** in-app notifications per member per **Bahrain** calendar day (plus web push if enabled):
+Sends up to **five** in-app notifications per member per **Bahrain** calendar day (plus web push if enabled):
 
-1. Five nudges, each **PRAYER_NUDGE_OFFSET_MINUTES** (default **27**) after the Aladhan adhan time for Fajr, Dhuhr, Asr, Maghrib, and Isha (Manama, Bahrain).
-2. One nudge at **09:30** Bahrain time to fill the ehtisaab form.
+- One nudge per prayer, each **PRAYER_NUDGE_OFFSET_MINUTES** (default **27**) after the Aladhan adhan time for Fajr, Dhuhr, Asr, Maghrib, and Isha (Manama, Bahrain).
 
-Members who already saved **Salah + Quran + Hadith** for that day are skipped for all six.
+Members who already saved **Salah + Quran + Hadith** for that day are skipped for all five.
 
 ## Auth
-
-Same as other crons:
 
 ```http
 GET /api/cron/ehtisaab-nudges
@@ -27,9 +24,12 @@ Legacy once-daily reminder + email is **off** unless `ENABLE_LEGACY_DAILY_REMIND
 
 ## Scheduler
 
-- **Vercel:** `vercel.json` runs this route every **5 minutes** (`*/5 * * * *`). Requires a Vercel plan that allows that schedule (or use an external cron hitting the same URL).
+**Not configured in `vercel.json` by default** (Hobby-friendly). Nudges only run when something calls this `GET`:
 
-- **External:** Any scheduler (e.g. cron-job.org) can `GET` the URL every 5 minutes with the `Authorization` header.
+- **External:** e.g. [cron-job.org](https://cron-job.org) — `GET` your production URL **every ~5 minutes** with `Authorization: Bearer <CRON_SECRET>` so each prayer’s short delivery window is hit.
+- **Manual:** `curl` for testing.
+
+If you use **Vercel Pro** (or another host) you may add a `*/5 * * * *` cron in `vercel.json` pointing at this path.
 
 ## Database
 

@@ -17,6 +17,7 @@ import { isStaffRole } from "@/lib/auth/roles";
 import { redirect } from "next/navigation";
 import { formatSessionRangeBahrain12h } from "@/lib/attendance/time-12h";
 import { AttendanceDeleteSessionButton } from "@/components/dashboard/attendance-delete-session-button";
+import { AttendanceSessionReminderButton } from "@/components/dashboard/attendance-session-reminder-button";
 import {
   getAttendanceProgramByIdForStaff,
   listSessionsForProgramForStaff,
@@ -115,6 +116,7 @@ export default async function DashboardAttendanceSessionsListPage({
                       >
                         Open →
                       </Link>
+                      <AttendanceSessionReminderButton sessionId={s.id} />
                       <AttendanceDeleteSessionButton
                         sessionId={s.id}
                         programId={programId}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { AttendanceAddSessionForm } from "@/components/dashboard/attendance-add-session-form";
+import { AttendanceSendRemindersGlobalButton } from "@/components/dashboard/attendance-send-reminders-global-button";
 import {
   AttendanceProgramForm,
   AttendanceProgramRowActions,
@@ -65,6 +66,13 @@ export default async function DashboardAttendanceProgramsPage() {
           </>
         }
       />
+
+      <StaffPanel
+        title="Attendance reminders"
+        description="Notify members who have not marked attendance for sessions that ended in the last 24 hours. One automated reminder per member per session. You can also send per session from the Sessions list."
+      >
+        <AttendanceSendRemindersGlobalButton />
+      </StaffPanel>
 
       <StaffPanel
         title="Create or update program"

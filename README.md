@@ -95,7 +95,7 @@ Use a hosted Postgres URL (e.g. Neon) in production via `DATABASE_URL`.
    | `DATABASE_URL` | Neon URL |
    | `AUTH_SECRET` | `openssl rand -base64 32` |
    | `AUTH_URL` | Your live origin, e.g. `https://your-project.vercel.app` or `https://your-domain.com` (no trailing slash). Set this for password-reset links and emails; with a **custom domain**, this must match that domain. |
-   | `CRON_SECRET` | `openssl rand -hex 32` — must match what secures `/api/cron/reminders` (see `vercel.json` cron). |
+   | `CRON_SECRET` | `openssl rand -hex 32` — secures optional `GET` cron routes (`/api/cron/*`, see `docs/`). |
    | `SMTP_*`, `EMAIL_FROM` | Same as local if you want email in production. |
    | `VAPID_*` | Optional; required for device push notifications. |
 
@@ -107,7 +107,7 @@ Use a hosted Postgres URL (e.g. Neon) in production via `DATABASE_URL`.
 
    For local Docker Postgres only, use `npm run db:migrate`.
 
-5. **Cron:** `vercel.json` schedules `GET /api/cron/reminders` daily at **06:00 UTC**. Your Vercel plan must include [Cron Jobs](https://vercel.com/docs/cron-jobs); set `CRON_SECRET` in the project (Vercel sends `Authorization: Bearer <CRON_SECRET>`). See `docs/cron-reminders.md`.
+5. **Cron:** `vercel.json` ships with **no** default Vercel schedules (Hobby-friendly). Use **dashboard** buttons for attendance reminders; for ehtisaab nudges use an **external** scheduler (e.g. every 5 minutes) or add crons on a plan that allows them. See `docs/cron-ehtisaab-nudges.md` and `docs/cron-attendance-reminders.md`. Set `CRON_SECRET` if you call `GET /api/cron/*` manually or from a scheduler.
 
 6. **Redeploy** after changing env vars.
 
