@@ -7,7 +7,7 @@ import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
 import { refreshDailyUnitStats } from "@/lib/db/refresh-daily-unit-stats";
 import { db } from "@/lib/db";
 import { dailyLogs } from "@/lib/db/schema";
-import { defaultSalahForGender } from "@/lib/utils/daily-log-defaults";
+import { placeholderSalahForDb } from "@/lib/utils/daily-log-defaults";
 import { parseYmdToUtcDate, todayYmdLocal } from "@/lib/utils/date";
 import { buildSaveDailyLogSectionSchema } from "@/lib/validations/daily-log";
 
@@ -22,18 +22,12 @@ function todayCalendarDate(): Date {
   return parseYmdToUtcDate(todayYmdLocal());
 }
 
-type GenderUnit = "MALE" | "FEMALE";
-
 type LogRow = typeof dailyLogs.$inferSelect;
 type PrayerCol = LogRow["fajr"];
 type QuranTypeCol = LogRow["quranType"];
 
-function basePlaceholderRow(
-  userId: string,
-  logDate: Date,
-  genderUnit: GenderUnit,
-) {
-  const salah = defaultSalahForGender(genderUnit);
+function basePlaceholderRow(userId: string, logDate: Date) {
+  const salah = placeholderSalahForDb();
   return {
     userId,
     date: logDate,
@@ -115,7 +109,7 @@ export async function saveDailyLogSection(
 
       const base = existing
         ? rowToMerge(existing)
-        : basePlaceholderRow(userId, logDate, genderUnit);
+        : basePlaceholderRow(userId, logDate);
 
       let merged = { ...base };
 
