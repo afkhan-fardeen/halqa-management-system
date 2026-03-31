@@ -9,6 +9,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import NotificationsActiveOutlinedIcon from "@mui/icons-material/NotificationsActiveOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
@@ -18,10 +19,16 @@ import { useMemberTheme } from "@/components/member/member-theme-provider";
 
 export function MemberTopBarClient({
   unread,
-  dateLine,
+  gregorianLine,
+  hijriLine,
+  dateAriaLabel,
+  dateIso,
 }: {
   unread: number;
-  dateLine: string;
+  gregorianLine: string;
+  hijriLine: string;
+  dateAriaLabel: string;
+  dateIso: string;
 }) {
   const { mode, toggleColorScheme } = useMemberTheme();
   const label =
@@ -35,9 +42,11 @@ export function MemberTopBarClient({
         disableGutters
         sx={{
           minHeight: MEMBER_BAR_ROW_MIN_HEIGHT_PX,
+          py: 1.5,
           gap: 1.5,
           justifyContent: "space-between",
           alignItems: "center",
+          boxSizing: "border-box",
         }}
       >
         <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -72,22 +81,43 @@ export function MemberTopBarClient({
                 fontWeight: 600,
                 letterSpacing: 0.04,
                 bgcolor: (t) =>
-                  t.palette.mode === "dark"
-                    ? "rgba(217, 119, 6, 0.18)"
-                    : "rgba(217, 119, 6, 0.12)",
+                  alpha(
+                    t.palette.primary.main,
+                    t.palette.mode === "dark" ? 0.18 : 0.12,
+                  ),
                 color: "primary.main",
                 border: 1,
-                borderColor: "rgba(217, 119, 6, 0.28)",
+                borderColor: (t) => alpha(t.palette.primary.main, 0.28),
               }}
             />
           </Box>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 0.5, fontWeight: 500, fontSize: "0.9375rem" }}
+          <Box
+            component="time"
+            dateTime={dateIso}
+            aria-label={dateAriaLabel}
+            sx={{ mt: 0.5, minWidth: 0, display: "block" }}
           >
-            {dateLine}
-          </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontWeight: 500, fontSize: "0.9375rem", display: "block" }}
+            >
+              {gregorianLine}
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                mt: 0.25,
+                display: "block",
+                fontSize: "0.8125rem",
+                lineHeight: 1.35,
+                wordBreak: "break-word",
+              }}
+            >
+              {hijriLine}
+            </Typography>
+          </Box>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexShrink: 0 }}>
           <IconButton

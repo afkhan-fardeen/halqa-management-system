@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
 import { db } from "@/lib/db";
 import { contacts, dailyLogs } from "@/lib/db/schema";
-import { defaultSalahForGender } from "@/lib/utils/daily-log-defaults";
+import { emptySalah } from "@/lib/utils/daily-log-defaults";
 import { isUndefinedColumnError } from "@/lib/utils/pg-error";
 import {
   parseYmdToUtcDate,
@@ -88,7 +88,7 @@ export async function getDailyLogForEdit(
         maghrib: log.maghrib,
         isha: log.isha,
       }
-    : defaultSalahForGender(genderUnit);
+    : emptySalah();
 
   const quran = log.quranSaved
     ? {

@@ -36,7 +36,10 @@ import type { DailyLogForEdit } from "@/lib/queries/daily-log";
 import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
 import { QURAN_SURAH_OPTIONS } from "@/lib/constants/quran-surahs";
 import { todayYmdLocal } from "@/lib/utils/date";
-import { defaultSalahForGender } from "@/lib/utils/daily-log-defaults";
+import {
+  emptySalah,
+  normalizeUnsavedSalahFromDraft,
+} from "@/lib/utils/daily-log-defaults";
 import { toast } from "sonner";
 import {
   clearDailyLogDraft,
@@ -63,7 +66,7 @@ function defaultForm(g: Gender, dateYmd: string): FormState {
     salatSaved: false,
     quranSaved: false,
     hadithSaved: false,
-    salah: defaultSalahForGender(g),
+    salah: emptySalah(),
     quran: {
       quranType: "TILAWAT",
       quranSurah: QURAN_SURAH_PLACEHOLDER,
@@ -197,7 +200,9 @@ export function DailyLogForm({
             salatSaved: parsed.salatSaved ?? d.salatSaved,
             quranSaved: parsed.quranSaved ?? d.quranSaved,
             hadithSaved: parsed.hadithSaved ?? d.hadithSaved,
-            salah: parsed.salah ?? d.salah,
+            salah: parsed.salatSaved
+              ? (parsed.salah ?? d.salah)
+              : normalizeUnsavedSalahFromDraft(parsed.salah, genderUnit),
             quran: parsed.quran ?? d.quran,
             hadithLiterature: parsed.hadithLiterature ?? d.hadithLiterature,
           };
@@ -248,7 +253,9 @@ export function DailyLogForm({
             salatSaved: parsed.salatSaved ?? d.salatSaved,
             quranSaved: parsed.quranSaved ?? d.quranSaved,
             hadithSaved: parsed.hadithSaved ?? d.hadithSaved,
-            salah: parsed.salah ?? d.salah,
+            salah: parsed.salatSaved
+              ? (parsed.salah ?? d.salah)
+              : normalizeUnsavedSalahFromDraft(parsed.salah, genderUnit),
             quran: parsed.quran ?? d.quran,
             hadithLiterature: parsed.hadithLiterature ?? d.hadithLiterature,
           };
@@ -467,6 +474,9 @@ export function DailyLogForm({
           />
           <CardContent sx={{ pt: 2 }}>
             <Stack spacing={2}>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.55 }}>
+                Select each prayer when you&apos;re ready—nothing is selected until you tap.
+              </Typography>
               {genderUnit === "MALE" ? (
                 <div className="hms-daily-legend">
                   <div className="hms-daily-legend-item">

@@ -8,6 +8,10 @@
     {
       "path": "/api/cron/attendance-reminders",
       "schedule": "30 7 * * *"
+    },
+    {
+      "path": "/api/cron/ehtisaab-nudges",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

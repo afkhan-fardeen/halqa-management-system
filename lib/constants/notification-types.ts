@@ -21,6 +21,10 @@ export const NOTIFICATION_TYPES = {
   STAFF_ANNOUNCEMENT: "staff_announcement",
   /** After session end (cron) or manual staff nudge — mark Dawati / Tarbiyati attendance */
   ATTENDANCE_REMINDER: "attendance_reminder",
+  /** Cron: nudge after Bahrain adhan + offset to fill ehtisaab for that salah */
+  EHTISAAB_PRAYER_NUDGE: "ehtisaab_prayer_nudge",
+  /** Cron: fixed ~09:30 Bahrain — fill today’s ehtisaab form */
+  EHTISAAB_MORNING_NUDGE: "ehtisaab_morning_nudge",
 } as const;
 
 export type NotificationTypeKey = keyof typeof NOTIFICATION_TYPES;

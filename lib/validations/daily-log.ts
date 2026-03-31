@@ -62,13 +62,26 @@ export function buildSaveDailyLogSectionSchema(genderUnit: "MALE" | "FEMALE") {
   const prayerSchema =
     genderUnit === "MALE" ? malePrayerEnum : femalePrayerEnum;
 
-  const salahShape = z.object({
-    fajr: prayerSchema,
-    dhuhr: prayerSchema,
-    asr: prayerSchema,
-    maghrib: prayerSchema,
-    isha: prayerSchema,
-  });
+  const salahSlotSchema = z.union([z.literal(""), prayerSchema]);
+
+  const salahShape = z
+    .object({
+      fajr: salahSlotSchema,
+      dhuhr: salahSlotSchema,
+      asr: salahSlotSchema,
+      maghrib: salahSlotSchema,
+      isha: salahSlotSchema,
+    })
+    .superRefine((salah, ctx) => {
+      const keys = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
+      if (keys.some((k) => salah[k] === "")) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Choose a status for each prayer.",
+          path: ["fajr"],
+        });
+      }
+    });
 
   const quranShape = z
     .object({

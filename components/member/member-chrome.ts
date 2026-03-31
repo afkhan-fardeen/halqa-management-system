@@ -11,5 +11,8 @@ export const memberFogBarSx: SxProps<Theme> = {
       : "rgba(250, 250, 249, 0.88)",
 };
 
-/** Primary row height for toolbar and bottom nav grid (aligned). */
-export const MEMBER_BAR_ROW_MIN_HEIGHT_PX = 64;
+/**
+ * Minimum row height for member top toolbar (with vertical padding + two date lines)
+ * and bottom nav grid (aligned).
+ */
+export const MEMBER_BAR_ROW_MIN_HEIGHT_PX = 72;

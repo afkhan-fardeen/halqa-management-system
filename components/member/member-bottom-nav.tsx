@@ -154,8 +154,8 @@ export function MemberBottomNav() {
               height: 58,
               boxShadow: (t) =>
                 t.palette.mode === "dark"
-                  ? "0 4px 20px rgba(217,119,6,0.42)"
-                  : "0 4px 18px rgba(217,119,6,0.48)",
+                  ? "0 4px 20px rgba(0,128,128,0.42)"
+                  : "0 4px 18px rgba(0,128,128,0.48)",
             }}
           >
             <AddIcon sx={{ fontSize: 28 }} />

@@ -30,6 +30,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (process.env.ENABLE_LEGACY_DAILY_REMINDER !== "true") {
+    return NextResponse.json({
+      ok: true,
+      skipped: true,
+      reason: "Set ENABLE_LEGACY_DAILY_REMINDER=true to run legacy daily reminders.",
+    });
+  }
+
   const today = parseYmdToUtcDate(todayYmdLocal());
   const dayEnd = new Date(today);
   dayEnd.setUTCDate(dayEnd.getUTCDate() + 1);

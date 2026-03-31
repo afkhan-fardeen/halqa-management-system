@@ -1,10 +1,10 @@
 import { createTheme } from "@mui/material/styles";
 
-const amber = {
-  main: "#D97706",
-  light: "#FDE68A",
-  dark: "#92400E",
-  contrastText: "#fff",
+const teal = {
+  main: "#008080",
+  light: "#66b2b2",
+  dark: "#004c4c",
+  contrastText: "#ffffff",
 };
 
 const heading =
@@ -15,7 +15,7 @@ export function createMemberTheme(mode: "light" | "dark") {
   return createTheme({
     palette: {
       mode,
-      primary: amber,
+      primary: teal,
       background:
         mode === "light"
           ? { default: "#FAFAF9", paper: "#FFFFFF" }

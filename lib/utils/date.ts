@@ -19,6 +19,20 @@ export function todayYmdLocal(): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Calendar YYYY-MM-DD in Asia/Bahrain (no DST). Use for cron alignment with local prayer day. */
+export function todayYmdBahrain(): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Bahrain",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const y = parts.find((p) => p.type === "year")?.value ?? "1970";
+  const m = parts.find((p) => p.type === "month")?.value ?? "01";
+  const d = parts.find((p) => p.type === "day")?.value ?? "01";
+  return `${y}-${m}-${d}`;
+}
+
 /** `YYYY-MM` calendar month to inclusive UTC date range (matches `daily_logs.date` storage). */
 export function monthYyyyMmToRange(ym: string): { fromYmd: string; toYmd: string } | null {
   const m = /^(\d{4})-(\d{2})$/.exec(ym.trim());

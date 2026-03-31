@@ -32,6 +32,10 @@ export function NotificationTypeIcon({ type }: { type: string }) {
     Icon = EventAvailableOutlinedIcon;
     bg = "rgba(5, 150, 105, 0.14)";
     fg = "#059669";
+  } else if (t.includes("ehtisaab")) {
+    Icon = NotificationsNoneOutlinedIcon;
+    bg = "rgba(37, 99, 235, 0.14)";
+    fg = "#2563EB";
   } else if (t.includes("reminder")) {
     Icon = NotificationsNoneOutlinedIcon;
     bg = "rgba(217, 119, 6, 0.18)";

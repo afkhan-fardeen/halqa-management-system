@@ -21,6 +21,9 @@ export function defaultNotificationPathForType(type: string): string {
       return "/notifications";
     case NOTIFICATION_TYPES.ATTENDANCE_REMINDER:
       return "/attendance";
+    case NOTIFICATION_TYPES.EHTISAAB_PRAYER_NUDGE:
+    case NOTIFICATION_TYPES.EHTISAAB_MORNING_NUDGE:
+      return "/submit";
     case NOTIFICATION_TYPES.DEMO_WELCOME:
       return "/home";
     default:

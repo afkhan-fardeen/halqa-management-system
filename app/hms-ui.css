@@ -1,10 +1,10 @@
 /* Scoped HMS marketing + auth UI — wrap content in .hms-root[data-theme="light"|"dark"] */
 .hms-root {
-  --hms-amber: #d97706;
-  --hms-amber-hover: #b45309;
-  --hms-amber-pale: #fffbeb;
-  --hms-amber-light: #fde68a;
-  --hms-amber-dark: #92400e;
+  --hms-amber: #008080;
+  --hms-amber-hover: #006666;
+  --hms-amber-pale: #e8f4f4;
+  --hms-amber-light: #66b2b2;
+  --hms-amber-dark: #004c4c;
   --hms-bg: #fafaf9;
   --hms-bg2: #f5f5f4;
   --hms-bg3: #ffffff;
@@ -37,7 +37,7 @@
   --hms-text2: #a8a29e;
   --hms-text3: #57534e;
   --hms-border: rgba(255, 255, 255, 0.07);
-  --hms-amber-pale: #1c1506;
+  --hms-amber-pale: #0a2525;
   --hms-danger-bg: #2d1010;
   --hms-success-bg: #064e3b;
 }
@@ -1109,7 +1109,7 @@
   background: #ef4444;
 }
 .hms-daily-ld-ot {
-  background: #d97706;
+  background: var(--hms-amber);
 }
 .hms-daily-prayer-table {
   display: flex;
@@ -1178,7 +1178,7 @@
 }
 .hms-daily-opt--ot {
   background: #ffedd5;
-  border-color: #d97706;
+  border-color: var(--hms-amber);
   color: #92400e;
 }
 .hms-root[data-theme="dark"] .hms-daily-opt {
@@ -1202,7 +1202,7 @@
 }
 .hms-root[data-theme="dark"] .hms-daily-opt--ot {
   background: #422006;
-  border-color: #d97706;
+  border-color: var(--hms-amber);
   color: #fcd34d;
 }
 .hms-daily-card-title {

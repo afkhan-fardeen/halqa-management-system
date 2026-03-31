@@ -11,9 +11,12 @@ The “today” date uses the server’s local calendar (`todayYmdLocal()`), so 
 
 ## Configuration
 
+**Legacy behavior is disabled by default.** Set `ENABLE_LEGACY_DAILY_REMINDER=true` to run this route’s in-app + email reminders. Prefer [`/api/cron/ehtisaab-nudges`](cron-ehtisaab-nudges.md) for Bahrain-time nudges.
+
 | Variable | Purpose |
 |----------|---------|
 | `CRON_SECRET` | Required. The route expects `Authorization: Bearer <CRON_SECRET>`. |
+| `ENABLE_LEGACY_DAILY_REMINDER` | Must be `true` to run (otherwise the handler returns `skipped: true`). |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`, etc. | Optional. If unset, in-app reminders still run; emails are skipped. See `.env.example`. |
 | `AUTH_URL` | Used when building links inside emails (same origin as the app). |
 

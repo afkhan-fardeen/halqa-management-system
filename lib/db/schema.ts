@@ -404,6 +404,28 @@ export const memberMonthlyStaffNotes = pgTable(
   ],
 );
 
+/** Dedupe for cron: one ehtisaab nudge per member per Bahrain calendar day per slot. */
+export const ehtisaabNudgeSent = pgTable(
+  "ehtisaab_nudge_sent",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    dayYmd: varchar("day_ymd", { length: 10 }).notNull(),
+    slot: varchar("slot", { length: 32 }).notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique("ehtisaab_nudge_sent_user_day_slot_unique").on(
+      table.userId,
+      table.dayYmd,
+      table.slot,
+    ),
+    index("ehtisaab_nudge_sent_day_ymd_idx").on(table.dayYmd),
+  ],
+);
+
 /** Member-submitted app feedback (fixes, ideas) — visible to admins in the dashboard. */
 export const memberFeedback = pgTable(
   "member_feedback",
