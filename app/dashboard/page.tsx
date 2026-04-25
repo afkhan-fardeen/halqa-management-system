@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { StaffPageHeader } from "@/components/dashboard/staff-page-section";
 import { getPendingRegistrationCount } from "@/lib/queries/pending-registrations";
 import { getDashboardOverview } from "@/lib/queries/dashboard-overview";
 import { cn } from "@/lib/utils";
@@ -10,17 +9,15 @@ export default async function DashboardHomePage() {
     getDashboardOverview(),
   ]);
 
-  const pct =
-    overview?.submissionRatePct != null ? overview.submissionRatePct : null;
+  const pct = overview?.submissionRatePct != null ? overview.submissionRatePct : null;
   const todayPct = pct != null ? `${pct}%` : "—";
-  const barWidth =
-    pct != null ? `${Math.min(100, Math.max(0, pct))}%` : "0%";
+  const barWidth = pct != null ? `${Math.min(100, Math.max(0, pct))}%` : "0%";
 
   const aiyanatLine =
     overview && overview.aiyanatEligibleMembers > 0
-      ? `${overview.aiyanatPaidMembers} / ${overview.aiyanatEligibleMembers} active members paid`
+      ? `${overview.aiyanatPaidMembers} / ${overview.aiyanatEligibleMembers} paid`
       : overview
-        ? `${overview.aiyanatPaidMembers} paid (no active members in scope)`
+        ? `${overview.aiyanatPaidMembers} paid`
         : "—";
 
   const notSubmitted =
@@ -29,216 +26,155 @@ export default async function DashboardHomePage() {
       : 0;
 
   return (
-    <div className="space-y-10 md:space-y-12">
-      <StaffPageHeader
-        title="Overview"
-        description="Unit activity and key metrics for your scope. Figures reload periodically while this tab stays open."
-      />
+    <div className="space-y-8">
+      {/* Page header */}
+      <div>
+        <h1 className="font-staff-headline text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
+          Overview
+        </h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Unit activity for your scope — refreshed on load.
+        </p>
+      </div>
 
-      <div className="mb-10 grid grid-cols-12 gap-6 md:gap-8 lg:mb-16">
-        {/* Today */}
-        <div className="col-span-12 flex flex-col justify-between rounded-xl bg-staff-surface-container-lowest p-6 shadow-[0_40px_60px_-15px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_40px_60px_-15px_rgba(0,0,0,0.06)] sm:p-8 lg:col-span-5">
-          <div>
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-sm font-medium uppercase tracking-wide text-staff-on-surface-variant">
-                Today stats
-              </span>
-              <span className="material-symbols-outlined text-staff-primary text-2xl">
-                analytics
-              </span>
-            </div>
-            <div className="mb-2 flex flex-wrap items-end gap-4">
-              <span className="font-staff-headline text-5xl font-black text-staff-on-surface sm:text-6xl">
-                {todayPct}
-              </span>
-              <div className="mb-1">
-                <p className="text-sm font-bold text-staff-primary">Submission rate</p>
-                <p className="text-xs text-staff-on-surface-variant">(your scope)</p>
-              </div>
-            </div>
-            <div className="mb-6 h-2 w-full overflow-hidden rounded-full bg-staff-surface-container">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-staff-primary to-staff-primary-dim"
-                style={{ width: barWidth }}
-              />
-            </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {/* Submission rate */}
+        <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Today
+            </span>
+            <span className="material-symbols-outlined text-[20px] text-blue-500">bar_chart</span>
           </div>
-          <div className="space-y-3">
+          <p className="font-staff-headline text-4xl font-black tabular-nums text-slate-900 dark:text-slate-100">
+            {todayPct}
+          </p>
+          <p className="mt-1 text-sm font-medium text-slate-500">Submission rate</p>
+          <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            <div
+              className="h-full rounded-full bg-blue-500 transition-all duration-700"
+              style={{ width: barWidth }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
             {overview ? (
               <>
-                <div className="flex items-center gap-3 text-sm text-staff-on-surface-variant">
-                  <span className="material-symbols-outlined text-base">check_circle</span>
-                  <span>
-                    {overview.submittedToday} submitted · {overview.totalMembersUnit}{" "}
-                    members in halqa stats
+                {overview.submittedToday} of {overview.totalMembersUnit} submitted
+                {notSubmitted > 0 && (
+                  <span className="ml-1 font-semibold text-amber-500">
+                    · {notSubmitted} pending
                   </span>
-                </div>
-                {overview.totalMembersUnit > 0 ? (
-                  <div
-                    className={cn(
-                      "flex items-center gap-3 text-sm font-medium",
-                      notSubmitted > 0 ? "text-staff-error" : "text-staff-on-surface-variant",
-                    )}
-                  >
-                    <span className="material-symbols-outlined text-base">pending</span>
-                    <span>
-                      {notSubmitted} not yet submitted today
-                    </span>
-                  </div>
-                ) : null}
+                )}
               </>
-            ) : (
-              <p className="text-sm text-staff-on-surface-variant">No overview data.</p>
+            ) : "No data"}
+          </p>
+        </div>
+
+        {/* Pending registrations */}
+        <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Registrations
+            </span>
+            <span className="material-symbols-outlined text-[20px] text-amber-500">how_to_reg</span>
+          </div>
+          <p
+            className={cn(
+              "font-staff-headline text-4xl font-black tabular-nums",
+              pendingCount > 0 ? "text-amber-500" : "text-slate-900 dark:text-slate-100",
             )}
+          >
+            {pendingCount}
+          </p>
+          <p className="mt-1 text-sm font-medium text-slate-500">
+            {pendingCount === 1 ? "Request" : "Requests"} pending review
+          </p>
+          <div className="mt-auto pt-4">
+            <Link
+              href="/dashboard/registrations"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Review queue
+              <span className="material-symbols-outlined text-[14px] leading-none">arrow_forward</span>
+            </Link>
           </div>
         </div>
 
         {/* Aiyanat */}
-        <div className="col-span-12 flex flex-col justify-between rounded-xl bg-staff-surface-container-lowest p-6 shadow-[0_40px_60px_-15px_rgba(0,0,0,0.04)] sm:p-8 md:col-span-6 lg:col-span-3">
-          <div>
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-sm font-medium uppercase tracking-wide text-staff-on-surface-variant">
-                Aiyanat
-              </span>
-              <span className="material-symbols-outlined text-2xl text-staff-tertiary">
-                account_balance_wallet
-              </span>
-            </div>
-            <h2 className="font-staff-headline mb-2 text-2xl font-bold text-staff-on-surface sm:text-3xl">
-              {overview?.aiyanatMonthLabel ?? "This month"}
-            </h2>
-            <p className="mb-6 text-sm font-medium text-staff-on-surface-variant">
-              {aiyanatLine}
-            </p>
+        <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Aiyanat
+            </span>
+            <span className="material-symbols-outlined text-[20px] text-green-500">payments</span>
           </div>
-          <Link
-            href="/dashboard/aiyanat"
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-staff-surface-container-high py-3 text-sm font-bold text-staff-on-surface transition-colors hover:bg-staff-surface-container"
-          >
-            Open Aiyanat
-            <span className="material-symbols-outlined text-base">arrow_forward</span>
-          </Link>
-        </div>
-
-        {/* Pending */}
-        <div className="col-span-12 flex flex-col justify-between border-l-4 border-staff-primary rounded-xl bg-staff-surface-container-lowest p-6 shadow-[0_40px_60px_-15px_rgba(0,0,0,0.04)] sm:p-8 md:col-span-6 lg:col-span-4">
-          <div>
-            <div className="mb-6 flex items-center justify-between">
-              <span className="text-sm font-medium uppercase tracking-wide text-staff-on-surface-variant">
-                Pending
-              </span>
-              <span className="material-symbols-outlined text-2xl text-staff-on-primary-container">
-                assignment_late
-              </span>
-            </div>
-            <p className="mb-1 text-sm text-staff-on-surface-variant">
-              Registration requests
-            </p>
-            <p className="font-staff-headline mb-6 text-4xl font-black text-staff-on-surface sm:text-5xl">
-              {pendingCount}
-            </p>
+          <p className="font-staff-headline text-xl font-bold text-slate-900 dark:text-slate-100">
+            {overview?.aiyanatMonthLabel ?? "This month"}
+          </p>
+          <p className="mt-1 text-sm text-slate-500">{aiyanatLine}</p>
+          <div className="mt-auto pt-4">
+            <Link
+              href="/dashboard/aiyanat"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+            >
+              View Aiyanat
+              <span className="material-symbols-outlined text-[14px] leading-none">arrow_forward</span>
+            </Link>
           </div>
-          <Link
-            href="/dashboard/registrations"
-            className="block w-full rounded-md border border-staff-outline-variant/30 py-3 text-center text-sm font-bold text-staff-on-surface transition-colors hover:bg-staff-surface-container-low"
-          >
-            Review queue
-          </Link>
         </div>
       </div>
 
-      <section className="grid grid-cols-12 gap-8 lg:gap-12">
-        <div className="col-span-12 lg:col-span-7">
-          <h2 className="font-staff-headline mb-4 text-2xl font-bold text-staff-on-surface">
-            Halqa tools
-          </h2>
-          <p className="mb-6 max-w-xl text-sm text-staff-on-surface-variant">
-            Daily operations for your scope (submissions, roster, inbox).
-          </p>
-          <div className="flex flex-wrap gap-4">
+      {/* Quick access */}
+      <div>
+        <h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          Quick access
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { href: "/dashboard/submissions", icon: "cloud_upload", label: "Submissions", desc: "Logs & contacts" },
+            { href: "/dashboard/members", icon: "groups", label: "Members", desc: "Member roster" },
+            { href: "/dashboard/attendance", icon: "calendar_today", label: "Attendance", desc: "Programs & sessions" },
+            { href: "/dashboard/notifications", icon: "mark_as_unread", label: "Notifications", desc: "Your inbox" },
+          ].map((item) => (
             <Link
-              href="/dashboard/submissions"
-              className="group flex max-w-full items-center gap-4 rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-4 pr-6 shadow-sm transition-all hover:shadow-md sm:pr-8"
+              key={item.href}
+              href={item.href}
+              className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-blue-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-blue-900"
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-staff-primary-container text-staff-on-primary-container">
-                <span className="material-symbols-outlined">cloud_upload</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors group-hover:bg-blue-50 group-hover:text-blue-600 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-blue-950 dark:group-hover:text-blue-400">
+                <span className="material-symbols-outlined text-[20px] leading-none">{item.icon}</span>
               </div>
-              <div className="min-w-0 text-left">
-                <p className="text-sm font-bold text-staff-on-surface">
-                  Submissions &amp; contacts
-                </p>
-                <p className="text-[11px] text-staff-on-surface-variant">
-                  Logs &amp; contacts
-                </p>
+              <div>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.label}</p>
+                <p className="text-xs text-slate-400">{item.desc}</p>
               </div>
             </Link>
-            <Link
-              href="/dashboard/members"
-              className="group flex max-w-full items-center gap-4 rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-4 pr-6 shadow-sm transition-all hover:shadow-md sm:pr-8"
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-staff-secondary-container text-staff-on-secondary-container">
-                <span className="material-symbols-outlined">groups</span>
-              </div>
-              <div className="min-w-0 text-left">
-                <p className="text-sm font-bold text-staff-on-surface">Members</p>
-                <p className="text-[11px] text-staff-on-surface-variant">
-                  Member roster
-                </p>
-              </div>
-            </Link>
-            <Link
-              href="/dashboard/notifications"
-              className="group flex max-w-full items-center gap-4 rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-4 pr-6 shadow-sm transition-all hover:shadow-md sm:pr-8"
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-staff-tertiary-container text-staff-on-tertiary-container">
-                <span className="material-symbols-outlined">mark_as_unread</span>
-              </div>
-              <div className="min-w-0 text-left">
-                <p className="text-sm font-bold text-staff-on-surface">
-                  Notifications inbox
-                </p>
-                <p className="text-[11px] text-staff-on-surface-variant">
-                  Your alerts
-                </p>
-              </div>
-            </Link>
-          </div>
+          ))}
         </div>
+      </div>
 
-        <div className="col-span-12 lg:col-span-5">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-8 text-white shadow-2xl sm:p-10">
-            <div
-              className="pointer-events-none absolute inset-0 opacity-10"
-              style={{
-                backgroundImage: "radial-gradient(#fff 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-              }}
-            />
-            <div className="relative z-10">
-              <div className="mb-6 flex items-center gap-3 sm:mb-8">
-                <span className="material-symbols-outlined text-blue-400 text-2xl">
-                  ios_share
-                </span>
-                <h2 className="font-staff-headline text-xl font-bold">Exports</h2>
-              </div>
-              <p className="mb-6 text-sm leading-relaxed text-slate-300 sm:mb-8">
-                Filter by date range on Submissions, then download CSV or Excel. Exports use
-                the same scope as your role (your halqa and gender for Incharge/Secretary; all
-                halqas for Admin).
-              </p>
-              <Link
-                href="/dashboard/submissions"
-                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-white py-4 text-sm font-bold text-slate-900 transition-colors hover:bg-slate-100"
-              >
-                Open submissions &amp; export
-                <span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">
-                  arrow_forward
-                </span>
-              </Link>
-            </div>
+      {/* Export callout */}
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
+            <span className="material-symbols-outlined text-[20px] leading-none">download</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Export data</p>
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Filter by date on Submissions, then download CSV or Excel. Scoped to your role.
+            </p>
           </div>
         </div>
-      </section>
+        <Link
+          href="/dashboard/submissions"
+          className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+        >
+          Open Submissions
+          <span className="material-symbols-outlined text-[16px] leading-none">arrow_forward</span>
+        </Link>
+      </div>
     </div>
   );
 }

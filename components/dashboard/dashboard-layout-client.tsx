@@ -30,69 +30,78 @@ function StaffSidebarChrome({
   onNavigate?: () => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
-  /** Desktop only — hide on mobile drawer */
   showCollapseControl: boolean;
 }) {
   return (
-    <>
+    <div className="flex h-full flex-col">
+      {/* Logo */}
       <div
         className={cn(
-          "mb-4 flex items-start justify-between gap-2 px-3 py-5 md:min-h-[3.25rem] md:items-center md:py-4",
-          collapsed && "md:px-1",
+          "flex h-14 shrink-0 items-center justify-between px-4",
+          collapsed && "md:justify-center md:px-2",
         )}
       >
-        <div className="min-w-0 flex-1">
-          <Link
-            href="/dashboard"
-            className={cn(
-              "block font-staff-headline text-xl font-black tracking-tighter text-blue-700 dark:text-blue-400",
-              collapsed && "md:flex md:justify-center",
-            )}
-            onClick={() => onNavigate?.()}
-          >
-            {collapsed ? (
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-700 text-lg font-black text-white dark:bg-blue-400 dark:text-slate-950 md:inline-flex">
-                Q
-              </span>
-            ) : (
-              "Qalbee"
-            )}
-          </Link>
-          {collapsed ? null : (
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-              Management Suite
-            </p>
+        <Link
+          href="/dashboard"
+          className="flex min-w-0 items-center gap-2.5"
+          onClick={() => onNavigate?.()}
+        >
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-black text-white select-none">
+            Q
+          </span>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold leading-none text-slate-900 dark:text-slate-100">
+                Qalbee
+              </p>
+              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                Staff
+              </p>
+            </div>
           )}
-        </div>
-        {showCollapseControl ? (
+        </Link>
+        {showCollapseControl && (
           <button
             type="button"
-            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 md:inline-flex"
+            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 md:inline-flex"
             onClick={onToggleCollapse}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <span className="material-symbols-outlined text-[22px] leading-none">
+            <span className="material-symbols-outlined text-[18px] leading-none">
               {collapsed ? "chevron_right" : "chevron_left"}
             </span>
           </button>
-        ) : null}
+        )}
       </div>
-      <DashboardSidebarNav
-        isAdmin={isAdmin}
-        onNavigate={onNavigate}
-        collapsed={collapsed}
-      />
-      <div className="mt-auto flex flex-col gap-1 border-t border-slate-200/80 pt-4 dark:border-slate-800">
+
+      {/* Nav */}
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <DashboardSidebarNav
+          isAdmin={isAdmin}
+          onNavigate={onNavigate}
+          collapsed={collapsed}
+        />
+      </div>
+
+      {/* Footer */}
+      <div
+        className={cn(
+          "shrink-0 border-t border-slate-200 pb-2 pt-1 dark:border-slate-800",
+          collapsed && "md:flex md:flex-col md:items-center",
+        )}
+      >
         <Link
           href="/about"
           className={cn(
-            "flex items-center gap-3 px-3 py-2 text-sm text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
-            collapsed && "md:justify-center md:px-1",
+            "mx-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200",
+            collapsed && "md:justify-center md:px-2",
           )}
           title={collapsed ? "Help" : undefined}
           onClick={() => onNavigate?.()}
         >
-          <span className="material-symbols-outlined text-[20px]">help</span>
+          <span className="material-symbols-outlined shrink-0 text-[18px] leading-none">
+            help_outline
+          </span>
           <span className={cn(collapsed && "md:sr-only")}>Help</span>
         </Link>
         {collapsed ? (
@@ -103,7 +112,7 @@ function StaffSidebarChrome({
           <SignOutButton variant="staffSidebar" />
         )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -126,9 +135,7 @@ export function DashboardLayoutClient({
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
-    const onChange = () => {
-      if (mq.matches) setMobileOpen(false);
-    };
+    const onChange = () => { if (mq.matches) setMobileOpen(false); };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
@@ -138,43 +145,36 @@ export function DashboardLayoutClient({
       if (localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true") {
         queueMicrotask(() => setSidebarCollapsed(true));
       }
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   }, []);
 
   const toggleSidebarCollapsed = useCallback(() => {
     setSidebarCollapsed((c) => {
       const next = !c;
-      try {
-        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "true" : "false");
-      } catch {
-        /* ignore */
-      }
+      try { localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "true" : "false"); }
+      catch { /* ignore */ }
       return next;
     });
   }, []);
 
-  const asideClass = cn(
-    "flex h-full min-h-0 flex-col border-r border-slate-200/80 bg-slate-100 dark:border-slate-800 dark:bg-slate-900",
-    "w-64 p-4 transition-[width,padding] duration-200 ease-out",
-    sidebarCollapsed && "md:w-16 md:overflow-x-hidden md:p-2",
+  const sidebarCls = cn(
+    "flex h-full min-h-0 flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800",
+    "w-60 transition-[width] duration-200 ease-out",
+    sidebarCollapsed && "md:w-[3.75rem] md:overflow-x-hidden",
   );
 
   return (
     <div
       data-staff-dashboard
       className={cn(
-        "min-h-dvh overflow-x-hidden bg-staff-background text-staff-on-surface dark:bg-slate-950",
+        "min-h-dvh overflow-x-hidden bg-slate-50 text-staff-on-surface dark:bg-slate-950",
         shellClassName,
       )}
     >
       {/* Desktop sidebar */}
       <aside
-        className={cn(
-          asideClass,
-          "fixed left-0 top-0 z-50 hidden min-h-dvh md:flex",
-        )}
+        className={cn(sidebarCls, "fixed left-0 top-0 z-50 hidden min-h-dvh md:flex")}
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <StaffSidebarChrome
           isAdmin={isAdmin}
@@ -184,24 +184,26 @@ export function DashboardLayoutClient({
         />
       </aside>
 
-      {/* Mobile drawer */}
-      {mobileOpen ? (
+      {/* Mobile backdrop */}
+      {mobileOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-[60] bg-black/40 md:hidden"
+          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm md:hidden"
           aria-label="Close menu"
           onClick={closeMobile}
         />
-      ) : null}
+      )}
+
+      {/* Mobile drawer */}
       <aside
         className={cn(
-          asideClass,
-          "fixed left-0 top-0 z-[70] min-h-dvh transition-transform duration-200 ease-out md:hidden",
+          sidebarCls,
+          "fixed left-0 top-0 z-[70] min-h-dvh shadow-xl transition-transform duration-200 ease-out md:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full pointer-events-none",
         )}
         style={{
-          paddingTop: "max(1rem, env(safe-area-inset-top))",
-          paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+          paddingTop: "max(0px, env(safe-area-inset-top))",
+          paddingBottom: "max(0px, env(safe-area-inset-bottom))",
         }}
         aria-hidden={!mobileOpen}
       >
@@ -214,10 +216,11 @@ export function DashboardLayoutClient({
         />
       </aside>
 
+      {/* Main content */}
       <div
         className={cn(
           "flex min-h-dvh min-w-0 flex-col transition-[margin] duration-200 ease-out",
-          sidebarCollapsed ? "md:ml-16" : "md:ml-64",
+          sidebarCollapsed ? "md:ml-[3.75rem]" : "md:ml-60",
         )}
       >
         <StaffDashboardHeader
@@ -226,13 +229,14 @@ export function DashboardLayoutClient({
           showMobileMenuButton
           onOpenMobileNav={() => setMobileOpen(true)}
         />
-        <main className="flex min-h-0 min-w-0 flex-1 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6 md:px-8 md:py-8">
-          <div className="mx-auto w-full min-w-0 max-w-7xl">
+        <main className="flex min-h-0 min-w-0 flex-1 px-4 py-6 sm:px-6 md:px-8 md:py-8 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+          <div className="mx-auto w-full min-w-0 max-w-6xl">
             <DashboardRefresh />
             {children}
           </div>
         </main>
       </div>
+
       <PushNotificationWelcomeModal audience="staff" />
     </div>
   );

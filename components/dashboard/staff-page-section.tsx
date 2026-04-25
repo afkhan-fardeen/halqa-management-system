@@ -11,23 +11,24 @@ export function StaffPageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between md:mb-8">
       <div>
-        <h1 className="font-staff-headline text-3xl font-extrabold tracking-tight text-staff-on-surface sm:text-4xl">
+        <h1 className="font-staff-headline text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
           {title}
         </h1>
         {description ? (
-          <div className="mt-2 max-w-2xl text-sm leading-relaxed text-staff-on-surface-variant md:text-base">
+          <div className="mt-1.5 max-w-2xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             {description}
           </div>
         ) : null}
       </div>
-      {action ? <div className="flex shrink-0 flex-wrap gap-2">{action}</div> : null}
+      {action ? (
+        <div className="flex shrink-0 flex-wrap gap-2">{action}</div>
+      ) : null}
     </div>
   );
 }
 
-/** Primary content panel for staff dashboard pages (replaces ad hoc Card chrome). */
 export function StaffPanel({
   title,
   description,
@@ -46,20 +47,20 @@ export function StaffPanel({
   return (
     <div
       className={cn(
-        "rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest shadow-sm",
-        padding && "p-6 md:p-8",
+        "rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900",
+        padding && "p-5 md:p-6",
         className,
       )}
     >
       {(title || description) && (
-        <div className={cn("mb-6", headerClassName)}>
+        <div className={cn("mb-5", headerClassName)}>
           {title ? (
-            <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface md:text-xl">
+            <h2 className="font-staff-headline text-base font-bold text-slate-900 dark:text-slate-100 md:text-lg">
               {title}
             </h2>
           ) : null}
           {description ? (
-            <div className="mt-1 text-sm text-staff-on-surface-variant">{description}</div>
+            <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</div>
           ) : null}
         </div>
       )}
