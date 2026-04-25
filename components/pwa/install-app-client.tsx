@@ -16,11 +16,11 @@ export function InstallAppClient() {
   useEffect(() => {
     const ua = window.navigator.userAgent.toLowerCase();
     const isIos = /iphone|ipad|ipod/.test(ua);
-    setIos(isIos);
+    queueMicrotask(() => setIos(isIos));
 
     const onBip = (e: Event) => {
       e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
+      queueMicrotask(() => setDeferred(e as BeforeInstallPromptEvent));
     };
     window.addEventListener("beforeinstallprompt", onBip);
     return () => window.removeEventListener("beforeinstallprompt", onBip);

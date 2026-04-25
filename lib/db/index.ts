@@ -24,7 +24,9 @@ export const db = new Proxy({} as NodePgDatabase<typeof schema>, {
   get(_target, prop, receiver) {
     const real = getDb();
     const value = Reflect.get(real as object, prop, receiver);
-    return typeof value === "function" ? (value as Function).bind(real) : value;
+    return typeof value === "function"
+      ? (value as (...args: unknown[]) => unknown).bind(real)
+      : value;
   },
 });
 

@@ -33,7 +33,7 @@ export function StaffAnnouncementComposeForm({ isAdmin }: { isAdmin: boolean }) 
 
   useEffect(() => {
     let cancelled = false;
-    setCountPending(true);
+    queueMicrotask(() => setCountPending(true));
     const opts = isAdmin
       ? { halqa: halqa || undefined, genderUnit: genderUnit || undefined }
       : {};

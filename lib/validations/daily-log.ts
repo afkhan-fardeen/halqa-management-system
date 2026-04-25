@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
 
 const malePrayerEnum = z.enum(["BA_JAMAAT", "MUNFARID", "QAZA"]);
 const femalePrayerEnum = z.enum(["ON_TIME", "QAZA"]);
@@ -86,12 +85,7 @@ export function buildSaveDailyLogSectionSchema(genderUnit: "MALE" | "FEMALE") {
   const quranShape = z
     .object({
       quranType: z.enum(["TILAWAT", "TAFSEER", "BOTH"]),
-      quranSurah: z
-        .string()
-        .trim()
-        .min(1)
-        .max(255)
-        .refine((s) => s !== QURAN_SURAH_PLACEHOLDER, "Enter a surah name"),
+      quranSurah: z.string().trim().min(1).max(255),
       quranPages: z.coerce.number().int().min(0),
     })
     .strict();

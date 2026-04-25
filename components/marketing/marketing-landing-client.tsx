@@ -119,9 +119,16 @@ export function MarketingLandingClient() {
 
   useEffect(() => {
     const s = localStorage.getItem(THEME_KEY);
-    if (s === "dark" || s === "light") setTheme(s);
-    else if (window.matchMedia("(prefers-color-scheme: dark)").matches) setTheme("dark");
-    setMounted(true);
+    const nextTheme =
+      s === "dark" || s === "light"
+        ? s
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+    queueMicrotask(() => {
+      setTheme(nextTheme);
+      setMounted(true);
+    });
   }, []);
 
   const toggleTheme = () => {

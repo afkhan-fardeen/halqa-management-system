@@ -25,7 +25,7 @@ export function Toaster() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    setTheme(readToastTheme());
+    queueMicrotask(() => setTheme(readToastTheme()));
     const onScheme = (e: Event) => {
       const d = (e as CustomEvent<"light" | "dark">).detail;
       if (d === "light" || d === "dark") {

@@ -49,7 +49,7 @@ export function MemberThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initial = readInitial();
-    setModeState(initial);
+    queueMicrotask(() => setModeState(initial));
     queueMicrotask(() => {
       try {
         window.dispatchEvent(

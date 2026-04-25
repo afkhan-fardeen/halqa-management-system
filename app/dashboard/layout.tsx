@@ -38,21 +38,14 @@ export default async function DashboardLayout({
         role: "SECRETARY",
       };
 
-  const materialSymbolsHref =
-    "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap";
-
   return (
-    <>
-      <link rel="preload" href={materialSymbolsHref} as="style" />
-      <link rel="stylesheet" href={materialSymbolsHref} />
-      <DashboardLayoutClient
-        unread={unread}
-        isAdmin={isAdmin}
-        user={user}
-        shellClassName={`${manrope.variable} ${inter.variable}`}
-      >
-        {children}
-      </DashboardLayoutClient>
-    </>
+    <DashboardLayoutClient
+      unread={unread}
+      isAdmin={isAdmin}
+      user={user}
+      shellClassName={`${manrope.variable} ${inter.variable}`}
+    >
+      {children}
+    </DashboardLayoutClient>
   );
 }

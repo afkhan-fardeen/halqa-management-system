@@ -136,7 +136,7 @@ export function DashboardLayoutClient({
   useEffect(() => {
     try {
       if (localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true") {
-        setSidebarCollapsed(true);
+        queueMicrotask(() => setSidebarCollapsed(true));
       }
     } catch {
       /* ignore */

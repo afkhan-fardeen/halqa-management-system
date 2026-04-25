@@ -10,8 +10,6 @@ import {
   useTransition,
 } from "react";
 import {
-  Autocomplete,
-  Box,
   Card,
   CardContent,
   CardHeader,
@@ -34,7 +32,6 @@ import { buildSaveDailyLogSectionSchema } from "@/lib/validations/daily-log";
 import { DailyLogHmsShell } from "@/components/member/daily-log-hms-shell";
 import type { DailyLogForEdit } from "@/lib/queries/daily-log";
 import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
-import { QURAN_SURAH_OPTIONS } from "@/lib/constants/quran-surahs";
 import { todayYmdLocal } from "@/lib/utils/date";
 import {
   emptySalah,
@@ -137,21 +134,12 @@ export function DailyLogForm({
 
   const [form, setForm] = useState<FormState>(base);
   const formRef = useRef(form);
-  formRef.current = form;
-
-  const [surahInput, setSurahInput] = useState(() =>
-    base.quran.quranSurah === QURAN_SURAH_PLACEHOLDER
-      ? ""
-      : base.quran.quranSurah,
-  );
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
 
   useEffect(() => {
     setForm(base);
-    setSurahInput(
-      base.quran.quranSurah === QURAN_SURAH_PLACEHOLDER
-        ? ""
-        : base.quran.quranSurah,
-    );
   }, [base]);
 
   const [autoSaveReady, setAutoSaveReady] = useState(false);
@@ -207,11 +195,6 @@ export function DailyLogForm({
             hadithLiterature: parsed.hadithLiterature ?? d.hadithLiterature,
           };
           setForm(merged);
-          setSurahInput(
-            merged.quran.quranSurah === QURAN_SURAH_PLACEHOLDER
-              ? ""
-              : merged.quran.quranSurah,
-          );
           if (!draftToastShown.current) {
             draftToastShown.current = true;
             toast.success("Draft loaded", { duration: 2500, id: "draft-once" });
@@ -222,6 +205,7 @@ export function DailyLogForm({
       }
     }
     allowSaveDraft.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draftHydrateKey]);
 
   useEffect(() => {
@@ -260,11 +244,6 @@ export function DailyLogForm({
             hadithLiterature: parsed.hadithLiterature ?? d.hadithLiterature,
           };
           setForm(merged);
-          setSurahInput(
-            merged.quran.quranSurah === QURAN_SURAH_PLACEHOLDER
-              ? ""
-              : merged.quran.quranSurah,
-          );
           return;
         }
       } catch {
@@ -273,7 +252,6 @@ export function DailyLogForm({
     }
     const fresh = defaultForm(genderUnit, ymd);
     setForm(fresh);
-    setSurahInput("");
   }
 
   function setSalah(p: (typeof PRAYERS)[number], v: string) {
@@ -555,11 +533,35 @@ export function DailyLogForm({
         <CardContent sx={{ pt: 2 }}>
           <Stack spacing={2.25}>
             <FormControl fullWidth size="small">
+              <InputLabel id="quran-done">Done?</InputLabel>
+              <Select
+                labelId="quran-done"
+                label="Done?"
+                value={form.quran.quranSurah === "YES" ? "YES" : "NO"}
+                onChange={(e) => {
+                  const v = String(e.target.value);
+                  setForm((f) => ({
+                    ...f,
+                    quranSaved: false,
+                    quran: {
+                      ...f.quran,
+                      quranSurah: v === "YES" ? "YES" : QURAN_SURAH_PLACEHOLDER,
+                      quranPages: 0,
+                    },
+                  }));
+                }}
+              >
+                <MenuItem value="YES">Yes</MenuItem>
+                <MenuItem value="NO">No</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth size="small">
               <InputLabel id="quran-type">Type</InputLabel>
               <Select
                 labelId="quran-type"
                 label="Type"
                 value={form.quran.quranType}
+                disabled={form.quran.quranSurah !== "YES"}
                 onChange={(e) =>
                   setForm((f) => ({
                     ...f,
@@ -576,50 +578,6 @@ export function DailyLogForm({
                 <MenuItem value="BOTH">Both</MenuItem>
               </Select>
             </FormControl>
-            <Autocomplete
-              freeSolo
-              options={[...QURAN_SURAH_OPTIONS]}
-              value={surahInput}
-              onInputChange={(_, v) => {
-                setSurahInput(v);
-                setForm((f) => ({
-                  ...f,
-                  quranSaved: false,
-                  quran: {
-                    ...f.quran,
-                    quranSurah: v.trim() ? v : QURAN_SURAH_PLACEHOLDER,
-                  },
-                }));
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Surah"
-                  placeholder="Search or type a surah"
-                  fullWidth
-                  size="small"
-                />
-              )}
-            />
-            <TextField
-              label="Pages (optional)"
-              type="number"
-              inputProps={{ min: 0 }}
-              value={form.quran.quranPages}
-              onChange={(e) =>
-                setForm((f) => ({
-                  ...f,
-                  quranSaved: false,
-                  quran: {
-                    ...f.quran,
-                    quranPages: Math.max(0, Number(e.target.value) || 0),
-                  },
-                }))
-              }
-              sx={{ maxWidth: 160 }}
-              size="small"
-              helperText="0 if not tracking pages for this surah."
-            />
           </Stack>
         </CardContent>
       </Card>

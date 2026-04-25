@@ -532,7 +532,7 @@ function MemberStaffNoteCard({
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
-    setBody(initialBody);
+    queueMicrotask(() => setBody(initialBody));
   }, [initialBody, memberId, month]);
 
   return (
