@@ -73,6 +73,9 @@
 }
 
 :root {
+  /* Member PWA body stack (DM Sans on <html> as --font-hms-sans); staff + HMS consume this too */
+  --font-member-body: var(--font-hms-sans), "DM Sans", ui-sans-serif, system-ui, sans-serif;
+
   /* Warm neutral surfaces + indigo accent (mature product UI, not teal/green) */
   --background: oklch(0.985 0.006 85);
   --foreground: oklch(0.22 0.02 264);
@@ -265,6 +268,13 @@
 /* Member PWA: slightly rounder cards without forking the whole system */
 [data-shell="member"] {
   --radius: 0.875rem;
+}
+
+/* Qalbee wordmark — same as member top bar (DM Serif Display) */
+.font-qalbee-wordmark {
+  font-family: var(--font-hms-serif), "DM Serif Display", serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* Staff dashboard: same font stack + rhythm as member PWA (Poppins / DM Sans) */

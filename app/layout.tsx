@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, DM_Serif_Display, Geist_Mono, Roboto } from "next/font/google";
+import { DM_Sans, DM_Serif_Display, Geist_Mono, Poppins } from "next/font/google";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { SwUpdatePrompt } from "@/components/pwa/sw-update-prompt";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
@@ -10,9 +10,16 @@ import "./globals.css";
 
 const hmsSans = DM_Sans({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
   variable: "--font-hms-sans",
+});
+
+const memberHeading = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-member-heading",
 });
 
 const hmsSerif = DM_Serif_Display({
@@ -20,13 +27,6 @@ const hmsSerif = DM_Serif_Display({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-hms-serif",
-});
-
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-roboto",
 });
 
 const fontMono = Geist_Mono({
@@ -76,10 +76,10 @@ export default async function RootLayout({
     <html
       lang="en"
       dir="ltr"
-      className={`${hmsSans.variable} ${hmsSerif.variable} ${roboto.variable} ${fontMono.variable} h-full`}
+      className={`${hmsSans.variable} ${hmsSerif.variable} ${memberHeading.variable} ${fontMono.variable} h-full`}
     >
       <body
-        className={`${roboto.className} bg-[#f5f5f5] text-gray-900 min-h-dvh flex flex-col antialiased [padding-left:env(safe-area-inset-left)] [padding-right:env(safe-area-inset-right)]`}
+        className={`${hmsSans.className} bg-[#f5f5f5] text-gray-900 min-h-dvh flex flex-col antialiased [padding-left:env(safe-area-inset-left)] [padding-right:env(safe-area-inset-right)]`}
       >
         <MuiAppProvider>
           <TooltipProvider delay={250}>

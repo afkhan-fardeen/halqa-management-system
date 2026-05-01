@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, Search, Settings } from "lucide-react";
 import { Suspense } from "react";
+import { QalbeeWordmark } from "@/components/brand/qalbee-wordmark";
 import { InboxLink } from "@/components/notifications/inbox-link";
 import { StaffDashboardSearch } from "@/components/dashboard/staff-dashboard-search";
 import { initials, staffRoleLabel } from "@/lib/utils/profile-display";
@@ -63,6 +64,13 @@ export function StaffDashboardHeader({
             <Menu className="size-[22px]" aria-hidden />
           </button>
         )}
+        {showMobileMenuButton ? (
+          <QalbeeWordmark
+            href="/dashboard"
+            size="compact"
+            className="shrink-0 md:hidden"
+          />
+        ) : null}
         <Suspense fallback={<StaffSearchFallback />}>
           <StaffDashboardSearch />
         </Suspense>

@@ -20,7 +20,7 @@
   --hms-danger-bg: #fef2f2;
   --hms-success: #059669;
   --hms-success-bg: #d1fae5;
-  font-family: var(--font-hms-sans), "DM Sans", system-ui, sans-serif;
+  font-family: var(--font-member-body), "DM Sans", system-ui, sans-serif;
   background: var(--hms-bg);
   color: var(--hms-text);
   transition: background 0.25s, color 0.25s;
@@ -709,7 +709,9 @@
   margin-bottom: 8px;
 }
 .hms-card-title {
-  font-family: var(--font-hms-serif), "DM Serif Display", serif;
+  font-family: var(--font-member-heading), "Poppins", system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   font-size: 26px;
   color: var(--hms-text);
   line-height: 1.2;

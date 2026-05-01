@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, CircleHelp, UserRound } from "lucide-react";
+import { QalbeeWordmark } from "@/components/brand/qalbee-wordmark";
 import {
   useCallback,
   useEffect,
@@ -42,25 +43,14 @@ function StaffSidebarChrome({
           collapsed && "md:justify-center md:px-2",
         )}
       >
-        <Link
-          href="/dashboard"
-          className="flex min-w-0 items-center gap-2.5"
-          onClick={() => onNavigate?.()}
-        >
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-staff-primary to-staff-primary-dim text-sm font-black text-white shadow-sm select-none">
-            Q
-          </span>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold leading-none text-staff-on-surface dark:text-slate-100">
-                Qalbee
-              </p>
-              <p className="mt-0.5 truncate text-[10px] font-medium leading-tight text-staff-on-surface-variant dark:text-slate-500">
-                Unit portal
-              </p>
-            </div>
-          )}
-        </Link>
+        <div className="flex min-w-0 items-center">
+          <QalbeeWordmark
+            href="/dashboard"
+            size={collapsed ? "compact" : "default"}
+            subtitle={collapsed ? null : "Unit portal"}
+            onClick={() => onNavigate?.()}
+          />
+        </div>
         {showCollapseControl && (
           <button
             type="button"
