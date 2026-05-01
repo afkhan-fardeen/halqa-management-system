@@ -46,6 +46,54 @@ export function monthYyyyMmToRange(ym: string): { fromYmd: string; toYmd: string
   return { fromYmd, toYmd };
 }
 
+/** Shift `YYYY-MM` by `delta` calendar months (e.g. -1 = previous month). */
+export function addMonthsYm(ym: string, delta: number): string {
+  const m = /^(\d{4})-(\d{2})$/.exec(ym.trim());
+  if (!m) {
+    const now = new Date();
+    let y = now.getFullYear();
+    let mo = now.getMonth() + 1 + delta;
+    while (mo > 12) {
+      mo -= 12;
+      y += 1;
+    }
+    while (mo < 1) {
+      mo += 12;
+      y -= 1;
+    }
+    return `${y}-${String(mo).padStart(2, "0")}`;
+  }
+  let y = Number(m[1]);
+  let mo = Number(m[2]) + delta;
+  while (mo > 12) {
+    mo -= 12;
+    y += 1;
+  }
+  while (mo < 1) {
+    mo += 12;
+    y -= 1;
+  }
+  return `${y}-${String(mo).padStart(2, "0")}`;
+}
+
+/** Today as `YYYY-MM` in the user’s local calendar. */
+export function currentYmLocal(): string {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
+}
+
+/** Every `YYYY-MM` from `minYm` through `maxYm` inclusive (lexicographic order). */
+export function enumerateYmInclusive(minYm: string, maxYm: string): string[] {
+  if (minYm > maxYm) return [maxYm];
+  const out: string[] = [];
+  let ym = minYm;
+  for (let i = 0; i < 2400 && ym <= maxYm; i++) {
+    out.push(ym);
+    ym = addMonthsYm(ym, 1);
+  }
+  return out;
+}
+
 /** Iterate each YYYY-MM-DD from `fromYmd` through `toYmd` (inclusive), UTC. */
 export function eachYmdInRangeUtc(fromYmd: string, toYmd: string): string[] {
   const out: string[] = [];

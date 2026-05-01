@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { QURAN_SURAH_PLACEHOLDER } from "@/lib/constants/daily-log";
 import { db } from "@/lib/db";
@@ -8,6 +8,7 @@ import { isUndefinedColumnError } from "@/lib/utils/pg-error";
 import {
   parseYmdToUtcDate,
   formatYmdUtc,
+  monthYyyyMmToRange,
   todayYmdLocal,
 } from "@/lib/utils/date";
 
@@ -121,18 +122,41 @@ export async function getDailyLogForEdit(
   };
 }
 
-export async function listDailyLogsForMember(
+/** Earliest log month for this member as `YYYY-MM`, or `null` if no logs. */
+export async function getEarliestDailyLogYm(
   userId: string,
-  page: number,
-  pageSize: number,
-): Promise<{ rows: DailyLogListItem[]; total: number }> {
-  const offset = (page - 1) * pageSize;
+): Promise<string | null> {
+  const [row] = await db
+    .select({ d: sql<Date | null>`min(${dailyLogs.date})` })
+    .from(dailyLogs)
+    .where(eq(dailyLogs.userId, userId));
+  const v = row?.d;
+  if (v == null) return null;
+  const date = v instanceof Date ? v : new Date(String(v));
+  return formatYmdUtc(date).slice(0, 7);
+}
+
+/** Daily logs for one calendar month (newest first). At most ~31 rows. */
+export async function listDailyLogsForMemberInMonth(
+  userId: string,
+  ym: string,
+): Promise<{ rows: DailyLogListItem[]; totalInMonth: number }> {
+  const range = monthYyyyMmToRange(ym);
+  if (!range) return { rows: [], totalInMonth: 0 };
+
+  const start = parseYmdToUtcDate(range.fromYmd);
+  const end = parseYmdToUtcDate(range.toYmd);
+  const inMonth = and(
+    eq(dailyLogs.userId, userId),
+    gte(dailyLogs.date, start),
+    lte(dailyLogs.date, end),
+  );
 
   const [countRow] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(dailyLogs)
-    .where(eq(dailyLogs.userId, userId));
-  const total = countRow?.n ?? 0;
+    .where(inMonth);
+  const totalInMonth = countRow?.n ?? 0;
 
   let logs: {
     id: string;
@@ -164,10 +188,8 @@ export async function listDailyLogsForMember(
         isha: dailyLogs.isha,
       })
       .from(dailyLogs)
-      .where(eq(dailyLogs.userId, userId))
-      .orderBy(desc(dailyLogs.date))
-      .limit(pageSize)
-      .offset(offset);
+      .where(inMonth)
+      .orderBy(desc(dailyLogs.date));
   } catch (e) {
     if (!isUndefinedColumnError(e)) throw e;
     logs = await db
@@ -184,10 +206,8 @@ export async function listDailyLogsForMember(
         isha: dailyLogs.isha,
       })
       .from(dailyLogs)
-      .where(eq(dailyLogs.userId, userId))
-      .orderBy(desc(dailyLogs.date))
-      .limit(pageSize)
-      .offset(offset);
+      .where(inMonth)
+      .orderBy(desc(dailyLogs.date));
   }
 
   const rows: DailyLogListItem[] = [];
@@ -229,7 +249,7 @@ export async function listDailyLogsForMember(
     });
   }
 
-  return { rows, total };
+  return { rows, totalInMonth };
 }
 
 /** When `salat_saved` columns are missing (migration not applied), treat any row as a full day. */

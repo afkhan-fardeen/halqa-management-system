@@ -17,7 +17,6 @@ function localYmdDaysAgo(daysAgo: number): string {
 export type MemberHomeDashboard = {
   submittedToday: boolean;
   yesterdayPrayers: { name: string; chip: PrayerChip }[] | null;
-  weekQuranPages: number;
   weekContacts: { total: number; muslim: number; nonMuslim: number };
   currentAiyanat: {
     month: string;
@@ -60,38 +59,6 @@ export async function getMemberHomeDashboard(
 
   const rangeStart = parseYmdToUtcDate(localYmdDaysAgo(6));
   const rangeEnd = parseYmdToUtcDate(todayYmd);
-
-  let weekQuranPages = 0;
-  try {
-    const [sumRow] = await db
-      .select({
-        n: sql<number>`coalesce(sum(case when ${dailyLogs.quranSaved} then ${dailyLogs.quranPages} else 0 end), 0)::int`,
-      })
-      .from(dailyLogs)
-      .where(
-        and(
-          eq(dailyLogs.userId, userId),
-          gte(dailyLogs.date, rangeStart),
-          lte(dailyLogs.date, rangeEnd),
-        ),
-      );
-    weekQuranPages = sumRow?.n ?? 0;
-  } catch (e) {
-    if (!isUndefinedColumnError(e)) throw e;
-    const [sumRow] = await db
-      .select({
-        n: sql<number>`coalesce(sum(${dailyLogs.quranPages}), 0)::int`,
-      })
-      .from(dailyLogs)
-      .where(
-        and(
-          eq(dailyLogs.userId, userId),
-          gte(dailyLogs.date, rangeStart),
-          lte(dailyLogs.date, rangeEnd),
-        ),
-      );
-    weekQuranPages = sumRow?.n ?? 0;
-  }
 
   const [muslimRow] = await db
     .select({ n: sql<number>`count(*)::int` })
@@ -174,7 +141,6 @@ export async function getMemberHomeDashboard(
   return {
     submittedToday,
     yesterdayPrayers,
-    weekQuranPages,
     weekContacts: { total: muslim + nonMuslim, muslim, nonMuslim },
     currentAiyanat,
   };

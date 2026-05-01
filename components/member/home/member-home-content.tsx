@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import {
-  Box,
-  Card,
-  Chip,
-  LinearProgress,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Card, Chip, Stack, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -80,7 +73,6 @@ export function MemberHomeContent({
   data: MemberHomeDashboard;
   todayLabel: string;
 }) {
-  const quranBar = Math.min(100, data.weekQuranPages);
   const contactTotal = data.weekContacts.total;
 
   return (
@@ -179,7 +171,7 @@ export function MemberHomeContent({
               Submit today&apos;s log
             </Typography>
             <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.55)", mt: 0.5 }}>
-              Salah, Quran, hadith & outreach
+              One daily log — salah, Quran, literature & hadith
             </Typography>
             <Box
               component="span"
@@ -329,32 +321,10 @@ export function MemberHomeContent({
         >
           This week
         </Typography>
-        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.75, mt: 0 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: "1fr", gap: 1.75, mt: 0 }}>
           <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: 1, p: 2 }}>
             <Typography variant="caption" color="text.disabled">
-              Quran pages
-            </Typography>
-            <Typography variant="h4" sx={{ mt: 0.5, fontWeight: 600, lineHeight: 1.2 }}>
-              {data.weekQuranPages}{" "}
-              <Typography component="span" variant="body2" color="text.disabled" fontWeight={500}>
-                pg
-              </Typography>
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={quranBar}
-              sx={{
-                mt: 1.25,
-                height: 3,
-                borderRadius: 1,
-                bgcolor: "action.hover",
-                "& .MuiLinearProgress-bar": { bgcolor: "primary.main" },
-              }}
-            />
-          </Card>
-          <Card variant="outlined" sx={{ borderRadius: 2, boxShadow: 1, p: 2 }}>
-            <Typography variant="caption" color="text.disabled">
-              Raabta
+              Raabta (this week)
             </Typography>
             <Typography variant="h4" sx={{ mt: 0.5, fontWeight: 600, lineHeight: 1.2 }}>
               {contactTotal}
