@@ -663,11 +663,17 @@
 
 /* Auth card */
 .hms-topbar {
-  padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--hms-border);
+  background: color-mix(in srgb, var(--hms-bg) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: max(16px, env(safe-area-inset-top, 0px)) 24px 16px 24px;
 }
 .hms-brand {
   font-family: var(--font-hms-serif), "DM Serif Display", serif;

@@ -176,7 +176,7 @@ export default async function DashboardSubmissionsPage({
           <Button
             type="submit"
             size="sm"
-            className="h-10 rounded-lg bg-staff-primary font-bold text-staff-on-primary hover:opacity-90"
+            className="h-10 rounded-lg bg-staff-primary font-bold text-white hover:opacity-90 dark:text-white"
           >
             Apply
           </Button>
