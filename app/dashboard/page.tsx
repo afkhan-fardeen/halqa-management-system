@@ -1,4 +1,15 @@
 import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  CalendarDays,
+  Download,
+  Inbox,
+  UploadCloud,
+  UserPlus,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { getPendingRegistrationCount } from "@/lib/queries/pending-registrations";
 import { getDashboardOverview } from "@/lib/queries/dashboard-overview";
 import {
@@ -39,8 +50,8 @@ export default async function DashboardHomePage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StaffMetricCard
           label="Today"
-          icon="bar_chart"
-          iconClassName="text-blue-500 dark:text-blue-400"
+          icon={<BarChart3 />}
+          iconClassName="text-sky-600 dark:text-sky-400"
           value={todayPct}
           subtitle="Submission rate"
           progress={{ widthPct: barWidth }}
@@ -62,7 +73,7 @@ export default async function DashboardHomePage() {
 
         <StaffMetricCard
           label="Registrations"
-          icon="how_to_reg"
+          icon={<UserPlus />}
           iconClassName="text-amber-500 dark:text-amber-400"
           value={pendingCount}
           valueClassName={cn(
@@ -74,7 +85,7 @@ export default async function DashboardHomePage() {
 
         <StaffMetricCard
           label="Aiyanat"
-          icon="payments"
+          icon={<Wallet />}
           iconClassName="text-emerald-600 dark:text-emerald-400"
           value={overview?.aiyanatMonthLabel ?? "This month"}
           valueClassName="!text-xl !font-bold md:!text-2xl"
@@ -91,25 +102,25 @@ export default async function DashboardHomePage() {
           {[
             {
               href: "/dashboard/submissions",
-              icon: "cloud_upload",
+              icon: <UploadCloud className="size-5" aria-hidden />,
               label: "Submissions",
               desc: "Logs & contacts",
             },
             {
               href: "/dashboard/members",
-              icon: "groups",
+              icon: <Users className="size-5" aria-hidden />,
               label: "Members",
               desc: "Member roster",
             },
             {
               href: "/dashboard/attendance",
-              icon: "calendar_today",
+              icon: <CalendarDays className="size-5" aria-hidden />,
               label: "Attendance",
               desc: "Programs & sessions",
             },
             {
               href: "/dashboard/notifications",
-              icon: "mark_as_unread",
+              icon: <Inbox className="size-5" aria-hidden />,
               label: "Notifications",
               desc: "Your inbox",
             },
@@ -117,12 +128,10 @@ export default async function DashboardHomePage() {
             <Link
               key={item.href}
               href={item.href}
-              className="group flex flex-col gap-3 rounded-2xl border border-staff-outline-variant/15 bg-staff-surface-container-lowest p-4 shadow-sm transition-all hover:border-staff-primary/25 hover:shadow-md dark:border-slate-700/80 dark:bg-slate-900 dark:hover:border-blue-900/60"
+              className="group flex flex-col gap-3 rounded-2xl border border-staff-outline-variant/15 bg-staff-surface-container-lowest p-4 shadow-sm transition-all hover:border-staff-primary/30 hover:shadow-md dark:border-slate-700/80 dark:bg-slate-900 dark:hover:border-teal-900/50"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-staff-surface-container text-staff-on-surface-variant transition-colors group-hover:bg-staff-primary-container group-hover:text-staff-on-primary-container dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-blue-950 dark:group-hover:text-blue-300">
-                <span className="material-symbols-outlined text-[20px] leading-none">
-                  {item.icon}
-                </span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-staff-surface-container text-staff-on-surface-variant transition-colors group-hover:bg-staff-primary-container group-hover:text-staff-on-primary-container dark:bg-slate-800 dark:text-slate-400 dark:group-hover:bg-teal-950/50 dark:group-hover:text-teal-200">
+                {item.icon}
               </div>
               <div>
                 <p className="text-sm font-semibold text-staff-on-surface dark:text-slate-100">
@@ -139,17 +148,16 @@ export default async function DashboardHomePage() {
 
       <div className="staff-elevated-surface flex flex-col gap-4 rounded-2xl bg-staff-surface-container-lowest p-5 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-staff-primary-container text-staff-on-primary-container dark:bg-blue-950 dark:text-blue-300">
-            <span className="material-symbols-outlined text-[20px] leading-none">
-              download
-            </span>
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-staff-primary-container text-staff-on-primary-container dark:bg-teal-950/50 dark:text-teal-200">
+            <Download className="size-5" aria-hidden />
           </div>
           <div>
             <p className="text-sm font-semibold text-staff-on-surface dark:text-slate-100">
               Export data
             </p>
             <p className="mt-0.5 text-xs text-staff-on-surface-variant dark:text-slate-400">
-              Filter by date on Submissions, then download CSV or Excel. Scoped to your role.
+              Filter by date on Submissions for daily logs; contacts export includes the full list
+              for your scope. Download CSV or Excel.
             </p>
           </div>
         </div>
@@ -158,9 +166,7 @@ export default async function DashboardHomePage() {
           className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-staff-outline-variant/20 bg-staff-surface-container-low px-4 py-2 text-sm font-semibold text-staff-on-surface transition-colors hover:bg-staff-surface-container dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
           Open Submissions
-          <span className="material-symbols-outlined text-[16px] leading-none">
-            arrow_forward
-          </span>
+          <ArrowRight className="size-4" aria-hidden />
         </Link>
       </div>
     </div>

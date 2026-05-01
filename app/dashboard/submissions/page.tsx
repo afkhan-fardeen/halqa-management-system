@@ -54,8 +54,6 @@ export default async function DashboardSubmissionsPage({
       pageSize: PAGE_SIZE,
     }),
     listContactsForStaff({
-      fromYmd: sp.from,
-      toYmd: sp.to,
       page: cpage,
       pageSize: PAGE_SIZE,
     }),
@@ -73,11 +71,8 @@ export default async function DashboardSubmissionsPage({
     ...Object.fromEntries(filterQs.entries()),
     format: "xlsx",
   }).toString()}`;
-  const exportContact = `/api/export/contacts?${filterQs.toString()}`;
-  const exportContactXlsx = `/api/export/contacts?${new URLSearchParams({
-    ...Object.fromEntries(filterQs.entries()),
-    format: "xlsx",
-  }).toString()}`;
+  const exportContact = `/api/export/contacts`;
+  const exportContactXlsx = `/api/export/contacts?format=xlsx`;
 
   const exportActions = (
     <div className="flex flex-wrap gap-2">
@@ -124,7 +119,21 @@ export default async function DashboardSubmissionsPage({
     <div className="space-y-8 md:space-y-10">
       <StaffPageHeader
         title="Submissions & contacts"
-        description="Read-only. Filter by date range (optional)."
+        description={
+          <>
+            <p>
+              Date filters apply to{" "}
+              <span className="font-semibold text-staff-on-surface dark:text-slate-200">
+                daily logs only
+              </span>
+              . The contacts table lists{" "}
+              <span className="font-semibold text-staff-on-surface dark:text-slate-200">
+                all contacts
+              </span>{" "}
+              for members in your scope (paginated), regardless of dates.
+            </p>
+          </>
+        }
         action={exportActions}
       />
 
@@ -176,7 +185,7 @@ export default async function DashboardSubmissionsPage({
 
       <StaffPanel
         title="Daily logs"
-        description={`${logs.total} entr${logs.total === 1 ? "y" : "ies"} (paged)`}
+        description={`${logs.total} entr${logs.total === 1 ? "y" : "ies"} (paged) · filtered by date when set`}
       >
         <div className="space-y-4">
           {logs.rows.length === 0 ? (
@@ -192,6 +201,7 @@ export default async function DashboardSubmissionsPage({
                     <TableHead>Unit</TableHead>
                     <TableHead className="text-right">Quran pages</TableHead>
                     <TableHead>Hadith</TableHead>
+                    <TableHead>Literature</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -210,6 +220,7 @@ export default async function DashboardSubmissionsPage({
                         {r.quranPages}
                       </TableCell>
                       <TableCell>{r.hadith ? "Yes" : "No"}</TableCell>
+                      <TableCell>{r.literature ? "Yes" : "No"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -256,11 +267,11 @@ export default async function DashboardSubmissionsPage({
 
       <StaffPanel
         title="Contacts"
-        description={`${contacts.total} contact${contacts.total === 1 ? "" : "s"} (paged)`}
+        description={`${contacts.total} contact${contacts.total === 1 ? "" : "s"} (paged) · full history for your scope; date filters above do not apply`}
       >
         <div className="space-y-4">
           {contacts.rows.length === 0 ? (
-            <p className="text-sm text-staff-on-surface-variant">No contacts in range.</p>
+            <p className="text-sm text-staff-on-surface-variant">No contacts yet.</p>
           ) : (
             <div className="w-full overflow-x-auto">
               <Table>

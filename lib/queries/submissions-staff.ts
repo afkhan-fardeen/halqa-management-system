@@ -36,6 +36,7 @@ export type StaffDailyLogRow = {
   genderUnit: string;
   quranPages: number;
   hadith: boolean;
+  literature: boolean;
 };
 
 export type StaffContactRow = {
@@ -113,6 +114,7 @@ export async function listDailyLogsForStaff(options: {
       genderUnit: users.genderUnit,
       quranPages: dailyLogs.quranPages,
       hadith: dailyLogs.hadith,
+      literature: dailyLogs.literature,
     })
     .from(dailyLogs)
     .innerJoin(users, eq(dailyLogs.userId, users.id))
@@ -133,13 +135,16 @@ export async function listDailyLogsForStaff(options: {
     genderUnit: r.genderUnit,
     quranPages: r.quranPages,
     hadith: r.hadith,
+    literature: r.literature,
   }));
 
   return { rows, total };
 }
 
 export async function listContactsForStaff(options: {
+  /** Ignored — contacts are listed in full for the staff scope (RBAC). */
   fromYmd?: string;
+  /** Ignored — contacts are listed in full for the staff scope (RBAC). */
   toYmd?: string;
   page: number;
   pageSize: number;
@@ -153,17 +158,6 @@ export async function listContactsForStaff(options: {
   const pageSize = Math.min(50_000, Math.max(1, options.pageSize));
   const offset = (page - 1) * pageSize;
 
-  const fromDate = options.fromYmd
-    ? parseYmdToUtcDate(options.fromYmd)
-    : undefined;
-  const toDate = options.toYmd ? parseYmdToUtcDate(options.toYmd) : undefined;
-
-  const dateParts = [];
-  if (fromDate) dateParts.push(gte(contacts.logDate, fromDate));
-  if (toDate) dateParts.push(lte(contacts.logDate, toDate));
-  const dateFilter =
-    dateParts.length > 0 ? and(...dateParts) : undefined;
-
   const unitFilter =
     scope.type === "admin"
       ? undefined
@@ -172,10 +166,7 @@ export async function listContactsForStaff(options: {
           eq(users.genderUnit, scope.genderUnit),
         );
 
-  const parts = [dateFilter, unitFilter].filter(
-    (x): x is NonNullable<typeof x> => x != null,
-  );
-  const whereClause = parts.length > 0 ? and(...parts) : undefined;
+  const whereClause = unitFilter ?? undefined;
 
   const countQuery = db
     .select({ n: sql<number>`count(*)::int` })

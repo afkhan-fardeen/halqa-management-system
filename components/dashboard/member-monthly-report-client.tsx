@@ -1,21 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  CalendarDays,
+  FileSpreadsheet,
+  Share2,
+} from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import Link from "next/link";
+  StaffPageHeader,
+  StaffPanel,
+} from "@/components/dashboard/staff-page-section";
+import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button-variants";
 import {
   Table,
@@ -26,21 +24,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { StaffRole } from "@/lib/auth/roles";
-import { cn } from "@/lib/utils";
 import { upsertMemberMonthlyStaffNote } from "@/lib/actions/member-monthly-notes";
 import type { MemberMonthlyReportData } from "@/lib/queries/member-monthly-report";
-import {
-  prayerPieFromRows,
-  prayerRowsForGender,
-} from "@/lib/utils/monthly-report-prayer-display";
-import { Button } from "@/components/ui/button";
-import { StaffPageHeader } from "@/components/dashboard/staff-page-section";
+import { cn } from "@/lib/utils";
+import { prayerRowsForGender } from "@/lib/utils/monthly-report-prayer-display";
 
 type Counterpart = { name: string; roleLabel: "Secretary" | "Incharge" } | null;
 
 type PickerRow = { id: string; name: string; email: string };
-
-const LINE_STROKE = "#0053db";
 
 function currentMonthYyyyMm(): string {
   return new Date().toISOString().slice(0, 7);
@@ -64,6 +55,20 @@ function buildExportHref(
   return `/api/export/member-monthly?${q.toString()}`;
 }
 
+function buildReportHref(opts: {
+  month: string;
+  memberId: string;
+  contactsPage?: number;
+}) {
+  const q = new URLSearchParams();
+  q.set("month", opts.month);
+  q.set("memberId", opts.memberId);
+  if (opts.contactsPage && opts.contactsPage > 1) {
+    q.set("cpage", String(opts.contactsPage));
+  }
+  return `/dashboard/reports/monthly?${q.toString()}`;
+}
+
 export function MemberMonthlyReportClient({
   role,
   counterpart,
@@ -71,6 +76,7 @@ export function MemberMonthlyReportClient({
   report,
   month,
   memberId,
+  contactsPage,
   error,
 }: {
   role: StaffRole;
@@ -79,17 +85,10 @@ export function MemberMonthlyReportClient({
   report: MemberMonthlyReportData | null;
   month: string;
   memberId: string;
+  contactsPage: number;
   error: string | null;
 }) {
   const router = useRouter();
-
-  const lineData = useMemo(() => {
-    if (!report) return [];
-    return report.dailySeries.map((d) => ({
-      day: d.ymd.slice(8).replace(/^0/, ""),
-      quran: d.quranPages,
-    }));
-  }, [report]);
 
   const prayerRows = useMemo(() => {
     if (!report) return [];
@@ -99,24 +98,33 @@ export function MemberMonthlyReportClient({
     );
   }, [report]);
 
-  const prayerPieData = useMemo(
-    () => prayerPieFromRows(prayerRows),
-    [prayerRows],
+  const hasMonthScopedActivity = Boolean(
+    report &&
+      (report.summary.daysWithLog > 0 ||
+        report.summary.contactsLoggedInReportMonth > 0 ||
+        report.aiyanatHistory.some((r) => r.month === report.month)),
   );
 
-  const isEmptyMonth = Boolean(
-    report &&
-      report.summary.daysWithLog === 0 &&
-      report.contactRows.length === 0,
-  );
+  const isSparseMonth = Boolean(report && !hasMonthScopedActivity);
+
+  const contactTotalPages = report
+    ? Math.max(1, Math.ceil(report.contacts.total / report.contacts.pageSize))
+    : 1;
 
   function navigate(next: { month?: string; memberId?: string }) {
-    const q = new URLSearchParams();
     const m = next.month ?? month;
     const mid = next.memberId ?? memberId;
-    if (m) q.set("month", m);
-    if (mid) q.set("memberId", mid);
-    router.push(`/dashboard/reports/monthly?${q.toString()}`);
+    router.push(buildReportHref({ month: m, memberId: mid }));
+  }
+
+  function navigateContactsPage(page: number) {
+    router.push(
+      buildReportHref({
+        month,
+        memberId,
+        contactsPage: Math.max(1, page),
+      }),
+    );
   }
 
   return (
@@ -131,6 +139,12 @@ export function MemberMonthlyReportClient({
                 ? "All halqas — pick an active member and month."
                 : "Your halqa — pick an active member and month."}
             </p>
+            <p className="mt-2 text-sm text-staff-on-surface-variant">
+              The month applies to daily worship totals (prayer, Quran, hadith &amp; literature)
+              and the staff note. Contacts and Aiyanat below show{" "}
+              <span className="font-semibold text-staff-on-surface">full history</span> for the
+              selected member.
+            </p>
             {counterpart ? (
               <p className="mt-2 text-sm font-medium text-staff-on-surface-variant">
                 {counterpart.roleLabel}: {counterpart.name}
@@ -141,9 +155,10 @@ export function MemberMonthlyReportClient({
         action={
           <div className="flex flex-wrap items-center gap-3 md:items-end">
             <div className="flex items-center gap-3 rounded-xl bg-staff-surface-container-low px-4 py-2 dark:bg-slate-800/80">
-              <span className="material-symbols-outlined text-[22px] text-staff-primary dark:text-blue-400">
-                calendar_month
-              </span>
+              <CalendarDays
+                className="size-[22px] shrink-0 text-staff-primary dark:text-teal-300"
+                aria-hidden
+              />
               <span className="font-semibold text-staff-on-surface dark:text-slate-100">
                 {formatMonthHeading(month || currentMonthYyyyMm())}
               </span>
@@ -220,24 +235,25 @@ export function MemberMonthlyReportClient({
 
       {!memberId ? (
         <p className="text-sm text-staff-on-surface-variant">
-          Choose a member to load prayer, Quran, contacts, and Aiyanat for the selected month.
+          Choose a member to load worship totals for the selected month and full contact / Aiyanat
+          history.
         </p>
       ) : null}
 
       {report ? (
         <>
-          {isEmptyMonth ? (
+          {isSparseMonth ? (
             <div
               className="rounded-xl border border-staff-outline-variant/20 bg-staff-surface-container-low/80 px-5 py-4 shadow-sm"
               role="status"
             >
               <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface">
-                No data for this month
+                Light activity this month
               </h2>
               <p className="mt-1 text-sm text-staff-on-surface-variant">
-                No daily logs or contacts were recorded for this member in{" "}
-                {formatMonthHeading(month || currentMonthYyyyMm())}. You can still add a staff note
-                below.
+                No daily logs or in-month contacts for{" "}
+                {formatMonthHeading(month || currentMonthYyyyMm())}, and no Aiyanat row for that
+                month. Contacts and older Aiyanat may still appear below.
               </p>
             </div>
           ) : null}
@@ -245,6 +261,7 @@ export function MemberMonthlyReportClient({
           <MemberStaffNoteCard
             memberId={memberId}
             month={month}
+            monthLabel={formatMonthHeading(month)}
             body={report.staffNote?.body ?? ""}
             updatedAtIso={report.staffNote?.updatedAt ?? null}
             updatedByName={report.staffNote?.updatedByName ?? null}
@@ -256,9 +273,7 @@ export function MemberMonthlyReportClient({
                 <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface">
                   {report.member.name}
                 </h2>
-                <p className="mt-1 text-sm text-staff-on-surface-variant">
-                  {report.member.email}
-                </p>
+                <p className="mt-1 text-sm text-staff-on-surface-variant">{report.member.email}</p>
                 <p className="mt-2 text-sm text-staff-on-surface-variant">
                   {report.member.halqa.replaceAll("_", " ")} · {report.member.genderUnit}
                 </p>
@@ -268,237 +283,262 @@ export function MemberMonthlyReportClient({
                   href={buildExportHref(memberId, month, "csv")}
                   className="flex flex-col items-center justify-center rounded-xl bg-staff-surface-container-lowest p-6 shadow-sm transition-all hover:bg-staff-surface-container-high"
                 >
-                  <span className="material-symbols-outlined mb-2 text-staff-primary text-2xl">
-                    share
-                  </span>
+                  <Share2
+                    className="mb-2 size-8 text-staff-primary dark:text-teal-300"
+                    aria-hidden
+                  />
                   <span className="text-xs font-bold text-staff-on-surface">Export CSV</span>
                 </Link>
                 <Link
                   href={buildExportHref(memberId, month, "xlsx")}
                   className="flex flex-col items-center justify-center rounded-xl bg-staff-surface-container-lowest p-6 shadow-sm transition-all hover:bg-staff-surface-container-high"
                 >
-                  <span className="material-symbols-outlined mb-2 text-staff-primary text-2xl">
-                    table_chart
-                  </span>
+                  <FileSpreadsheet
+                    className="mb-2 size-8 text-staff-primary dark:text-teal-300"
+                    aria-hidden
+                  />
                   <span className="text-xs font-bold text-staff-on-surface">Export Excel</span>
                 </Link>
               </div>
             </div>
 
-            <div className="col-span-12 lg:col-span-8">
-              <div className="rounded-xl bg-staff-surface-container-low/50 p-6 md:p-8">
-                <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="font-staff-headline text-2xl font-bold text-staff-on-surface">
-                    Month totals
-                  </h2>
-                  <span className="rounded-full bg-staff-surface-container-lowest px-3 py-1 text-sm font-medium text-staff-on-surface-variant">
-                    {report.summary.daysInMonth} days in month
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  <MetricTile
-                    icon="history_edu"
-                    iconBg="bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-300"
-                    label="Days with log"
-                    value={`${report.summary.daysWithLog} / ${report.summary.daysInMonth}`}
-                  />
-                  {prayerRows.map((row) => (
-                    <MetricTile
-                      key={row.key}
-                      icon={row.icon}
-                      iconBg={row.iconBg}
-                      label={row.label}
-                      value={String(row.value)}
-                      highlight={row.key === "QAZA"}
-                    />
-                  ))}
-                  <MetricTile
-                    icon="auto_stories"
-                    iconBg="bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-300"
-                    label="Quran pages (total)"
-                    value={String(report.summary.totalQuranPages)}
-                  />
-                  <MetricTile
-                    icon="menu_book"
-                    iconBg="bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300"
-                    label="Days with Quran logged"
-                    value={String(report.summary.daysWithQuranSaved)}
-                  />
-                  <MetricTile
-                    icon="thumb_up"
-                    iconBg="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                    label="Hadith — yes (days)"
-                    value={String(report.summary.daysHadithYes)}
-                  />
-                  <MetricTile
-                    icon="thumb_down"
-                    iconBg="bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300"
-                    label="Hadith — no (days)"
-                    value={String(report.summary.daysHadithNo)}
-                  />
-                  <MetricTile
-                    icon="library_books"
-                    iconBg="bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300"
-                    label="Literature — yes (days)"
-                    value={String(report.summary.daysLiteratureYes)}
-                  />
-                  <MetricTile
-                    icon="book_2"
-                    iconBg="bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
-                    label="Literature — no (days)"
-                    value={String(report.summary.daysLiteratureNo)}
-                  />
-                  <MetricTile
-                    icon="contacts"
-                    iconBg="bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300"
-                    label="Contacts"
-                    value={String(report.summary.totalContacts)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+            <div className="col-span-12 space-y-6 lg:col-span-8">
+              <StaffPanel
+                title="Month totals"
+                description={`${report.summary.daysInMonth} days in month · Worship metrics use logs in ${formatMonthHeading(month)} only.`}
+              >
+                <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="rounded-lg bg-staff-surface-container-low/60 px-4 py-3 dark:bg-slate-800/50">
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                      Days with log
+                    </dt>
+                    <dd className="mt-1 font-staff-headline text-2xl font-bold tabular-nums text-staff-on-surface">
+                      {report.summary.daysWithLog}{" "}
+                      <span className="text-base font-semibold text-staff-on-surface-variant">
+                        / {report.summary.daysInMonth}
+                      </span>
+                    </dd>
+                  </div>
+                  <div className="rounded-lg bg-staff-surface-container-low/60 px-4 py-3 dark:bg-slate-800/50">
+                    <dt className="text-[10px] font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                      Contacts logged in this month
+                    </dt>
+                    <dd className="mt-1 font-staff-headline text-2xl font-bold tabular-nums text-staff-on-surface">
+                      {report.summary.contactsLoggedInReportMonth}
+                    </dd>
+                  </div>
+                </dl>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
-              <div className="mb-6">
-                <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
-                  Quran pages by day
-                </h3>
-                <p className="text-sm text-staff-on-surface-variant">
-                  Daily total pages for this month.
-                </p>
-              </div>
-              <div className="flex h-[300px] w-full min-w-0 flex-col">
-                <div className="min-h-[220px] min-w-0 flex-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={lineData} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-staff-outline-variant/30" />
-                      <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                      <Tooltip contentStyle={{ fontSize: 12 }} />
-                      <Line
-                        type="monotone"
-                        dataKey="quran"
-                        name="Quran pages"
-                        stroke={LINE_STROKE}
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div className="mt-6 space-y-4">
+                  <h3 className="font-staff-headline text-sm font-bold text-staff-on-surface">
+                    Prayers (saved salat)
+                  </h3>
+                  <ul className="grid gap-2 sm:grid-cols-2">
+                    {prayerRows.map((row) => (
+                      <li
+                        key={row.key}
+                        className={cn(
+                          "flex items-center justify-between rounded-lg border border-staff-outline-variant/15 px-3 py-2 text-sm",
+                          row.key === "QAZA" &&
+                            "border-l-4 border-red-200 dark:border-red-900/50",
+                        )}
+                      >
+                        <span className="text-staff-on-surface-variant">{row.label}</span>
+                        <span className="font-bold tabular-nums text-staff-on-surface">
+                          {row.value}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-staff-on-surface-variant">
+                    Qaza (prayer-day count):{" "}
+                    <span className="font-semibold text-staff-on-surface">
+                      {report.summary.totalQazaPrayers}
+                    </span>
+                  </p>
                 </div>
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
-              <div className="mb-6">
-                <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
-                  Prayer status mix
-                </h3>
-                <p className="text-sm text-staff-on-surface-variant">
-                  Counts across saved salat for the month.
-                </p>
-              </div>
-              <div className="flex h-[300px] flex-col">
-                {prayerPieData.length === 0 ? (
-                  <p className="text-sm text-staff-on-surface-variant">No saved salat data this month.</p>
+                <div className="mt-8 border-t border-staff-outline-variant/15 pt-6">
+                  <h3 className="font-staff-headline text-sm font-bold text-staff-on-surface">
+                    Quran
+                  </h3>
+                  <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg bg-staff-surface-container-low/60 px-4 py-3 dark:bg-slate-800/50">
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                        Pages (month)
+                      </dt>
+                      <dd className="mt-1 text-xl font-bold tabular-nums text-staff-on-surface">
+                        {report.summary.totalQuranPages}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg bg-staff-surface-container-low/60 px-4 py-3 dark:bg-slate-800/50">
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                        Days with Quran saved
+                      </dt>
+                      <dd className="mt-1 text-xl font-bold tabular-nums text-staff-on-surface">
+                        {report.summary.daysWithQuranSaved}
+                      </dd>
+                    </div>
+                  </dl>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(
+                      [
+                        ["Tilawat", report.summary.quranByType.TILAWAT],
+                        ["Tafseer", report.summary.quranByType.TAFSEER],
+                        ["Both", report.summary.quranByType.BOTH],
+                      ] as const
+                    ).map(([label, n]) => (
+                      <span
+                        key={label}
+                        className="rounded-full bg-staff-primary-container px-3 py-1 text-xs font-semibold text-staff-on-primary-container dark:bg-teal-950/40 dark:text-teal-200"
+                      >
+                        {label}: {n}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-8 border-t border-staff-outline-variant/15 pt-6">
+                  <h3 className="font-staff-headline text-sm font-bold text-staff-on-surface">
+                    Hadith &amp; literature
+                  </h3>
+                  <p className="mt-1 text-xs text-staff-on-surface-variant">
+                    Days where the hadith section was saved on the daily log.
+                  </p>
+                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg bg-staff-surface-container-low/60 px-4 py-3 dark:bg-slate-800/50">
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                        Hadith — yes / no (days)
+                      </dt>
+                      <dd className="mt-1 text-lg font-bold text-staff-on-surface">
+                        {report.summary.daysHadithYes}{" "}
+                        <span className="text-staff-on-surface-variant">/</span>{" "}
+                        {report.summary.daysHadithNo}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg bg-staff-surface-container-low/60 px-4 py-3 dark:bg-slate-800/50">
+                      <dt className="text-[10px] font-bold uppercase tracking-wider text-staff-on-surface-variant">
+                        Literature — yes / no (days)
+                      </dt>
+                      <dd className="mt-1 text-lg font-bold text-staff-on-surface">
+                        {report.summary.daysLiteratureYes}{" "}
+                        <span className="text-staff-on-surface-variant">/</span>{" "}
+                        {report.summary.daysLiteratureNo}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </StaffPanel>
+
+              <StaffPanel
+                title="Contacts (all time)"
+                description={`${report.contacts.total} total · Muslim ${report.contactByStatusAllTime.MUSLIM}, non-Muslim ${report.contactByStatusAllTime.NON_MUSLIM}`}
+              >
+                {report.contacts.rows.length === 0 ? (
+                  <p className="text-sm text-staff-on-surface-variant">No contacts yet.</p>
                 ) : (
-                  <div className="min-h-[220px] min-w-0 flex-1">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={prayerPieData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={88}
-                          label={({ name, percent }) =>
-                            `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
-                          }
-                        >
-                          {prayerPieData.map((entry) => (
-                            <Cell key={entry.name} fill={entry.fill ?? "#64748b"} />
+                  <>
+                    <div className="max-h-[min(28rem,70vh)] w-full overflow-auto rounded-md border border-staff-outline-variant/15">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Log date</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {report.contacts.rows.map((c) => (
+                            <TableRow key={c.id}>
+                              <TableCell>{c.logDate}</TableCell>
+                              <TableCell>{c.name}</TableCell>
+                              <TableCell>{c.phone}</TableCell>
+                              <TableCell>{c.location}</TableCell>
+                              <TableCell>{c.status}</TableCell>
+                            </TableRow>
                           ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(v) => [typeof v === "number" ? v : Number(v), "Prayers"]}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {contactTotalPages > 1 ? (
+                      <div className="mt-4 flex items-center justify-between text-sm text-staff-on-surface-variant">
+                        <button
+                          type="button"
+                          className={cn(
+                            buttonVariants({ variant: "ghost", size: "sm" }),
+                            contactsPage <= 1 && "pointer-events-none opacity-40",
+                          )}
+                          onClick={() => navigateContactsPage(contactsPage - 1)}
+                        >
+                          Previous
+                        </button>
+                        <span>
+                          Page {contactsPage} / {contactTotalPages}
+                        </span>
+                        <button
+                          type="button"
+                          className={cn(
+                            buttonVariants({ variant: "ghost", size: "sm" }),
+                            contactsPage >= contactTotalPages &&
+                              "pointer-events-none opacity-40",
+                          )}
+                          onClick={() => navigateContactsPage(contactsPage + 1)}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </StaffPanel>
+
+              <StaffPanel
+                title="Aiyanat history"
+                description="Recent rows for this member (newest first). The report month is highlighted when present."
+              >
+                {report.aiyanatHistory.length === 0 ? (
+                  <p className="text-sm text-staff-on-surface-variant">No Aiyanat rows yet.</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-md border border-staff-outline-variant/15">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Month</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead>Payment date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {report.aiyanatHistory.map((row) => {
+                          const active = row.month === report.month;
+                          return (
+                            <TableRow
+                              key={row.month}
+                              className={cn(
+                                active &&
+                                  "bg-staff-primary-container/35 dark:bg-teal-950/35",
+                              )}
+                            >
+                              <TableCell className="font-medium">{row.month}</TableCell>
+                              <TableCell>
+                                {row.status === "PAID" ? "Paid" : "Not paid"}
+                              </TableCell>
+                              <TableCell className="text-right tabular-nums">
+                                {row.amount}
+                              </TableCell>
+                              <TableCell>{row.paymentDate ?? "—"}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
-              </div>
+              </StaffPanel>
             </div>
-          </div>
-
-          <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
-            <div className="mb-4">
-              <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
-                Aiyanat ({report.month})
-              </h3>
-              <p className="text-sm text-staff-on-surface-variant">Payment for this calendar month.</p>
-            </div>
-            {report.aiyanat ? (
-              <ul className="space-y-2 text-sm text-staff-on-surface">
-                <li>
-                  <span className="text-staff-on-surface-variant">Status: </span>
-                  {report.aiyanat.status === "PAID" ? "Paid" : "Not paid"}
-                </li>
-                <li>
-                  <span className="text-staff-on-surface-variant">Amount: </span>
-                  {report.aiyanat.amount}
-                </li>
-                {report.aiyanat.paymentDate ? (
-                  <li>
-                    <span className="text-staff-on-surface-variant">Payment date: </span>
-                    {report.aiyanat.paymentDate}
-                  </li>
-                ) : null}
-              </ul>
-            ) : (
-              <p className="text-sm text-staff-on-surface-variant">No Aiyanat row for this month.</p>
-            )}
-          </div>
-
-          <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
-            <div className="mb-4">
-              <h3 className="font-staff-headline text-lg font-bold text-staff-on-surface">
-                Contacts this month
-              </h3>
-              <p className="text-sm text-staff-on-surface-variant">
-                All contacts logged in the selected month.
-              </p>
-            </div>
-            {report.contactRows.length === 0 ? (
-              <p className="text-sm text-staff-on-surface-variant">No contacts this month.</p>
-            ) : (
-              <div className="max-h-[min(28rem,70vh)] w-full overflow-auto rounded-md border border-staff-outline-variant/15">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Log date</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {report.contactRows.map((c) => (
-                      <TableRow key={c.id}>
-                        <TableCell>{c.logDate}</TableCell>
-                        <TableCell>{c.name}</TableCell>
-                        <TableCell>{c.phone}</TableCell>
-                        <TableCell>{c.location}</TableCell>
-                        <TableCell>{c.status}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
           </div>
         </>
       ) : null}
@@ -521,12 +561,14 @@ function formatStaffNoteTimestamp(iso: string | null) {
 function MemberStaffNoteCard({
   memberId,
   month,
+  monthLabel,
   body: initialBody,
   updatedAtIso,
   updatedByName,
 }: {
   memberId: string;
   month: string;
+  monthLabel: string;
   body: string;
   updatedAtIso: string | null;
   updatedByName: string | null;
@@ -542,9 +584,11 @@ function MemberStaffNoteCard({
   return (
     <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm md:p-8">
       <div className="mb-4">
-        <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface">Staff note</h2>
+        <h2 className="font-staff-headline text-lg font-bold text-staff-on-surface">
+          Staff note for {monthLabel}
+        </h2>
         <p className="mt-1 text-sm text-staff-on-surface-variant">
-          Private note for this member and month. Visible to staff in scope.
+          Private note for this member and calendar month. Visible to staff in scope.
         </p>
       </div>
       <textarea
@@ -552,7 +596,7 @@ function MemberStaffNoteCard({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="Add context for this month…"
-        aria-label="Staff note for this month"
+        aria-label={`Staff note for ${monthLabel}`}
       />
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-staff-on-surface-variant">
@@ -583,46 +627,6 @@ function MemberStaffNoteCard({
         >
           {pending ? "Saving…" : "Save note"}
         </Button>
-      </div>
-    </div>
-  );
-}
-
-function MetricTile({
-  icon,
-  iconBg,
-  label,
-  value,
-  highlight,
-}: {
-  icon: string;
-  iconBg: string;
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-xl bg-staff-surface-container-lowest p-6 shadow-sm transition-shadow hover:shadow-md",
-        highlight && "border-l-4 border-red-200 dark:border-red-900/50",
-      )}
-    >
-      <div className="mb-4 flex items-center justify-between">
-        <div
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full",
-            iconBg,
-          )}
-        >
-          <span className="material-symbols-outlined text-[22px]">{icon}</span>
-        </div>
-      </div>
-      <div className="font-staff-headline mb-1 text-3xl font-black text-staff-on-surface sm:text-4xl">
-        {value}
-      </div>
-      <div className="text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
-        {label}
       </div>
     </div>
   );

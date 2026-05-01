@@ -4,6 +4,7 @@ import { RegisterServiceWorker } from "@/components/pwa/register-service-worker"
 import { SwUpdatePrompt } from "@/components/pwa/sw-update-prompt";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { MuiAppProvider } from "@/components/providers/mui-app-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -81,12 +82,14 @@ export default async function RootLayout({
         className={`${roboto.className} bg-[#f5f5f5] text-gray-900 min-h-dvh flex flex-col antialiased [padding-left:env(safe-area-inset-left)] [padding-right:env(safe-area-inset-right)]`}
       >
         <MuiAppProvider>
-          <RegisterServiceWorker />
-          <SwUpdatePrompt />
-          <AuthSessionProvider>
-            {children}
-            <Toaster />
-          </AuthSessionProvider>
+          <TooltipProvider delay={250}>
+            <RegisterServiceWorker />
+            <SwUpdatePrompt />
+            <AuthSessionProvider>
+              {children}
+              <Toaster />
+            </AuthSessionProvider>
+          </TooltipProvider>
         </MuiAppProvider>
       </body>
     </html>

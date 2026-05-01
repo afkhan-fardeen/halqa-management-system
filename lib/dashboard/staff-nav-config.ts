@@ -1,9 +1,22 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  FolderOpen,
+  Inbox,
+  LayoutDashboard,
+  Megaphone,
+  MessageSquareText,
+  UserPlus,
+  Users,
+  Wallet,
+} from "lucide-react";
+
 export type StaffNavItem = {
   href: string;
   label: string;
   description?: string;
-  /** Material Symbols ligature name */
-  icon: string;
+  icon: LucideIcon;
 };
 
 export type StaffNavSection = {
@@ -31,59 +44,56 @@ export function isNavItemActive(href: string, pathname: string): boolean {
 const homeSection: StaffNavSection = {
   id: "home",
   title: "Home",
-  items: [
-    { href: "/dashboard", label: "Overview", icon: "dashboard" },
-    { href: "/dashboard/profile", label: "Profile", icon: "person" },
-  ],
+  items: [{ href: "/dashboard", label: "Overview", icon: LayoutDashboard }],
 };
 
 const peopleSection: StaffNavSection = {
   id: "people",
-  title: "People & finance",
+  title: "People",
   items: [
+    { href: "/dashboard/members", label: "Members", icon: Users },
     {
       href: "/dashboard/registrations",
       label: "Registrations",
       description: "Pending sign-ups",
-      icon: "how_to_reg",
+      icon: UserPlus,
     },
-    { href: "/dashboard/members", label: "Members", icon: "group" },
     {
       href: "/dashboard/aiyanat",
       label: "Aiyanat",
       description: "Contributions",
-      icon: "payments",
+      icon: Wallet,
     },
   ],
 };
 
-const attendanceSection: StaffNavSection = {
-  id: "attendance",
-  title: "Session attendance",
+const programsSection: StaffNavSection = {
+  id: "programs",
+  title: "Programs",
   items: [
     {
       href: "/dashboard/attendance",
-      label: "Programs & sessions",
-      description: "Dawati dars & Tarbiyati",
-      icon: "calendar_today",
+      label: "Attendance",
+      description: "Programs & sessions entry",
+      icon: CalendarDays,
     },
   ],
 };
 
-const reportsSection: StaffNavSection = {
-  id: "reports",
-  title: "Reports & submissions",
+const insightsSection: StaffNavSection = {
+  id: "insights",
+  title: "Insights",
   items: [
     {
       href: "/dashboard/reports/monthly",
       label: "Monthly report",
-      icon: "description",
+      icon: FileText,
     },
     {
       href: "/dashboard/submissions",
       label: "Submissions",
       description: "Logs & contacts",
-      icon: "folder_open",
+      icon: FolderOpen,
     },
   ],
 };
@@ -96,26 +106,26 @@ const messagesSection: StaffNavSection = {
       href: "/dashboard/notifications",
       label: "Inbox",
       description: "Your alerts",
-      icon: "inbox",
+      icon: Inbox,
     },
     {
       href: "/dashboard/notifications/compose",
       label: "Notify members",
       description: "Broadcast",
-      icon: "campaign",
+      icon: Megaphone,
     },
   ],
 };
 
 const adminSection: StaffNavSection = {
   id: "admin",
-  title: "Administration",
+  title: "Admin only",
   items: [
     {
       href: "/dashboard/feedback",
       label: "Member feedback",
       description: "App feedback",
-      icon: "feedback",
+      icon: MessageSquareText,
     },
   ],
 };
@@ -124,8 +134,8 @@ export function getStaffNavSections(isAdmin: boolean): StaffNavSection[] {
   return [
     homeSection,
     peopleSection,
-    attendanceSection,
-    reportsSection,
+    programsSection,
+    insightsSection,
     messagesSection,
     ...(isAdmin ? [adminSection] : []),
   ];

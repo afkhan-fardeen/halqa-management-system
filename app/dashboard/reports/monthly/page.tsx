@@ -16,7 +16,7 @@ function defaultMonth() {
 export default async function MonthlyReportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string; memberId?: string }>;
+  searchParams: Promise<{ month?: string; memberId?: string; cpage?: string }>;
 }) {
   const session = await auth();
   if (!session?.user || !isStaffRole(session.user.role)) {
@@ -26,6 +26,7 @@ export default async function MonthlyReportPage({
   const sp = await searchParams;
   const month = sp.month?.trim() || defaultMonth();
   const memberId = sp.memberId?.trim() || "";
+  const contactsPage = Math.max(1, Number.parseInt(sp.cpage ?? "1", 10) || 1);
 
   const [picker, counterpart] = await Promise.all([
     listMembersForReportPicker(),
@@ -38,7 +39,10 @@ export default async function MonthlyReportPage({
   if (!monthYyyyMmToRange(month)) {
     error = "Invalid month.";
   } else if (memberId) {
-    report = await getMemberMonthlyReport(memberId, month);
+    report = await getMemberMonthlyReport(memberId, month, {
+      contactsPage,
+      contactsPageSize: 25,
+    });
     if (!report) {
       error =
         "You cannot view this member, or they are not an active member in your scope.";
@@ -53,6 +57,7 @@ export default async function MonthlyReportPage({
       report={report}
       month={month}
       memberId={memberId}
+      contactsPage={contactsPage}
       error={error}
     />
   );

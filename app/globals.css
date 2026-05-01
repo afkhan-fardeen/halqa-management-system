@@ -267,41 +267,46 @@
   --radius: 0.875rem;
 }
 
-/* Staff dashboard: semantic surfaces + Material Symbols elsewhere */
+/* Staff dashboard: aligned with member teal + stone neutrals */
 [data-staff-dashboard] {
-  --staff-primary: #0053db;
-  --staff-primary-dim: #0048c1;
-  --staff-on-surface: #2a3439;
-  --staff-on-surface-variant: #566166;
-  --staff-surface-container: #e8eff3;
-  --staff-surface-container-high: #e1e9ee;
-  --staff-surface-container-low: #f0f4f7;
-  --staff-surface-container-lowest: #ffffff;
-  --staff-background: #f7f9fb;
-  --staff-outline-variant: #a9b4b9;
+  --staff-primary: #008080;
+  --staff-primary-dim: #006666;
+  --staff-on-primary: #ffffff;
+  --staff-on-surface: #1c1917;
+  --staff-on-surface-variant: #57534e;
+  --staff-surface-container: #e7e5e4;
+  --staff-surface-container-high: #d6d3d1;
+  --staff-surface-container-low: #f5f5f4;
+  --staff-surface-container-lowest: #fafaf9;
+  --staff-background: #fafaf9;
+  --staff-outline-variant: #a8a29e;
   --staff-error: #9f403d;
-  --staff-on-primary-container: #0048bf;
-  --staff-primary-container: #dbe1ff;
-  --staff-secondary-container: #d3e4fe;
-  --staff-on-secondary-container: #435368;
-  --staff-tertiary: #605c78;
-  --staff-tertiary-container: #e3dbfd;
-  --staff-on-tertiary-container: #514d68;
-  --staff-shadow-card: 0 1px 3px rgb(15 23 42 / 0.06);
-  font-family: var(--font-staff-body), ui-sans-serif, system-ui, sans-serif;
+  --staff-on-primary-container: #115e59;
+  --staff-primary-container: #ccfbf1;
+  --staff-secondary-container: #dbeafe;
+  --staff-on-secondary-container: #334155;
+  --staff-tertiary: #57534e;
+  --staff-tertiary-container: #e7e5e4;
+  --staff-on-tertiary-container: #44403c;
+  --staff-shadow-card: 0 1px 3px rgb(28 25 23 / 0.06);
+  font-family: var(--font-member-body), "DM Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark [data-staff-dashboard] {
-  --staff-on-surface: #f1f5f9;
-  --staff-on-surface-variant: #94a3b8;
-  --staff-surface-container: #334155;
-  --staff-surface-container-high: #334155;
-  --staff-surface-container-low: #1e293b;
-  --staff-surface-container-lowest: #0f172a;
-  --staff-background: #020617;
-  --staff-outline-variant: #64748b;
-  --staff-primary-container: rgb(30 58 138 / 0.45);
-  --staff-on-primary-container: #bfdbfe;
+  --staff-primary: #2dd4bf;
+  --staff-primary-dim: #14b8a6;
+  --staff-on-primary: #042f2e;
+  --staff-on-surface: #fafaf9;
+  --staff-on-surface-variant: #a8a29e;
+  --staff-surface-container: #292524;
+  --staff-surface-container-high: #44403c;
+  --staff-surface-container-low: #1c1917;
+  --staff-surface-container-lowest: #0c0a09;
+  --staff-background: #0c0a09;
+  --staff-outline-variant: #78716c;
+  --staff-primary-container: rgb(45 212 191 / 0.14);
+  --staff-on-primary-container: #ccfbf1;
+  --staff-secondary-container: rgb(51 65 85 / 0.55);
   --staff-shadow-card: 0 1px 3px rgb(0 0 0 / 0.35);
 }
 
@@ -317,29 +322,8 @@
 }
 
 [data-staff-dashboard] .font-staff-headline {
-  font-family: var(--font-staff-headline), ui-sans-serif, system-ui, sans-serif;
-}
-
-.material-symbols-outlined {
-  font-family: "Material Symbols Outlined";
-  font-weight: normal;
-  font-style: normal;
-  font-size: 1.25rem;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
-  user-select: none;
-  flex-shrink: 0;
-  overflow: hidden;
+  font-family: var(--font-member-heading), "Poppins", ui-sans-serif, system-ui,
+    sans-serif;
 }
 
 @import "./hms-ui.css";

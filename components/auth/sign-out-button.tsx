@@ -1,8 +1,9 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { Button } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { LogOut } from "lucide-react";
+import { Button } from "@mui/material";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -22,7 +23,7 @@ export function SignOutButton({ variant = "outline", className }: Props) {
         aria-label="Sign out"
         onClick={() => signOut({ callbackUrl: "/login" })}
       >
-        <span className="material-symbols-outlined text-[20px]">logout</span>
+        <LogOut className="size-5" aria-hidden />
       </button>
     );
   }
@@ -37,7 +38,7 @@ export function SignOutButton({ variant = "outline", className }: Props) {
         )}
         onClick={() => signOut({ callbackUrl: "/login" })}
       >
-        <span className="material-symbols-outlined text-[20px]">logout</span>
+        <LogOut className="size-5" aria-hidden />
         Sign out
       </button>
     );

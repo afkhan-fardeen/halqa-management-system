@@ -1,5 +1,6 @@
 "use client";
 
+import { Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -44,7 +45,7 @@ function StaffDashboardSearchInner() {
         aria-label="Open member search"
         onClick={() => setExpanded(true)}
       >
-        <span className="material-symbols-outlined shrink-0 text-[22px] leading-none">search</span>
+        <Search className="size-[22px] shrink-0" aria-hidden />
         <span className="hidden min-w-0 truncate sm:inline">Search members…</span>
       </button>
     );
@@ -59,9 +60,7 @@ function StaffDashboardSearchInner() {
         submit();
       }}
     >
-      <span className="material-symbols-outlined shrink-0 text-staff-on-surface-variant text-[22px] leading-none">
-        search
-      </span>
+      <Search className="size-[22px] shrink-0 text-staff-on-surface-variant" aria-hidden />
       <input
         ref={inputRef}
         type="search"
@@ -79,7 +78,7 @@ function StaffDashboardSearchInner() {
         aria-label="Close search"
         onClick={() => setExpanded(false)}
       >
-        <span className="material-symbols-outlined text-[20px] leading-none">close</span>
+        <X className="size-5" aria-hidden />
       </button>
     </form>
   );

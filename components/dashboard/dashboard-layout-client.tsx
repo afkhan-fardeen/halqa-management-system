@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronLeft, ChevronRight, CircleHelp, UserRound } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -54,8 +55,8 @@ function StaffSidebarChrome({
               <p className="truncate text-sm font-bold leading-none text-staff-on-surface dark:text-slate-100">
                 Qalbee
               </p>
-              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-staff-on-surface-variant dark:text-slate-500">
-                Staff
+              <p className="mt-0.5 truncate text-[10px] font-medium leading-tight text-staff-on-surface-variant dark:text-slate-500">
+                Unit portal
               </p>
             </div>
           )}
@@ -67,9 +68,11 @@ function StaffSidebarChrome({
             onClick={onToggleCollapse}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <span className="material-symbols-outlined text-[18px] leading-none">
-              {collapsed ? "chevron_right" : "chevron_left"}
-            </span>
+            {collapsed ? (
+              <ChevronRight className="size-[18px]" aria-hidden />
+            ) : (
+              <ChevronLeft className="size-[18px]" aria-hidden />
+            )}
           </button>
         )}
       </div>
@@ -91,6 +94,18 @@ function StaffSidebarChrome({
         )}
       >
         <Link
+          href="/dashboard/profile"
+          className={cn(
+            "mx-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200",
+            collapsed && "md:justify-center md:px-2",
+          )}
+          title={collapsed ? "Profile" : undefined}
+          onClick={() => onNavigate?.()}
+        >
+          <UserRound className="size-[18px] shrink-0" aria-hidden />
+          <span className={cn(collapsed && "md:sr-only")}>Profile</span>
+        </Link>
+        <Link
           href="/about"
           className={cn(
             "mx-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200",
@@ -99,9 +114,7 @@ function StaffSidebarChrome({
           title={collapsed ? "Help" : undefined}
           onClick={() => onNavigate?.()}
         >
-          <span className="material-symbols-outlined shrink-0 text-[18px] leading-none">
-            help_outline
-          </span>
+          <CircleHelp className="size-[18px] shrink-0" aria-hidden />
           <span className={cn(collapsed && "md:sr-only")}>Help</span>
         </Link>
         {collapsed ? (

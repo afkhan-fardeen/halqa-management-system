@@ -1,11 +1,11 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { auth } from "@/auth";
+import { MemberDirectoryRowActions } from "@/components/dashboard/member-directory-row-actions";
 import {
   StaffMetricCard,
   StaffPageHeader,
 } from "@/components/dashboard/staff-page-section";
-import { adminSendPasswordResetEmail } from "@/lib/actions/password-reset";
-import { deactivateMember } from "@/lib/actions/member-admin";
 import {
   getMemberDirectoryKpis,
   listMembersForStaff,
@@ -212,46 +212,11 @@ export default async function DashboardMembersPage({
                         {r.email}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <div className="flex flex-wrap justify-end gap-1 sm:gap-2 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
-                          <Link
-                            href={`/dashboard/reports/monthly?memberId=${encodeURIComponent(r.id)}&month=${encodeURIComponent(currentMonthYyyyMm())}`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-staff-primary transition-colors hover:bg-staff-surface-container"
-                            title="Monthly report"
-                          >
-                            <span className="material-symbols-outlined text-[20px]">
-                              insert_chart
-                            </span>
-                            <span className="sr-only">Monthly report</span>
-                          </Link>
-                          <form action={adminSendPasswordResetEmail} className="inline">
-                            <input type="hidden" name="userId" value={r.id} />
-                            <button
-                              type="submit"
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-staff-on-surface-variant transition-colors hover:bg-staff-surface-container"
-                              title="Send password reset email"
-                            >
-                              <span className="material-symbols-outlined text-[20px]">
-                                restart_alt
-                              </span>
-                              <span className="sr-only">Reset email</span>
-                            </button>
-                          </form>
-                          {r.status !== "DEACTIVATED" ? (
-                            <form action={deactivateMember} className="inline">
-                              <input type="hidden" name="userId" value={r.id} />
-                              <button
-                                type="submit"
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-staff-error transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
-                                title="Deactivate member"
-                              >
-                                <span className="material-symbols-outlined text-[20px]">
-                                  person_off
-                                </span>
-                                <span className="sr-only">Deactivate</span>
-                              </button>
-                            </form>
-                          ) : null}
-                        </div>
+                        <MemberDirectoryRowActions
+                          memberId={r.id}
+                          monthYyyyMm={currentMonthYyyyMm()}
+                          isDeactivated={r.status === "DEACTIVATED"}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -285,7 +250,7 @@ export default async function DashboardMembersPage({
                     )}
                     aria-label="Previous page"
                   >
-                    <span className="material-symbols-outlined text-sm">chevron_left</span>
+                    <ChevronLeft className="size-4" aria-hidden />
                   </Link>
                   <span className="px-2 text-xs font-bold text-staff-on-surface">
                     {safePage} / {totalPages}
@@ -302,7 +267,7 @@ export default async function DashboardMembersPage({
                     )}
                     aria-label="Next page"
                   >
-                    <span className="material-symbols-outlined text-sm">chevron_right</span>
+                    <ChevronRight className="size-4" aria-hidden />
                   </Link>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ export function StaffMetricCard({
   label: string;
   value: ReactNode;
   subtitle?: ReactNode;
-  icon?: string;
+  icon?: ReactNode;
   iconClassName?: string;
   footer?: ReactNode;
   progress?: { widthPct: string };
@@ -39,7 +40,7 @@ export function StaffMetricCard({
         {icon ? (
           <span
             className={cn(
-              "material-symbols-outlined text-[20px] text-staff-primary dark:text-blue-400",
+              "inline-flex text-staff-primary dark:text-teal-300 [&_svg]:size-5",
               iconClassName,
             )}
             aria-hidden
@@ -64,7 +65,7 @@ export function StaffMetricCard({
       {progress ? (
         <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-staff-surface-container dark:bg-slate-800">
           <div
-            className="h-full rounded-full bg-staff-primary transition-all duration-700 dark:bg-blue-500"
+            className="h-full rounded-full bg-staff-primary transition-all duration-700 dark:bg-teal-500"
             style={{ width: progress.widthPct }}
           />
         </div>
@@ -78,12 +79,10 @@ export function StaffMetricCard({
         <div className="mt-auto pt-4">
           <Link
             href={footerLink.href}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-staff-primary hover:underline dark:text-blue-400"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-staff-primary hover:underline dark:text-teal-300"
           >
             {footerLink.label}
-            <span className="material-symbols-outlined text-[14px] leading-none">
-              arrow_forward
-            </span>
+            <ArrowRight className="size-3.5" aria-hidden />
           </Link>
         </div>
       ) : null}

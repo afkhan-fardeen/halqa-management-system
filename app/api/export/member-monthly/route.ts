@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { toCsv } from "@/lib/export/csv";
-import { getMemberMonthlyReport } from "@/lib/queries/member-monthly-report";
+import {
+  getMemberMonthlyReport,
+  MEMBER_MONTHLY_EXPORT_CONTACTS_PAGE_SIZE,
+} from "@/lib/queries/member-monthly-report";
 import { isStaffRole } from "@/lib/auth/roles";
 import { monthYyyyMmToRange } from "@/lib/utils/date";
 
@@ -17,10 +20,16 @@ export async function GET(req: Request) {
   const format = url.searchParams.get("format");
 
   if (!memberId || !month || !monthYyyyMmToRange(month)) {
-    return NextResponse.json({ error: "memberId and valid month required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "memberId and valid month required" },
+      { status: 400 },
+    );
   }
 
-  const report = await getMemberMonthlyReport(memberId, month);
+  const report = await getMemberMonthlyReport(memberId, month, {
+    contactsPage: 1,
+    contactsPageSize: MEMBER_MONTHLY_EXPORT_CONTACTS_PAGE_SIZE,
+  });
   if (!report) {
     return NextResponse.json({ error: "Forbidden or not found" }, { status: 403 });
   }
@@ -39,9 +48,10 @@ export async function GET(req: Request) {
       ["Email", report.member.email],
       ["Halqa", report.member.halqa],
       ["Unit", report.member.genderUnit],
-      ["Month", report.month],
+      ["Report month", report.month],
       ["Days with log", `${report.summary.daysWithLog} / ${report.summary.daysInMonth}`],
-      ["Total Quran pages", report.summary.totalQuranPages],
+      ["Contacts logged in report month", report.summary.contactsLoggedInReportMonth],
+      ["Total Quran pages (month)", report.summary.totalQuranPages],
       ["Days with Quran logged", report.summary.daysWithQuranSaved],
       ["Ba jamaat (total)", p.BA_JAMAAT],
       ["Munfarid (total)", p.MUNFARID],
@@ -55,44 +65,25 @@ export async function GET(req: Request) {
       ["Quran type — Tilawat (days)", q.TILAWAT],
       ["Quran type — Tafseer (days)", q.TAFSEER],
       ["Quran type — Both (days)", q.BOTH],
-      ["Contact — Muslim", report.contactByStatus.MUSLIM],
-      ["Contact — Non-Muslim", report.contactByStatus.NON_MUSLIM],
-      ["Total contacts", report.summary.totalContacts],
+      ["Contacts — Muslim (all time)", report.contactByStatusAllTime.MUSLIM],
+      ["Contacts — Non-Muslim (all time)", report.contactByStatusAllTime.NON_MUSLIM],
+      ["Contacts — Total rows (all time)", report.contacts.total],
     ];
-    if (report.aiyanat) {
-      rows.push(["Aiyanat status", report.aiyanat.status]);
-      rows.push(["Aiyanat amount", report.aiyanat.amount]);
-      if (report.aiyanat.paymentDate) {
-        rows.push(["Payment date", report.aiyanat.paymentDate]);
+
+    const reportMonthAi = report.aiyanatHistory.find((r) => r.month === report.month);
+    if (reportMonthAi) {
+      rows.push(["Aiyanat (report month) status", reportMonthAi.status]);
+      rows.push(["Aiyanat (report month) amount", reportMonthAi.amount]);
+      if (reportMonthAi.paymentDate) {
+        rows.push(["Aiyanat (report month) payment date", reportMonthAi.paymentDate]);
       }
     }
+
     for (const [k, v] of rows) {
       wsSum.addRow([k, v]);
     }
 
-    const wsTrends = wb.addWorksheet("Daily_trends");
-    wsTrends.columns = [
-      { header: "Date", key: "date", width: 12 },
-      { header: "Has log", key: "hasLog", width: 10 },
-      { header: "Quran pages", key: "quran", width: 12 },
-      { header: "Qaza count", key: "qaza", width: 10 },
-      { header: "Hadith", key: "hadith", width: 8 },
-      { header: "Literature", key: "literature", width: 10 },
-      { header: "Contacts", key: "contacts", width: 10 },
-    ];
-    for (const d of report.dailySeries) {
-      wsTrends.addRow({
-        date: d.ymd,
-        hasLog: d.hasLog ? "Yes" : "No",
-        quran: d.quranPages,
-        qaza: d.qazaCount,
-        hadith: d.hadith ? "Yes" : "No",
-        literature: d.literature ? "Yes" : "No",
-        contacts: d.contactCount,
-      });
-    }
-
-    const wsContacts = wb.addWorksheet("Contacts");
+    const wsContacts = wb.addWorksheet("Contacts_all_time");
     wsContacts.columns = [
       { header: "Log date", key: "logDate", width: 12 },
       { header: "Name", key: "name", width: 22 },
@@ -100,13 +91,29 @@ export async function GET(req: Request) {
       { header: "Location", key: "location", width: 20 },
       { header: "Status", key: "status", width: 12 },
     ];
-    for (const c of report.contactRows) {
+    for (const c of report.contacts.rows) {
       wsContacts.addRow({
         logDate: c.logDate,
         name: c.name,
         phone: c.phone,
         location: c.location,
         status: c.status,
+      });
+    }
+
+    const wsAi = wb.addWorksheet("Aiyanat_history");
+    wsAi.columns = [
+      { header: "Month", key: "month", width: 10 },
+      { header: "Status", key: "status", width: 12 },
+      { header: "Amount", key: "amount", width: 12 },
+      { header: "Payment date", key: "paymentDate", width: 14 },
+    ];
+    for (const r of report.aiyanatHistory) {
+      wsAi.addRow({
+        month: r.month,
+        status: r.status,
+        amount: r.amount,
+        paymentDate: r.paymentDate ?? "",
       });
     }
 
@@ -123,9 +130,16 @@ export async function GET(req: Request) {
   const summaryRows: Record<string, unknown>[] = [
     { section: "Metric", value: "Value" },
     { section: "Member", value: report.member.name },
-    { section: "Month", value: report.month },
-    { section: "Days with log", value: `${report.summary.daysWithLog}/${report.summary.daysInMonth}` },
-    { section: "Total Quran pages", value: report.summary.totalQuranPages },
+    { section: "Report month", value: report.month },
+    {
+      section: "Days with log",
+      value: `${report.summary.daysWithLog}/${report.summary.daysInMonth}`,
+    },
+    {
+      section: "Contacts logged in report month",
+      value: report.summary.contactsLoggedInReportMonth,
+    },
+    { section: "Total Quran pages (month)", value: report.summary.totalQuranPages },
     { section: "Days with Quran logged", value: report.summary.daysWithQuranSaved },
     { section: "Ba jamaat total", value: report.summary.prayerByStatus.BA_JAMAAT },
     { section: "Munfarid total", value: report.summary.prayerByStatus.MUNFARID },
@@ -135,12 +149,20 @@ export async function GET(req: Request) {
     { section: "Hadith no days", value: report.summary.daysHadithNo },
     { section: "Literature yes days", value: report.summary.daysLiteratureYes },
     { section: "Literature no days", value: report.summary.daysLiteratureNo },
-    { section: "Total contacts", value: report.summary.totalContacts },
+    {
+      section: "Contacts Muslim (all time)",
+      value: report.contactByStatusAllTime.MUSLIM,
+    },
+    {
+      section: "Contacts Non-Muslim (all time)",
+      value: report.contactByStatusAllTime.NON_MUSLIM,
+    },
+    { section: "Contacts total rows", value: report.contacts.total },
   ];
 
   const summaryCsv = toCsv(summaryRows);
   const contactCsv = toCsv(
-    report.contactRows.map((c) => ({
+    report.contacts.rows.map((c) => ({
       logDate: c.logDate,
       name: c.name,
       phone: c.phone,
@@ -149,7 +171,16 @@ export async function GET(req: Request) {
     })),
   );
 
-  const csv = `${summaryCsv}\n\nContacts\n${contactCsv || "(none)"}`;
+  const aiCsv = toCsv(
+    report.aiyanatHistory.map((r) => ({
+      month: r.month,
+      status: r.status,
+      amount: r.amount,
+      paymentDate: r.paymentDate ?? "",
+    })),
+  );
+
+  const csv = `${summaryCsv}\n\nContacts_all_time\n${contactCsv || "(none)"}\n\nAiyanat_history\n${aiCsv || "(none)"}`;
 
   return new NextResponse(csv, {
     headers: {

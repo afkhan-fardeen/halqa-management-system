@@ -33,7 +33,7 @@ export function DashboardSidebarNav({
             <div className="mx-auto mb-1 mt-2 h-px w-6 bg-slate-200 dark:bg-slate-800 md:block" />
           )}
           <ul className="flex flex-col gap-0.5">
-            {section.items.map(({ href, label, icon }) => {
+            {section.items.map(({ href, label, icon: Icon }) => {
               const active = isNavItemActive(href, pathname);
               return (
                 <li key={href}>
@@ -46,20 +46,19 @@ export function DashboardSidebarNav({
                       "flex h-9 items-center gap-2.5 rounded-xl px-3 text-sm font-medium transition-colors",
                       collapsed ? "md:mx-auto md:w-9 md:justify-center md:px-0" : "",
                       active
-                        ? "bg-staff-primary-container text-staff-on-primary-container shadow-sm dark:bg-blue-950/55 dark:text-blue-300"
+                        ? "bg-staff-primary-container text-staff-on-primary-container shadow-sm dark:bg-teal-950/55 dark:text-teal-200"
                         : "text-staff-on-surface-variant hover:bg-staff-surface-container hover:text-staff-on-surface dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
                     )}
                   >
-                    <span
+                    <Icon
                       className={cn(
-                        "material-symbols-outlined shrink-0 text-[18px] leading-none",
+                        "size-[18px] shrink-0",
                         active
-                          ? "text-staff-primary dark:text-blue-400"
+                          ? "text-staff-primary dark:text-teal-300"
                           : "text-staff-on-surface-variant dark:text-slate-500",
                       )}
-                    >
-                      {icon}
-                    </span>
+                      aria-hidden
+                    />
                     {!collapsed && <span className="truncate">{label}</span>}
                   </Link>
                 </li>

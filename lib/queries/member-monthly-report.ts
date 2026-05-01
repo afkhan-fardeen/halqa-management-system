@@ -1,4 +1,4 @@
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
 import { db } from "@/lib/db";
@@ -15,6 +15,10 @@ import {
   monthYyyyMmToRange,
   parseYmdToUtcDate,
 } from "@/lib/utils/date";
+
+const AIYANAT_HISTORY_LIMIT = 48;
+const DEFAULT_CONTACTS_PAGE_SIZE = 25;
+export const MEMBER_MONTHLY_EXPORT_CONTACTS_PAGE_SIZE = 100_000;
 
 function qazaCountForLog(row: {
   salatSaved: boolean;
@@ -165,17 +169,6 @@ export async function getMemberForStaffView(memberId: string) {
   return null;
 }
 
-export type MemberMonthlyDailyPoint = {
-  ymd: string;
-  dayLabel: string;
-  hasLog: boolean;
-  quranPages: number;
-  qazaCount: number;
-  hadith: boolean;
-  literature: boolean;
-  contactCount: number;
-};
-
 export type MemberMonthlyContactRow = {
   id: string;
   logDate: string;
@@ -183,6 +176,13 @@ export type MemberMonthlyContactRow = {
   phone: string;
   location: string;
   status: string;
+};
+
+export type MemberMonthlyAiyanatRow = {
+  month: string;
+  amount: string;
+  status: "PAID" | "NOT_PAID";
+  paymentDate: string | null;
 };
 
 export type MemberMonthlyReportData = {
@@ -200,33 +200,26 @@ export type MemberMonthlyReportData = {
     daysInMonth: number;
     daysWithLog: number;
     totalQuranPages: number;
-    totalContacts: number;
+    /** Contacts whose log date falls inside the selected report month. */
+    contactsLoggedInReportMonth: number;
     totalQazaPrayers: number;
-    /** Prayer slot totals for the month (5 prayers × days with saved salat). */
     prayerByStatus: PrayerStatusTotals;
-    /** Days where hadith section was saved and hadith read = yes. */
     daysHadithYes: number;
-    /** Days where hadith section was saved and hadith read = no. */
     daysHadithNo: number;
-    /** Days where hadith section was saved and literature read = yes. */
     daysLiteratureYes: number;
-    /** Days where hadith section was saved and literature read = no. */
     daysLiteratureNo: number;
-    /** Days where the Quran section was saved for that daily log. */
     daysWithQuranSaved: number;
-    /** Quran type counts among days with quran saved. */
     quranByType: QuranTypeTotals;
   };
-  /** Contact totals by status for pie chart. */
-  contactByStatus: { MUSLIM: number; NON_MUSLIM: number };
-  dailySeries: MemberMonthlyDailyPoint[];
-  contactRows: MemberMonthlyContactRow[];
-  aiyanat: {
-    month: string;
-    amount: string;
-    status: "PAID" | "NOT_PAID";
-    paymentDate: string | null;
-  } | null;
+  /** All-time totals for the selected member (not limited to report month). */
+  contactByStatusAllTime: { MUSLIM: number; NON_MUSLIM: number };
+  contacts: {
+    rows: MemberMonthlyContactRow[];
+    total: number;
+    page: number;
+    pageSize: number;
+  };
+  aiyanatHistory: MemberMonthlyAiyanatRow[];
   staffNote: {
     body: string;
     updatedAt: string;
@@ -234,9 +227,15 @@ export type MemberMonthlyReportData = {
   } | null;
 };
 
+export type MemberMonthlyReportOptions = {
+  contactsPage?: number;
+  contactsPageSize?: number;
+};
+
 export async function getMemberMonthlyReport(
   memberId: string,
   monthYyyyMm: string,
+  options?: MemberMonthlyReportOptions,
 ): Promise<MemberMonthlyReportData | null> {
   const member = await getMemberForStaffView(memberId);
   if (!member) return null;
@@ -246,6 +245,13 @@ export async function getMemberMonthlyReport(
 
   const fromD = parseYmdToUtcDate(range.fromYmd);
   const toD = parseYmdToUtcDate(range.toYmd);
+
+  const contactsPage = Math.max(1, options?.contactsPage ?? 1);
+  const contactsPageSize = Math.min(
+    MEMBER_MONTHLY_EXPORT_CONTACTS_PAGE_SIZE,
+    Math.max(1, options?.contactsPageSize ?? DEFAULT_CONTACTS_PAGE_SIZE),
+  );
+  const contactsOffset = (contactsPage - 1) * contactsPageSize;
 
   const logRows = await db
     .select({
@@ -273,18 +279,42 @@ export async function getMemberMonthlyReport(
       ),
     );
 
-  const logByYmd = new Map<
-    string,
-    (typeof logRows)[number]
-  >();
-  for (const r of logRows) {
-    const ymd = formatYmdUtc(
-      r.date instanceof Date ? r.date : new Date(String(r.date)),
+  const [contactsMonthRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(contacts)
+    .where(
+      and(
+        eq(contacts.userId, memberId),
+        gte(contacts.logDate, fromD),
+        lte(contacts.logDate, toD),
+      ),
     );
-    logByYmd.set(ymd, r);
+
+  const contactsLoggedInReportMonth = contactsMonthRow?.n ?? 0;
+
+  const [contactsTotalRow] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(contacts)
+    .where(eq(contacts.userId, memberId));
+
+  const contactsTotal = contactsTotalRow?.n ?? 0;
+
+  const statusAgg = await db
+    .select({
+      status: contacts.status,
+      n: sql<number>`count(*)::int`,
+    })
+    .from(contacts)
+    .where(eq(contacts.userId, memberId))
+    .groupBy(contacts.status);
+
+  const contactByStatusAllTime = { MUSLIM: 0, NON_MUSLIM: 0 };
+  for (const row of statusAgg) {
+    if (row.status === "MUSLIM") contactByStatusAllTime.MUSLIM = row.n;
+    else contactByStatusAllTime.NON_MUSLIM += row.n;
   }
 
-  const contactRaw = await db
+  const contactPageRows = await db
     .select({
       id: contacts.id,
       logDate: contacts.logDate,
@@ -294,24 +324,23 @@ export async function getMemberMonthlyReport(
       status: contacts.status,
     })
     .from(contacts)
-    .where(
-      and(
-        eq(contacts.userId, memberId),
-        gte(contacts.logDate, fromD),
-        lte(contacts.logDate, toD),
-      ),
-    )
-    .orderBy(contacts.logDate);
+    .where(eq(contacts.userId, memberId))
+    .orderBy(desc(contacts.logDate))
+    .limit(contactsPageSize)
+    .offset(contactsOffset);
 
-  const contactsByYmd = new Map<string, number>();
-  for (const c of contactRaw) {
-    const ymd = formatYmdUtc(
+  const contactsRows: MemberMonthlyContactRow[] = contactPageRows.map((c) => ({
+    id: c.id,
+    logDate: formatYmdUtc(
       c.logDate instanceof Date ? c.logDate : new Date(String(c.logDate)),
-    );
-    contactsByYmd.set(ymd, (contactsByYmd.get(ymd) ?? 0) + 1);
-  }
+    ),
+    name: c.name,
+    phone: c.phone,
+    location: c.location,
+    status: c.status,
+  }));
 
-  const [aiRow] = await db
+  const aiyanatRowsRaw = await db
     .select({
       month: aiyanat.month,
       amount: aiyanat.amount,
@@ -319,8 +348,22 @@ export async function getMemberMonthlyReport(
       paymentDate: aiyanat.paymentDate,
     })
     .from(aiyanat)
-    .where(and(eq(aiyanat.userId, memberId), eq(aiyanat.month, monthYyyyMm)))
-    .limit(1);
+    .where(eq(aiyanat.userId, memberId))
+    .orderBy(desc(aiyanat.month))
+    .limit(AIYANAT_HISTORY_LIMIT);
+
+  const aiyanatHistory: MemberMonthlyAiyanatRow[] = aiyanatRowsRaw.map((r) => ({
+    month: r.month,
+    amount: String(r.amount),
+    status: r.status,
+    paymentDate: r.paymentDate
+      ? formatYmdUtc(
+          r.paymentDate instanceof Date
+            ? r.paymentDate
+            : new Date(String(r.paymentDate)),
+        )
+      : null,
+  }));
 
   const prayerByStatus = emptyPrayerTotals();
   const quranByType = emptyQuranTypeTotals();
@@ -329,11 +372,17 @@ export async function getMemberMonthlyReport(
   let daysLiteratureYes = 0;
   let daysLiteratureNo = 0;
   let daysWithQuranSaved = 0;
+  let daysWithLog = 0;
+  let totalQuranPages = 0;
+  let totalQazaPrayers = 0;
 
   for (const log of logRows) {
+    daysWithLog += 1;
     addPrayerRowToTotals(log, prayerByStatus);
+    totalQazaPrayers += qazaCountForLog(log);
     if (log.quranSaved) {
       daysWithQuranSaved += 1;
+      totalQuranPages += log.quranPages ?? 0;
       if (log.quranType === "TILAWAT") quranByType.TILAWAT += 1;
       else if (log.quranType === "TAFSEER") quranByType.TAFSEER += 1;
       else quranByType.BOTH += 1;
@@ -346,64 +395,8 @@ export async function getMemberMonthlyReport(
     }
   }
 
-  const contactByStatus = { MUSLIM: 0, NON_MUSLIM: 0 };
-  for (const c of contactRaw) {
-    if (c.status === "MUSLIM") contactByStatus.MUSLIM += 1;
-    else contactByStatus.NON_MUSLIM += 1;
-  }
-
   const days = eachYmdInRangeUtc(range.fromYmd, range.toYmd);
-  const dailySeries: MemberMonthlyDailyPoint[] = [];
-  let daysWithLog = 0;
-  let totalQuranPages = 0;
-  let totalQazaPrayers = 0;
-
-  for (const ymd of days) {
-    const log = logByYmd.get(ymd);
-    const hasLog = Boolean(log);
-    const quranPages =
-      log && log.quranSaved !== false ? log.quranPages : 0;
-    const qaza = log ? qazaCountForLog(log) : 0;
-    const hadith = log ? log.hadith : false;
-    const literature = log ? log.literature : false;
-    const contactCount = contactsByYmd.get(ymd) ?? 0;
-
-    const dt = parseYmdToUtcDate(ymd);
-    const dayLabel = dt.toLocaleDateString(undefined, {
-      weekday: "short",
-      day: "numeric",
-    });
-
-    if (hasLog) {
-      daysWithLog += 1;
-      totalQuranPages += quranPages;
-      totalQazaPrayers += qaza;
-    }
-
-    dailySeries.push({
-      ymd,
-      dayLabel,
-      hasLog,
-      quranPages,
-      qazaCount: qaza,
-      hadith,
-      literature,
-      contactCount,
-    });
-  }
-
-  const contactRows: MemberMonthlyContactRow[] = contactRaw.map((c) => ({
-    id: c.id,
-    logDate: formatYmdUtc(
-      c.logDate instanceof Date ? c.logDate : new Date(String(c.logDate)),
-    ),
-    name: c.name,
-    phone: c.phone,
-    location: c.location,
-    status: c.status,
-  }));
-
-  const totalContacts = contactRows.length;
+  const daysInMonth = days.length;
 
   const [noteJoin] = await db
     .select({
@@ -444,10 +437,10 @@ export async function getMemberMonthlyReport(
     fromYmd: range.fromYmd,
     toYmd: range.toYmd,
     summary: {
-      daysInMonth: days.length,
+      daysInMonth,
       daysWithLog,
       totalQuranPages,
-      totalContacts,
+      contactsLoggedInReportMonth,
       totalQazaPrayers,
       prayerByStatus,
       daysHadithYes,
@@ -457,23 +450,14 @@ export async function getMemberMonthlyReport(
       daysWithQuranSaved,
       quranByType,
     },
-    contactByStatus,
-    dailySeries,
-    contactRows,
-    aiyanat: aiRow
-      ? {
-          month: aiRow.month,
-          amount: String(aiRow.amount),
-          status: aiRow.status,
-          paymentDate: aiRow.paymentDate
-            ? formatYmdUtc(
-                aiRow.paymentDate instanceof Date
-                  ? aiRow.paymentDate
-                  : new Date(String(aiRow.paymentDate)),
-              )
-            : null,
-        }
-      : null,
+    contactByStatusAllTime,
+    contacts: {
+      rows: contactsRows,
+      total: contactsTotal,
+      page: contactsPage,
+      pageSize: contactsPageSize,
+    },
+    aiyanatHistory,
     staffNote,
   };
 }

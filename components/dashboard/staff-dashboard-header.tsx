@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Menu, Search, Settings } from "lucide-react";
 import { Suspense } from "react";
 import { InboxLink } from "@/components/notifications/inbox-link";
 import { StaffDashboardSearch } from "@/components/dashboard/staff-dashboard-search";
@@ -12,9 +13,7 @@ import type { UserRole } from "@/types/next-auth";
 function StaffSearchFallback() {
   return (
     <div className="flex h-9 w-full max-w-xs items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 dark:border-slate-700 dark:bg-slate-900">
-      <span className="material-symbols-outlined shrink-0 text-[18px] leading-none text-slate-400">
-        search
-      </span>
+      <Search className="size-[18px] shrink-0 text-slate-400" aria-hidden />
       <div className="h-3 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
     </div>
   );
@@ -61,7 +60,7 @@ export function StaffDashboardHeader({
             aria-label="Open navigation menu"
             onClick={onOpenMobileNav}
           >
-            <span className="material-symbols-outlined text-[22px] leading-none">menu</span>
+            <Menu className="size-[22px]" aria-hidden />
           </button>
         )}
         <Suspense fallback={<StaffSearchFallback />}>
@@ -79,7 +78,7 @@ export function StaffDashboardHeader({
           aria-label="Profile & settings"
           title="Profile & settings"
         >
-          <span className="material-symbols-outlined text-[20px] leading-none">settings</span>
+          <Settings className="size-5" aria-hidden />
         </Link>
 
         <div className="hidden h-5 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
@@ -108,7 +107,7 @@ export function StaffDashboardHeader({
             />
           ) : (
             <div
-              className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-blue-600 text-[13px] font-bold text-white"
+              className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-staff-primary text-[13px] font-bold text-white dark:bg-teal-500 dark:text-teal-950"
               aria-hidden
             >
               {initial}
@@ -128,7 +127,7 @@ export function StaffDashboardHeader({
               unoptimized
             />
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-[12px] font-bold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-staff-primary text-[12px] font-bold text-white dark:bg-teal-500 dark:text-teal-950">
               {initial}
             </div>
           )}
