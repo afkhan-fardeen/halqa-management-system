@@ -9,6 +9,7 @@ import { materializeSessionsForProgram } from "@/lib/attendance/generate-session
 import { isStaffRole } from "@/lib/auth/roles";
 import {
   createAttendanceSessionSchema,
+  updateAttendanceSessionSchema,
   upsertAttendanceProgramSchema,
 } from "@/lib/validations/attendance";
 import { db } from "@/lib/db";
@@ -155,6 +156,94 @@ export async function createAttendanceSession(
     console.error("[createAttendanceSession]", e);
     return { ok: false, error: "Could not add session." };
   }
+
+  revalidatePath("/dashboard/attendance/programs");
+  revalidatePath("/dashboard/attendance/sessions");
+  revalidatePath("/attendance");
+  return { ok: true };
+}
+
+export async function updateAttendanceSession(
+  input: z.input<typeof updateAttendanceSessionSchema>,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const parsed = updateAttendanceSessionSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Invalid session data" };
+  }
+
+  const staff = await requireStaff();
+  if (!staff.ok) {
+    return { ok: false, error: staff.error };
+  }
+
+  const bundle = await getAttendanceSessionWithProgramForStaff(
+    parsed.data.sessionId,
+    staff.session.user,
+  );
+  if ("error" in bundle) {
+    const err = bundle.error;
+    if (err === "Not found") return { ok: false, error: "Session not found." };
+    if (err === "Forbidden") return { ok: false, error: "You cannot edit this session." };
+    return { ok: false, error: err };
+  }
+
+  const ymd = parsed.data.sessionDateYmd;
+  const [y, mo, day] = ymd.split("-").map(Number);
+  if (!y || !mo || !day) {
+    return { ok: false, error: "Invalid date" };
+  }
+
+  const startH = parseTimeHHMM(parsed.data.startTime);
+  const endH = parseTimeHHMM(parsed.data.endTime);
+  const startsAt = bahrainLocalToUtc(y, mo - 1, day, startH.hour, startH.minute);
+  let endsAt = bahrainLocalToUtc(y, mo - 1, day, endH.hour, endH.minute);
+  if (endsAt.getTime() <= startsAt.getTime()) {
+    endsAt = new Date(endsAt.getTime() + 24 * 60 * 60 * 1000);
+  }
+  const sessionDate = new Date(Date.UTC(y, mo - 1, day, 12, 0, 0));
+
+  try {
+    await db
+      .update(attendanceSessions)
+      .set({
+        sessionDate,
+        startsAt,
+        endsAt,
+      })
+      .where(eq(attendanceSessions.id, parsed.data.sessionId));
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/unique|duplicate|23505/i.test(msg)) {
+      return {
+        ok: false,
+        error: "A session for this program on that date already exists.",
+      };
+    }
+    console.error("[updateAttendanceSession]", e);
+    return { ok: false, error: "Could not update session." };
+  }
+
+  revalidatePath("/dashboard/attendance/programs");
+  revalidatePath("/dashboard/attendance/sessions");
+  revalidatePath(`/dashboard/attendance/sessions/${parsed.data.sessionId}`);
+  revalidatePath("/attendance");
+  return { ok: true };
+}
+
+export async function deleteAttendanceProgram(
+  programId: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const staff = await requireStaff();
+  if (!staff.ok) {
+    return { ok: false, error: staff.error };
+  }
+
+  const access = await getAttendanceProgramByIdForStaff(programId, staff.session.user);
+  if ("error" in access) {
+    return { ok: false, error: access.error ?? "Forbidden" };
+  }
+
+  await db.delete(attendancePrograms).where(eq(attendancePrograms.id, programId));
 
   revalidatePath("/dashboard/attendance/programs");
   revalidatePath("/dashboard/attendance/sessions");

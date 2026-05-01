@@ -23,7 +23,7 @@ export function MemberDirectoryRowActions({
   const monthlyHref = `/dashboard/reports/monthly?memberId=${encodeURIComponent(memberId)}&month=${encodeURIComponent(monthYyyyMm)}`;
 
   return (
-    <div className="flex flex-wrap justify-end gap-1 sm:gap-2 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+    <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
       <Tooltip>
         <TooltipTrigger
           delay={250}

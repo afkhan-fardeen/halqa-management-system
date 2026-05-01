@@ -33,7 +33,7 @@ export function TimeRow12h({
           id={`${idPrefix}-hour`}
           value={hour12}
           onChange={(e) => onHour(Number(e.target.value))}
-          className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="h-10 rounded-lg border-0 bg-staff-surface-container-low px-2 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25 dark:bg-slate-800/80"
           aria-label={`${label} hour`}
         >
           {HOURS_12.map((h) => (
@@ -47,7 +47,7 @@ export function TimeRow12h({
           id={`${idPrefix}-min`}
           value={minute}
           onChange={(e) => onMinute(Number(e.target.value))}
-          className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="h-10 rounded-lg border-0 bg-staff-surface-container-low px-2 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25 dark:bg-slate-800/80"
           aria-label={`${label} minute`}
         >
           {MINUTES.map((m) => (
@@ -60,7 +60,7 @@ export function TimeRow12h({
           id={`${idPrefix}-ap`}
           value={meridiem}
           onChange={(e) => onMeridiem(e.target.value as Meridiem)}
-          className="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="h-10 rounded-lg border-0 bg-staff-surface-container-low px-2 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25 dark:bg-slate-800/80"
           aria-label={`${label} AM or PM`}
         >
           <option value="AM">AM</option>

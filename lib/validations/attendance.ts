@@ -32,6 +32,14 @@ export const createAttendanceSessionSchema = z.object({
   timezone: z.string().trim().min(1).max(64).optional(),
 });
 
+export const updateAttendanceSessionSchema = z.object({
+  sessionId: z.string().uuid(),
+  sessionDateYmd: ymd,
+  startTime: timeHHMM,
+  endTime: timeHHMM,
+  timezone: z.string().trim().min(1).max(64).optional(),
+});
+
 export const submitAttendanceMarkSchema = z.object({
   sessionId: z.string().uuid(),
   status: z.enum(["PRESENT", "LATE", "ABSENT"]),

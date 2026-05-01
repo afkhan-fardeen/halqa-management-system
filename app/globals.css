@@ -267,8 +267,12 @@
   --radius: 0.875rem;
 }
 
-/* Staff dashboard: aligned with member teal + stone neutrals */
+/* Staff dashboard: same font stack + rhythm as member PWA (Poppins / DM Sans) */
 [data-staff-dashboard] {
+  /* Tailwind / shadcn resolve font-sans & font-heading from these */
+  --font-sans: var(--font-member-body), "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-member-heading), "Poppins", ui-sans-serif, system-ui, sans-serif;
+
   --staff-primary: #008080;
   --staff-primary-dim: #006666;
   --staff-on-primary: #ffffff;
@@ -289,7 +293,34 @@
   --staff-tertiary-container: #e7e5e4;
   --staff-on-tertiary-container: #44403c;
   --staff-shadow-card: 0 1px 3px rgb(28 25 23 / 0.06);
-  font-family: var(--font-member-body), "DM Sans", ui-sans-serif, system-ui, sans-serif;
+
+  font-family: var(--font-sans);
+  /* Member theme body1-ish base */
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-staff-dashboard] h1,
+[data-staff-dashboard] h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+[data-staff-dashboard] h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+/* Member theme: buttons use heading family + 600 */
+[data-staff-dashboard] [data-slot="button"] {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
 }
 
 .dark [data-staff-dashboard] {
@@ -322,8 +353,7 @@
 }
 
 [data-staff-dashboard] .font-staff-headline {
-  font-family: var(--font-member-heading), "Poppins", ui-sans-serif, system-ui,
-    sans-serif;
+  font-family: var(--font-heading);
 }
 
 @import "./hms-ui.css";

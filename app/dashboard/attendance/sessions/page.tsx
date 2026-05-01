@@ -54,7 +54,7 @@ export default async function DashboardAttendanceSessionsListPage({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 md:space-y-10">
       <div>
         <Link
           href="/dashboard/attendance/programs"

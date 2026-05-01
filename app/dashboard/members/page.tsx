@@ -146,7 +146,7 @@ export default async function DashboardMembersPage({
             <Button
               type="submit"
               size="sm"
-              className="h-10 rounded-lg bg-staff-primary px-4 font-bold text-staff-on-primary shadow-sm hover:opacity-90"
+              className="h-10 rounded-lg bg-staff-primary px-4 font-bold text-white shadow-sm hover:opacity-90"
             >
               Apply
             </Button>

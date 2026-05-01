@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   deactivateAttendanceProgram,
+  deleteAttendanceProgram,
   regenerateAttendanceSessions,
   upsertAttendanceProgram,
 } from "@/lib/actions/attendance-programs";
@@ -10,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { HALQA_OPTIONS, type Halqa } from "@/lib/constants/halqas";
 import { toast } from "sonner";
+
+const staffControl =
+  "h-10 w-full rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25 dark:bg-slate-800/80";
 
 const KINDS = [
   { value: "DAWATI", label: "Dawati dars" },
@@ -25,6 +30,7 @@ export function AttendanceProgramForm({
   defaultHalqa: string;
   defaultGenderUnit: string;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [halqa, setHalqa] = useState("");
   const [genderUnit, setGenderUnit] = useState("");
@@ -58,6 +64,7 @@ export function AttendanceProgramForm({
             toast.success("Program saved", {
               description: "Add dated sessions below when you are ready.",
             });
+            router.refresh();
           } else {
             toast.error(res.error);
           }
@@ -74,7 +81,7 @@ export function AttendanceProgramForm({
                 required
                 value={halqa}
                 onChange={(e) => setHalqa(e.target.value)}
-                className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className={staffControl}
               >
                 <option value="">Select halqa</option>
                 {HALQA_OPTIONS.map((o) => (
@@ -91,7 +98,7 @@ export function AttendanceProgramForm({
                 required
                 value={genderUnit}
                 onChange={(e) => setGenderUnit(e.target.value)}
-                className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                className={staffControl}
               >
                 <option value="">Select</option>
                 <option value="MALE">Male</option>
@@ -100,7 +107,7 @@ export function AttendanceProgramForm({
             </div>
           </>
         ) : (
-          <p className="text-muted-foreground text-sm sm:col-span-2">
+          <p className="text-sm text-staff-on-surface-variant sm:col-span-2">
             Program applies to your halqa ({defaultHalqa}) and gender unit ({defaultGenderUnit}).
           </p>
         )}
@@ -110,7 +117,7 @@ export function AttendanceProgramForm({
             id="ap-kind"
             value={kind}
             onChange={(e) => setKind(e.target.value as typeof kind)}
-            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            className={staffControl}
           >
             {KINDS.map((k) => (
               <option key={k.value} value={k.value}>
@@ -125,12 +132,16 @@ export function AttendanceProgramForm({
             id="ap-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            className={staffControl}
             placeholder="e.g. Main hall"
           />
         </div>
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button
+        type="submit"
+        disabled={pending}
+        className="bg-staff-primary font-bold text-white hover:opacity-90 dark:text-teal-950"
+      >
         {pending ? "Saving…" : "Save program"}
       </Button>
     </form>
@@ -145,6 +156,7 @@ export function AttendanceProgramRowActions({
   /** Legacy programs with a weekday + times can still bulk-generate slots. */
   showRecurringRefresh?: boolean;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -162,6 +174,7 @@ export function AttendanceProgramRowActions({
                 toast.success("Sessions refreshed", {
                   description: `Inserted ${r.inserted} new session slot(s) if needed.`,
                 });
+                router.refresh();
               } else {
                 toast.error(r.error);
               }
@@ -188,6 +201,7 @@ export function AttendanceProgramRowActions({
             const r = await deactivateAttendanceProgram(programId);
             if (r.ok) {
               toast.success("Program deactivated");
+              router.refresh();
             } else {
               toast.error(r.error);
             }
@@ -196,6 +210,33 @@ export function AttendanceProgramRowActions({
         title="Stops new sessions; does not delete past sessions"
       >
         Deactivate (archive)
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={pending}
+        className="border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900/50 dark:text-red-300 dark:hover:bg-red-950/40"
+        onClick={() => {
+          if (
+            !confirm(
+              "Permanently delete this program and ALL of its sessions and attendance marks? This cannot be undone.",
+            )
+          ) {
+            return;
+          }
+          startTransition(async () => {
+            const r = await deleteAttendanceProgram(programId);
+            if (r.ok) {
+              toast.success("Program deleted");
+              router.refresh();
+            } else {
+              toast.error(r.error);
+            }
+          });
+        }}
+      >
+        Delete program
       </Button>
     </div>
   );

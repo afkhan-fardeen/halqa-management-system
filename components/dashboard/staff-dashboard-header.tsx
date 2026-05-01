@@ -46,7 +46,7 @@ export function StaffDashboardHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-30 flex h-14 w-full shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95 md:px-6",
+        "sticky top-0 z-50 flex h-14 w-full shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-950/95 md:px-6",
         "pt-[env(safe-area-inset-top)]",
       )}
       style={{ minHeight: "max(3.5rem, calc(3.5rem + env(safe-area-inset-top)))" }}

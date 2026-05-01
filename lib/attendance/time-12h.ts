@@ -81,6 +81,16 @@ export function formatTimeRange12hFrom24hStrings(
   return `${fmt(a)} – ${fmt(b)}`;
 }
 
+/** "HH:MM" 24h wall clock in Asia/Bahrain for an instant. */
+export function formatTimeHHMMBahrain(d: Date): string {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: BAHRAIN_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(d);
+}
+
 /** Format session wall-clock range in Bahrain (12-hour). */
 export function formatSessionRangeBahrain12h(startsAt: Date, endsAt: Date): string {
   const opts: Intl.DateTimeFormatOptions = {

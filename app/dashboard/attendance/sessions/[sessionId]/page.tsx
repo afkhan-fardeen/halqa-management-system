@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { AttendanceSessionEditForm } from "@/components/dashboard/attendance-session-edit-form";
 import { AttendanceSessionNudgeForm } from "@/components/dashboard/attendance-session-nudge";
 import {
   StaffPageHeader,
@@ -19,7 +20,17 @@ import { redirect } from "next/navigation";
 import { AttendanceDeleteSessionButton } from "@/components/dashboard/attendance-delete-session-button";
 import { listMarksForSessionForStaff } from "@/lib/queries/attendance";
 import { attendanceProgramDisplayTitle } from "@/lib/attendance/labels";
-import { formatSessionRangeBahrain12h } from "@/lib/attendance/time-12h";
+import {
+  formatSessionRangeBahrain12h,
+  formatTimeHHMMBahrain,
+} from "@/lib/attendance/time-12h";
+
+function sessionDateToYmd(d: Date): string {
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth() + 1;
+  const day = d.getUTCDate();
+  return `${y}-${String(m).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
 
 export default async function DashboardAttendanceSessionDetailPage({
   params,
@@ -55,8 +66,12 @@ export default async function DashboardAttendanceSessionDetailPage({
     data.session.endsAt,
   );
 
+  const initialYmd = sessionDateToYmd(data.session.sessionDate);
+  const initialStart24 = formatTimeHHMMBahrain(data.session.startsAt);
+  const initialEnd24 = formatTimeHHMMBahrain(data.session.endsAt);
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 md:space-y-10">
       <div>
         <Link
           href={`/dashboard/attendance/sessions?program=${data.program.id}`}
@@ -86,6 +101,18 @@ export default async function DashboardAttendanceSessionDetailPage({
           />
         }
       />
+
+      <StaffPanel
+        title="Edit session"
+        description="Change the calendar date or start/end times (Asia/Bahrain). Members see updates on refresh."
+      >
+        <AttendanceSessionEditForm
+          sessionId={data.session.id}
+          initialYmd={initialYmd}
+          initialStart24={initialStart24}
+          initialEnd24={initialEnd24}
+        />
+      </StaffPanel>
 
       <AttendanceSessionNudgeForm sessionId={data.session.id} />
 

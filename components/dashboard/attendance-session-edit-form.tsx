@@ -2,10 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { createAttendanceSession } from "@/lib/actions/attendance-programs";
+import { updateAttendanceSession } from "@/lib/actions/attendance-programs";
 import {
   parse24hTo12hParts,
-  todayYmdBahrain,
   twelveHourPartsTo24h,
   type Meridiem,
 } from "@/lib/attendance/time-12h";
@@ -14,26 +13,27 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-export type AttendanceProgramOption = {
-  id: string;
-  label: string;
-};
-
 const staffField =
-  "h-10 w-full max-w-md rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25 dark:bg-slate-800/80";
+  "h-10 w-full max-w-xs rounded-lg border-0 bg-staff-surface-container-low px-3 text-sm text-staff-on-surface focus:outline-none focus:ring-2 focus:ring-staff-primary/25 dark:bg-slate-800/80";
 
-export function AttendanceAddSessionForm({
-  programs,
+export function AttendanceSessionEditForm({
+  sessionId,
+  initialYmd,
+  initialStart24,
+  initialEnd24,
 }: {
-  programs: AttendanceProgramOption[];
+  sessionId: string;
+  initialYmd: string;
+  initialStart24: string;
+  initialEnd24: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [programId, setProgramId] = useState("");
-  const [sessionYmd, setSessionYmd] = useState(() => todayYmdBahrain());
+  const [sessionYmd, setSessionYmd] = useState(initialYmd);
 
-  const s0 = useMemo(() => parse24hTo12hParts("19:00"), []);
-  const e0 = useMemo(() => parse24hTo12hParts("20:30"), []);
+  const s0 = useMemo(() => parse24hTo12hParts(initialStart24), [initialStart24]);
+  const e0 = useMemo(() => parse24hTo12hParts(initialEnd24), [initialEnd24]);
+
   const [startH, setStartH] = useState(s0.hour12);
   const [startM, setStartM] = useState(s0.minute);
   const [startAp, setStartAp] = useState<Meridiem>(s0.meridiem);
@@ -41,23 +41,11 @@ export function AttendanceAddSessionForm({
   const [endM, setEndM] = useState(e0.minute);
   const [endAp, setEndAp] = useState<Meridiem>(e0.meridiem);
 
-  if (programs.length === 0) {
-    return (
-      <p className="text-sm text-staff-on-surface-variant">
-        Save a program first, then you can add sessions on any date.
-      </p>
-    );
-  }
-
   return (
     <form
       className="space-y-4"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!programId) {
-          toast.error("Choose a program");
-          return;
-        }
         const startTime = twelveHourPartsTo24h({
           hour12: startH,
           minute: startM,
@@ -69,15 +57,15 @@ export function AttendanceAddSessionForm({
           meridiem: endAp,
         });
         startTransition(async () => {
-          const res = await createAttendanceSession({
-            programId,
+          const res = await updateAttendanceSession({
+            sessionId,
             sessionDateYmd: sessionYmd,
             startTime,
             endTime,
             timezone: "Asia/Bahrain",
           });
           if (res.ok) {
-            toast.success("Session added");
+            toast.success("Session updated");
             router.refresh();
           } else {
             toast.error(res.error);
@@ -87,38 +75,21 @@ export function AttendanceAddSessionForm({
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="as-program">Program</Label>
-          <select
-            id="as-program"
-            required
-            value={programId}
-            onChange={(e) => setProgramId(e.target.value)}
-            className={staffField}
-          >
-            <option value="">Select program</option>
-            {programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="as-date">Session date</Label>
+          <Label htmlFor="es-date">Session date</Label>
           <input
-            id="as-date"
+            id="es-date"
             type="date"
             required
             value={sessionYmd}
             onChange={(e) => setSessionYmd(e.target.value)}
-            className={`${staffField} max-w-xs`}
+            className={staffField}
           />
           <p className="text-xs text-staff-on-surface-variant">
-            Calendar day in <strong>Asia/Bahrain</strong> for this class.
+            Calendar day in <strong>Asia/Bahrain</strong>.
           </p>
         </div>
         <TimeRow12h
-          idPrefix="as-start"
+          idPrefix="es-start"
           label="Start time"
           hour12={startH}
           minute={startM}
@@ -128,7 +99,7 @@ export function AttendanceAddSessionForm({
           onMeridiem={setStartAp}
         />
         <TimeRow12h
-          idPrefix="as-end"
+          idPrefix="es-end"
           label="End time"
           hour12={endH}
           minute={endM}
@@ -141,9 +112,9 @@ export function AttendanceAddSessionForm({
       <Button
         type="submit"
         disabled={pending}
-        className="bg-staff-primary font-bold text-white hover:opacity-90 dark:text-teal-950"
+        className="rounded-lg bg-staff-primary font-bold text-white hover:opacity-90 dark:text-teal-950"
       >
-        {pending ? "Adding…" : "Add session"}
+        {pending ? "Saving…" : "Save session changes"}
       </Button>
     </form>
   );

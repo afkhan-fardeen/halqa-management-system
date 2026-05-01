@@ -2,13 +2,7 @@ import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
 import { db } from "@/lib/db";
-import {
-  aiyanat,
-  contacts,
-  dailyLogs,
-  memberMonthlyStaffNotes,
-  users,
-} from "@/lib/db/schema";
+import { aiyanat, contacts, dailyLogs, users } from "@/lib/db/schema";
 import {
   eachYmdInRangeUtc,
   formatYmdUtc,
@@ -220,11 +214,6 @@ export type MemberMonthlyReportData = {
     pageSize: number;
   };
   aiyanatHistory: MemberMonthlyAiyanatRow[];
-  staffNote: {
-    body: string;
-    updatedAt: string;
-    updatedByName: string | null;
-  } | null;
 };
 
 export type MemberMonthlyReportOptions = {
@@ -398,33 +387,6 @@ export async function getMemberMonthlyReport(
   const days = eachYmdInRangeUtc(range.fromYmd, range.toYmd);
   const daysInMonth = days.length;
 
-  const [noteJoin] = await db
-    .select({
-      body: memberMonthlyStaffNotes.body,
-      updatedAt: memberMonthlyStaffNotes.updatedAt,
-      updaterName: users.name,
-    })
-    .from(memberMonthlyStaffNotes)
-    .leftJoin(users, eq(users.id, memberMonthlyStaffNotes.updatedBy))
-    .where(
-      and(
-        eq(memberMonthlyStaffNotes.memberId, memberId),
-        eq(memberMonthlyStaffNotes.month, monthYyyyMm),
-      ),
-    )
-    .limit(1);
-
-  const staffNote = noteJoin
-    ? {
-        body: noteJoin.body,
-        updatedAt: (noteJoin.updatedAt instanceof Date
-          ? noteJoin.updatedAt
-          : new Date(String(noteJoin.updatedAt))
-        ).toISOString(),
-        updatedByName: noteJoin.updaterName ?? null,
-      }
-    : null;
-
   return {
     member: {
       id: member.id,
@@ -458,6 +420,5 @@ export async function getMemberMonthlyReport(
       pageSize: contactsPageSize,
     },
     aiyanatHistory,
-    staffNote,
   };
 }
