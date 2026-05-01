@@ -335,14 +335,14 @@ export function MemberMonthlyReportClient({
                   <MetricTile
                     icon="library_books"
                     iconBg="bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300"
-                    label="Literature — with book (days)"
-                    value={String(report.summary.daysLiteratureWithBook)}
+                    label="Literature — yes (days)"
+                    value={String(report.summary.daysLiteratureYes)}
                   />
                   <MetricTile
                     icon="book_2"
                     iconBg="bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
-                    label="Literature — skipped (days)"
-                    value={String(report.summary.daysLiteratureSkipped)}
+                    label="Literature — no (days)"
+                    value={String(report.summary.daysLiteratureNo)}
                   />
                   <MetricTile
                     icon="contacts"

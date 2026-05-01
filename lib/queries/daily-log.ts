@@ -56,9 +56,7 @@ export type DailyLogForEdit = {
   };
   hadithLiterature: {
     hadithRead: boolean;
-    literatureSkipped: boolean;
-    bookTitle: string;
-    bookDescription: string;
+    literatureRead: boolean;
   };
 };
 
@@ -105,15 +103,11 @@ export async function getDailyLogForEdit(
   const hadithLiterature = log.hadithSaved
     ? {
         hadithRead: log.hadith,
-        literatureSkipped: log.literatureSkipped,
-        bookTitle: log.bookTitle ?? "",
-        bookDescription: log.bookDescription ?? "",
+        literatureRead: log.literature,
       }
     : {
         hadithRead: false,
-        literatureSkipped: false,
-        bookTitle: "",
-        bookDescription: "",
+        literatureRead: false,
       };
 
   return {

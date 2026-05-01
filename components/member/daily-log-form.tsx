@@ -22,7 +22,6 @@ import {
   MenuItem,
   Select,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -71,11 +70,26 @@ function defaultForm(g: Gender, dateYmd: string): FormState {
     },
     hadithLiterature: {
       hadithRead: false,
-      literatureSkipped: false,
-      bookTitle: "",
-      bookDescription: "",
+      literatureRead: false,
     },
   };
+}
+
+function normalizeHadithLiteratureFromDraft(
+  raw: unknown,
+  fallback: DailyLogForEdit["hadithLiterature"],
+): DailyLogForEdit["hadithLiterature"] {
+  if (!raw || typeof raw !== "object") return fallback;
+  const o = raw as Record<string, unknown>;
+  const hadithRead =
+    typeof o.hadithRead === "boolean" ? o.hadithRead : fallback.hadithRead;
+  if (typeof o.literatureRead === "boolean") {
+    return { hadithRead, literatureRead: o.literatureRead };
+  }
+  if (typeof o.literatureSkipped === "boolean") {
+    return { hadithRead, literatureRead: !o.literatureSkipped };
+  }
+  return { hadithRead, literatureRead: fallback.literatureRead };
 }
 
 function labelForOpt(o: string) {
@@ -192,7 +206,10 @@ export function DailyLogForm({
               ? (parsed.salah ?? d.salah)
               : normalizeUnsavedSalahFromDraft(parsed.salah, genderUnit),
             quran: parsed.quran ?? d.quran,
-            hadithLiterature: parsed.hadithLiterature ?? d.hadithLiterature,
+            hadithLiterature: normalizeHadithLiteratureFromDraft(
+              parsed.hadithLiterature,
+              d.hadithLiterature,
+            ),
           };
           setForm(merged);
           if (!draftToastShown.current) {
@@ -241,7 +258,10 @@ export function DailyLogForm({
               ? (parsed.salah ?? d.salah)
               : normalizeUnsavedSalahFromDraft(parsed.salah, genderUnit),
             quran: parsed.quran ?? d.quran,
-            hadithLiterature: parsed.hadithLiterature ?? d.hadithLiterature,
+            hadithLiterature: normalizeHadithLiteratureFromDraft(
+              parsed.hadithLiterature,
+              d.hadithLiterature,
+            ),
           };
           setForm(merged);
           return;
@@ -626,14 +646,14 @@ export function DailyLogForm({
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={form.hadithLiterature.literatureSkipped}
+                  checked={form.hadithLiterature.literatureRead}
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
                       hadithSaved: false,
                       hadithLiterature: {
                         ...f.hadithLiterature,
-                        literatureSkipped: e.target.checked,
+                        literatureRead: e.target.checked,
                       },
                     }))
                   }
@@ -641,47 +661,8 @@ export function DailyLogForm({
                   size="medium"
                 />
               }
-              label={<Typography fontWeight={500}>No literature</Typography>}
+              label={<Typography fontWeight={500}>Literature read</Typography>}
             />
-            {!form.hadithLiterature.literatureSkipped ? (
-              <>
-                <TextField
-                  label="Book"
-                  value={form.hadithLiterature.bookTitle}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      hadithSaved: false,
-                      hadithLiterature: {
-                        ...f.hadithLiterature,
-                        bookTitle: e.target.value,
-                      },
-                    }))
-                  }
-                  fullWidth
-                  size="small"
-                />
-                <TextField
-                  label="Summary (max 500)"
-                  multiline
-                  rows={3}
-                  inputProps={{ maxLength: 500 }}
-                  value={form.hadithLiterature.bookDescription}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      hadithSaved: false,
-                      hadithLiterature: {
-                        ...f.hadithLiterature,
-                        bookDescription: e.target.value,
-                      },
-                    }))
-                  }
-                  fullWidth
-                  size="small"
-                />
-              </>
-            ) : null}
           </Stack>
         </CardContent>
       </Card>

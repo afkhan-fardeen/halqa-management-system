@@ -6,28 +6,9 @@ const femalePrayerEnum = z.enum(["ON_TIME", "QAZA"]);
 const hadithLiteratureSchema = z
   .object({
     hadithRead: z.boolean(),
-    literatureSkipped: z.boolean(),
-    bookTitle: z.string().max(255).optional(),
-    bookDescription: z.string().max(500).optional(),
+    literatureRead: z.boolean(),
   })
-  .superRefine((hl, ctx) => {
-    if (!hl.literatureSkipped) {
-      if (!hl.bookTitle?.trim()) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Book title is required",
-          path: ["bookTitle"],
-        });
-      }
-      if (!hl.bookDescription?.trim()) {
-        ctx.addIssue({
-          code: "custom",
-          message: "Description is required",
-          path: ["bookDescription"],
-        });
-      }
-    }
-  });
+  .strict();
 
 export function buildDailyLogSchema(genderUnit: "MALE" | "FEMALE") {
   const prayerSchema =

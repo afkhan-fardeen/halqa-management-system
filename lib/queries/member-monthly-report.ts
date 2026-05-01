@@ -172,6 +172,7 @@ export type MemberMonthlyDailyPoint = {
   quranPages: number;
   qazaCount: number;
   hadith: boolean;
+  literature: boolean;
   contactCount: number;
 };
 
@@ -207,10 +208,10 @@ export type MemberMonthlyReportData = {
     daysHadithYes: number;
     /** Days where hadith section was saved and hadith read = no. */
     daysHadithNo: number;
-    /** Days where literature was explicitly skipped (hadith section saved). */
-    daysLiteratureSkipped: number;
-    /** Days with a book title logged (not skipped). */
-    daysLiteratureWithBook: number;
+    /** Days where hadith section was saved and literature read = yes. */
+    daysLiteratureYes: number;
+    /** Days where hadith section was saved and literature read = no. */
+    daysLiteratureNo: number;
     /** Days where the Quran section was saved for that daily log. */
     daysWithQuranSaved: number;
     /** Quran type counts among days with quran saved. */
@@ -261,8 +262,7 @@ export async function getMemberMonthlyReport(
       quranPages: dailyLogs.quranPages,
       hadith: dailyLogs.hadith,
       hadithSaved: dailyLogs.hadithSaved,
-      literatureSkipped: dailyLogs.literatureSkipped,
-      bookTitle: dailyLogs.bookTitle,
+      literature: dailyLogs.literature,
     })
     .from(dailyLogs)
     .where(
@@ -326,8 +326,8 @@ export async function getMemberMonthlyReport(
   const quranByType = emptyQuranTypeTotals();
   let daysHadithYes = 0;
   let daysHadithNo = 0;
-  let daysLiteratureSkipped = 0;
-  let daysLiteratureWithBook = 0;
+  let daysLiteratureYes = 0;
+  let daysLiteratureNo = 0;
   let daysWithQuranSaved = 0;
 
   for (const log of logRows) {
@@ -341,10 +341,8 @@ export async function getMemberMonthlyReport(
     if (log.hadithSaved) {
       if (log.hadith) daysHadithYes += 1;
       else daysHadithNo += 1;
-      if (log.literatureSkipped) daysLiteratureSkipped += 1;
-      else if (log.bookTitle && log.bookTitle.trim().length > 0) {
-        daysLiteratureWithBook += 1;
-      }
+      if (log.literature) daysLiteratureYes += 1;
+      else daysLiteratureNo += 1;
     }
   }
 
@@ -367,6 +365,7 @@ export async function getMemberMonthlyReport(
       log && log.quranSaved !== false ? log.quranPages : 0;
     const qaza = log ? qazaCountForLog(log) : 0;
     const hadith = log ? log.hadith : false;
+    const literature = log ? log.literature : false;
     const contactCount = contactsByYmd.get(ymd) ?? 0;
 
     const dt = parseYmdToUtcDate(ymd);
@@ -388,6 +387,7 @@ export async function getMemberMonthlyReport(
       quranPages,
       qazaCount: qaza,
       hadith,
+      literature,
       contactCount,
     });
   }
@@ -452,8 +452,8 @@ export async function getMemberMonthlyReport(
       prayerByStatus,
       daysHadithYes,
       daysHadithNo,
-      daysLiteratureSkipped,
-      daysLiteratureWithBook,
+      daysLiteratureYes,
+      daysLiteratureNo,
       daysWithQuranSaved,
       quranByType,
     },

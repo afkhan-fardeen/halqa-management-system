@@ -85,6 +85,13 @@
       "when": 1775400000000,
       "tag": "0011_ehtisaab_nudge_sent",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1775500000000,
+      "tag": "0012_daily_log_literature_yes_no",
+      "breakpoints": true
     }
   ]
 }

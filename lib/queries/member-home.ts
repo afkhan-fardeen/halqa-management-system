@@ -14,51 +14,8 @@ function localYmdDaysAgo(daysAgo: number): string {
   return `${y}-${m}-${day}`;
 }
 
-function weekdayLetter(ymd: string): string {
-  const [y, mo, da] = ymd.split("-").map(Number);
-  const dt = new Date(y, mo - 1, da);
-  const letters = ["S", "M", "T", "W", "T", "F", "S"];
-  return letters[dt.getDay()] ?? "?";
-}
-
-async function isDayFullySubmitted(
-  userId: string,
-  dayUtc: Date,
-): Promise<boolean> {
-  try {
-    const [row] = await db
-      .select({
-        salatSaved: dailyLogs.salatSaved,
-        quranSaved: dailyLogs.quranSaved,
-        hadithSaved: dailyLogs.hadithSaved,
-      })
-      .from(dailyLogs)
-      .where(and(eq(dailyLogs.userId, userId), eq(dailyLogs.date, dayUtc)))
-      .limit(1);
-    return Boolean(
-      row?.salatSaved && row?.quranSaved && row?.hadithSaved,
-    );
-  } catch (e) {
-    if (!isUndefinedColumnError(e)) throw e;
-    const [row] = await db
-      .select({ id: dailyLogs.id })
-      .from(dailyLogs)
-      .where(and(eq(dailyLogs.userId, userId), eq(dailyLogs.date, dayUtc)))
-      .limit(1);
-    return Boolean(row);
-  }
-}
-
-export type WeekPip = {
-  label: string;
-  ymd: string;
-  state: "done" | "miss" | "today";
-};
-
 export type MemberHomeDashboard = {
   submittedToday: boolean;
-  daysSubmittedLast7: number;
-  weekPips: WeekPip[];
   yesterdayPrayers: { name: string; chip: PrayerChip }[] | null;
   weekQuranPages: number;
   weekContacts: { total: number; muslim: number; nonMuslim: number };
@@ -75,31 +32,6 @@ export async function getMemberHomeDashboard(
 ): Promise<MemberHomeDashboard> {
   const todayYmd = todayYmdLocal();
   const todayUtc = parseYmdToUtcDate(todayYmd);
-
-  const pipPromises = Array.from({ length: 7 }, async (_, i) => {
-    const ymd = localYmdDaysAgo(6 - i);
-    const dayUtc = parseYmdToUtcDate(ymd);
-    const isToday = ymd === todayYmd;
-    const done = await isDayFullySubmitted(userId, dayUtc);
-    const state: WeekPip["state"] = isToday
-      ? done
-        ? "done"
-        : "today"
-      : done
-        ? "done"
-        : "miss";
-    return {
-      label: weekdayLetter(ymd),
-      ymd,
-      state,
-    };
-  });
-  const weekPips: WeekPip[] = await Promise.all(pipPromises);
-
-  let daysSubmittedLast7 = 0;
-  for (const p of weekPips) {
-    if (p.state === "done") daysSubmittedLast7 += 1;
-  }
 
   const yesterdayYmd = localYmdDaysAgo(1);
   const yesterdayUtc = parseYmdToUtcDate(yesterdayYmd);
@@ -241,8 +173,6 @@ export async function getMemberHomeDashboard(
 
   return {
     submittedToday,
-    daysSubmittedLast7,
-    weekPips,
     yesterdayPrayers,
     weekQuranPages,
     weekContacts: { total: muslim + nonMuslim, muslim, nonMuslim },

@@ -50,8 +50,8 @@ export async function GET(req: Request) {
       ["Qaza (prayer-day count)", report.summary.totalQazaPrayers],
       ["Hadith yes (days)", report.summary.daysHadithYes],
       ["Hadith no (days)", report.summary.daysHadithNo],
-      ["Literature skipped (days)", report.summary.daysLiteratureSkipped],
-      ["Literature with book (days)", report.summary.daysLiteratureWithBook],
+      ["Literature yes (days)", report.summary.daysLiteratureYes],
+      ["Literature no (days)", report.summary.daysLiteratureNo],
       ["Quran type — Tilawat (days)", q.TILAWAT],
       ["Quran type — Tafseer (days)", q.TAFSEER],
       ["Quran type — Both (days)", q.BOTH],
@@ -77,6 +77,7 @@ export async function GET(req: Request) {
       { header: "Quran pages", key: "quran", width: 12 },
       { header: "Qaza count", key: "qaza", width: 10 },
       { header: "Hadith", key: "hadith", width: 8 },
+      { header: "Literature", key: "literature", width: 10 },
       { header: "Contacts", key: "contacts", width: 10 },
     ];
     for (const d of report.dailySeries) {
@@ -86,6 +87,7 @@ export async function GET(req: Request) {
         quran: d.quranPages,
         qaza: d.qazaCount,
         hadith: d.hadith ? "Yes" : "No",
+        literature: d.literature ? "Yes" : "No",
         contacts: d.contactCount,
       });
     }
@@ -131,8 +133,8 @@ export async function GET(req: Request) {
     { section: "On time total", value: report.summary.prayerByStatus.ON_TIME },
     { section: "Hadith yes days", value: report.summary.daysHadithYes },
     { section: "Hadith no days", value: report.summary.daysHadithNo },
-    { section: "Literature skipped days", value: report.summary.daysLiteratureSkipped },
-    { section: "Literature with book days", value: report.summary.daysLiteratureWithBook },
+    { section: "Literature yes days", value: report.summary.daysLiteratureYes },
+    { section: "Literature no days", value: report.summary.daysLiteratureNo },
     { section: "Total contacts", value: report.summary.totalContacts },
   ];
 
