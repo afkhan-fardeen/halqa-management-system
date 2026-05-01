@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { DM_Sans, DM_Serif_Display, Geist_Mono, Poppins } from "next/font/google";
+import { PWA_ASSETS } from "@/lib/constants/pwa-assets";
 import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { SwUpdatePrompt } from "@/components/pwa/sw-update-prompt";
 import { AuthSessionProvider } from "@/components/providers/session-provider";
@@ -60,10 +61,26 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
+  icons: {
+    icon: [
+      { url: PWA_ASSETS.icon48, sizes: "48x48", type: "image/png" },
+      { url: PWA_ASSETS.icon72, sizes: "72x72", type: "image/png" },
+      { url: PWA_ASSETS.icon96, sizes: "96x96", type: "image/png" },
+      { url: PWA_ASSETS.icon144, sizes: "144x144", type: "image/png" },
+      { url: PWA_ASSETS.icon192, sizes: "192x192", type: "image/png" },
+      { url: PWA_ASSETS.icon512, sizes: "512x512", type: "image/png" },
+      { url: PWA_ASSETS.iconSvg, type: "image/svg+xml" },
+    ],
+    apple: [{ url: PWA_ASSETS.appleTouch180, sizes: "180x180", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     title: "Qalbee",
     statusBarStyle: "default",
+  },
+  other: {
+    "msapplication-TileColor": THEME_LIGHT,
+    "msapplication-TileImage": PWA_ASSETS.windowsTile150,
   },
 };
 

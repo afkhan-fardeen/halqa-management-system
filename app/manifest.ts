@@ -18,6 +18,30 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["lifestyle", "productivity"],
     icons: [
       {
+        src: PWA_ASSETS.icon48,
+        sizes: "48x48",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: PWA_ASSETS.icon72,
+        sizes: "72x72",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: PWA_ASSETS.icon96,
+        sizes: "96x96",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: PWA_ASSETS.icon144,
+        sizes: "144x144",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
         src: PWA_ASSETS.icon192,
         sizes: "192x192",
         type: "image/png",
