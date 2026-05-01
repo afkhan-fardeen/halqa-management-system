@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { StaffPageHeader } from "@/components/dashboard/staff-page-section";
+import {
+  StaffMetricCard,
+  StaffPageHeader,
+} from "@/components/dashboard/staff-page-section";
 import { adminSendPasswordResetEmail } from "@/lib/actions/password-reset";
 import { deactivateMember } from "@/lib/actions/member-admin";
 import {
@@ -72,17 +75,32 @@ export default async function DashboardMembersPage({
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
-        <KpiCard label="Total members" value={formatNumber(kpis.total)} />
-        <KpiCard
+        <StaffMetricCard
+          label="Total members"
+          value={formatNumber(kpis.total)}
+          valueClassName="!text-3xl !font-bold"
+        />
+        <StaffMetricCard
           label="Active"
           value={formatNumber(kpis.active)}
-          accent="text-emerald-600"
+          valueClassName="!text-3xl !font-bold text-emerald-600 dark:text-emerald-400"
         />
-        <KpiCard label="Pending" value={formatNumber(kpis.pending)} />
-        <KpiCard label="Deactivated" value={formatNumber(kpis.deactivated)} />
+        <StaffMetricCard
+          label="Pending"
+          value={formatNumber(kpis.pending)}
+          valueClassName={cn(
+            "!text-3xl !font-bold",
+            kpis.pending > 0 && "text-amber-600 dark:text-amber-400",
+          )}
+        />
+        <StaffMetricCard
+          label="Deactivated"
+          value={formatNumber(kpis.deactivated)}
+          valueClassName="!text-3xl !font-bold"
+        />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest shadow-sm">
+      <div className="staff-elevated-surface overflow-hidden rounded-2xl bg-staff-surface-container-lowest dark:bg-slate-900">
         <div className="flex flex-col gap-4 border-b border-staff-outline-variant/10 p-6 md:flex-row md:items-center md:justify-between">
           <form
             className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
@@ -291,34 +309,6 @@ export default async function DashboardMembersPage({
             ) : null}
           </>
         )}
-      </div>
-    </div>
-  );
-}
-
-function KpiCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: string;
-}) {
-  return (
-    <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm">
-      <p className="mb-2 text-xs font-bold uppercase tracking-wider text-staff-on-surface-variant">
-        {label}
-      </p>
-      <div className="flex items-end justify-between gap-2">
-        <h3
-          className={cn(
-            "font-staff-headline text-3xl font-bold text-staff-on-surface",
-            accent,
-          )}
-        >
-          {value}
-        </h3>
       </div>
     </div>
   );

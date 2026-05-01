@@ -25,6 +25,8 @@ export type StaffHeaderUser = {
   email: string | null;
   image: string | null;
   role: UserRole;
+  /** Halqa · unit · role line for staff context (shown under name when set). */
+  scopeSubtitle?: string | null;
 };
 
 export function StaffDashboardHeader({
@@ -85,10 +87,15 @@ export function StaffDashboardHeader({
         {/* User chip */}
         <div className="hidden items-center gap-2 sm:flex">
           <div className="min-w-0 text-right">
-            <p className="max-w-[9rem] truncate text-sm font-semibold leading-tight text-slate-800 dark:text-slate-200">
+            <p className="max-w-[12rem] truncate text-sm font-semibold leading-tight text-slate-800 dark:text-slate-200">
               {displayName}
             </p>
-            <p className="text-[10px] font-medium leading-tight text-slate-400">{roleLabel}</p>
+            <p
+              className="max-w-[12rem] truncate text-[10px] font-medium leading-tight text-slate-400 dark:text-slate-500"
+              title={user.scopeSubtitle ?? roleLabel}
+            >
+              {user.scopeSubtitle ?? roleLabel}
+            </p>
           </div>
           {user.image ? (
             <Image

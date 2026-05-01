@@ -46,15 +46,15 @@ function StaffSidebarChrome({
           className="flex min-w-0 items-center gap-2.5"
           onClick={() => onNavigate?.()}
         >
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-black text-white select-none">
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-staff-primary to-staff-primary-dim text-sm font-black text-white shadow-sm select-none">
             Q
           </span>
           {!collapsed && (
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold leading-none text-slate-900 dark:text-slate-100">
+              <p className="truncate text-sm font-bold leading-none text-staff-on-surface dark:text-slate-100">
                 Qalbee
               </p>
-              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-staff-on-surface-variant dark:text-slate-500">
                 Staff
               </p>
             </div>
@@ -158,7 +158,7 @@ export function DashboardLayoutClient({
   }, []);
 
   const sidebarCls = cn(
-    "flex h-full min-h-0 flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800",
+    "flex h-full min-h-0 flex-col border-r border-staff-outline-variant/20 bg-staff-surface-container-lowest dark:border-slate-800 dark:bg-slate-950",
     "w-60 transition-[width] duration-200 ease-out",
     sidebarCollapsed && "md:w-[3.75rem] md:overflow-x-hidden",
   );
@@ -167,7 +167,7 @@ export function DashboardLayoutClient({
     <div
       data-staff-dashboard
       className={cn(
-        "min-h-dvh overflow-x-hidden bg-slate-50 text-staff-on-surface dark:bg-slate-950",
+        "min-h-dvh overflow-x-hidden bg-staff-background text-staff-on-surface dark:bg-slate-950",
         shellClassName,
       )}
     >

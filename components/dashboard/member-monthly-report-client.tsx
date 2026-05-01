@@ -34,6 +34,7 @@ import {
   prayerRowsForGender,
 } from "@/lib/utils/monthly-report-prayer-display";
 import { Button } from "@/components/ui/button";
+import { StaffPageHeader } from "@/components/dashboard/staff-page-section";
 
 type Counterpart = { name: string; roleLabel: "Secretary" | "Incharge" } | null;
 
@@ -120,35 +121,38 @@ export function MemberMonthlyReportClient({
 
   return (
     <div className="space-y-8 md:space-y-10">
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="font-staff-headline text-3xl font-extrabold leading-tight tracking-tight text-staff-on-surface sm:text-[2.2rem] md:text-[2.75rem]">
-            Monthly member report
-          </h1>
-          <p className="mt-2 max-w-2xl text-staff-on-surface-variant">
-            {role === "ADMIN"
-              ? "All halqas — pick an active member and month."
-              : "Your halqa — pick an active member and month."}
-          </p>
-          {counterpart ? (
-            <p className="mt-2 text-sm font-medium text-staff-on-surface-variant">
-              {counterpart.roleLabel}: {counterpart.name}
+      <StaffPageHeader
+        title="Monthly member report"
+        titleClassName="text-3xl font-extrabold leading-tight sm:text-[2.2rem] md:text-[2.75rem]"
+        description={
+          <>
+            <p>
+              {role === "ADMIN"
+                ? "All halqas — pick an active member and month."
+                : "Your halqa — pick an active member and month."}
             </p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-3 rounded-xl bg-staff-surface-container-low px-4 py-2">
-            <span className="material-symbols-outlined text-staff-primary text-[22px]">
-              calendar_month
-            </span>
-            <span className="font-semibold text-staff-on-surface">
-              {formatMonthHeading(month || currentMonthYyyyMm())}
-            </span>
+            {counterpart ? (
+              <p className="mt-2 text-sm font-medium text-staff-on-surface-variant">
+                {counterpart.roleLabel}: {counterpart.name}
+              </p>
+            ) : null}
+          </>
+        }
+        action={
+          <div className="flex flex-wrap items-center gap-3 md:items-end">
+            <div className="flex items-center gap-3 rounded-xl bg-staff-surface-container-low px-4 py-2 dark:bg-slate-800/80">
+              <span className="material-symbols-outlined text-[22px] text-staff-primary dark:text-blue-400">
+                calendar_month
+              </span>
+              <span className="font-semibold text-staff-on-surface dark:text-slate-100">
+                {formatMonthHeading(month || currentMonthYyyyMm())}
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
-      <div className="rounded-xl border border-staff-outline-variant/10 bg-staff-surface-container-lowest p-6 shadow-sm md:p-8">
+      <div className="staff-elevated-surface rounded-2xl bg-staff-surface-container-lowest p-6 md:p-8 dark:bg-slate-900">
         <label className="mb-4 block text-[0.6875rem] font-bold uppercase tracking-wider text-staff-on-surface-variant/80">
           Month &amp; member
         </label>

@@ -267,7 +267,7 @@
   --radius: 0.875rem;
 }
 
-/* Staff dashboard: tokens aligned with code.html reference */
+/* Staff dashboard: semantic surfaces + Material Symbols elsewhere */
 [data-staff-dashboard] {
   --staff-primary: #0053db;
   --staff-primary-dim: #0048c1;
@@ -287,7 +287,33 @@
   --staff-tertiary: #605c78;
   --staff-tertiary-container: #e3dbfd;
   --staff-on-tertiary-container: #514d68;
+  --staff-shadow-card: 0 1px 3px rgb(15 23 42 / 0.06);
   font-family: var(--font-staff-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark [data-staff-dashboard] {
+  --staff-on-surface: #f1f5f9;
+  --staff-on-surface-variant: #94a3b8;
+  --staff-surface-container: #334155;
+  --staff-surface-container-high: #334155;
+  --staff-surface-container-low: #1e293b;
+  --staff-surface-container-lowest: #0f172a;
+  --staff-background: #020617;
+  --staff-outline-variant: #64748b;
+  --staff-primary-container: rgb(30 58 138 / 0.45);
+  --staff-on-primary-container: #bfdbfe;
+  --staff-shadow-card: 0 1px 3px rgb(0 0 0 / 0.35);
+}
+
+[data-staff-dashboard] .staff-elevated-surface {
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--staff-outline-variant) 22%, transparent);
+  background: var(--staff-surface-container-lowest);
+  box-shadow: var(--staff-shadow-card);
+}
+
+.dark [data-staff-dashboard] .staff-elevated-surface {
+  border-color: rgb(51 65 85 / 0.55);
 }
 
 [data-staff-dashboard] .font-staff-headline {

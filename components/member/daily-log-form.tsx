@@ -13,13 +13,15 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Checkbox,
   Chip,
   CircularProgress,
   FormControl,
   FormControlLabel,
+  FormLabel,
   InputLabel,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
   Stack,
   Typography,
@@ -622,47 +624,51 @@ export function DailyLogForm({
           sx={{ pb: 0 }}
         />
         <CardContent sx={{ pt: 2 }}>
-          <Stack spacing={2}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={form.hadithLiterature.hadithRead}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      hadithSaved: false,
-                      hadithLiterature: {
-                        ...f.hadithLiterature,
-                        hadithRead: e.target.checked,
-                      },
-                    }))
-                  }
-                  color="primary"
-                  size="medium"
-                />
-              }
-              label={<Typography fontWeight={500}>Hadith read</Typography>}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={form.hadithLiterature.literatureRead}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      hadithSaved: false,
-                      hadithLiterature: {
-                        ...f.hadithLiterature,
-                        literatureRead: e.target.checked,
-                      },
-                    }))
-                  }
-                  color="primary"
-                  size="medium"
-                />
-              }
-              label={<Typography fontWeight={500}>Literature read</Typography>}
-            />
+          <Stack spacing={2.5}>
+            <FormControl component="fieldset" variant="standard" sx={{ m: 0 }}>
+              <FormLabel component="legend" sx={{ typography: "subtitle2", fontWeight: 600, mb: 0.75 }}>
+                Hadith
+              </FormLabel>
+              <RadioGroup
+                row
+                value={form.hadithLiterature.hadithRead ? "yes" : "no"}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    hadithSaved: false,
+                    hadithLiterature: {
+                      ...f.hadithLiterature,
+                      hadithRead: e.target.value === "yes",
+                    },
+                  }))
+                }
+              >
+                <FormControlLabel value="yes" control={<Radio color="primary" />} label="Yes" />
+                <FormControlLabel value="no" control={<Radio color="primary" />} label="No" sx={{ ml: 1 }} />
+              </RadioGroup>
+            </FormControl>
+            <FormControl component="fieldset" variant="standard" sx={{ m: 0 }}>
+              <FormLabel component="legend" sx={{ typography: "subtitle2", fontWeight: 600, mb: 0.75 }}>
+                Literature
+              </FormLabel>
+              <RadioGroup
+                row
+                value={form.hadithLiterature.literatureRead ? "yes" : "no"}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    hadithSaved: false,
+                    hadithLiterature: {
+                      ...f.hadithLiterature,
+                      literatureRead: e.target.value === "yes",
+                    },
+                  }))
+                }
+              >
+                <FormControlLabel value="yes" control={<Radio color="primary" />} label="Yes" />
+                <FormControlLabel value="no" control={<Radio color="primary" />} label="No" sx={{ ml: 1 }} />
+              </RadioGroup>
+            </FormControl>
           </Stack>
         </CardContent>
       </Card>

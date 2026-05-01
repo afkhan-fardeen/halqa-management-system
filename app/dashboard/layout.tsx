@@ -3,7 +3,9 @@ import { Inter, Manrope } from "next/font/google";
 import { auth } from "@/auth";
 import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-client";
 import type { StaffHeaderUser } from "@/components/dashboard/staff-dashboard-header";
+import { isStaffRole } from "@/lib/auth/roles";
 import { getUnreadNotificationCount } from "@/lib/queries/notifications";
+import { staffRoleLabel } from "@/lib/utils/profile-display";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -30,12 +32,16 @@ export default async function DashboardLayout({
         email: session.user.email ?? null,
         image: session.user.image ?? null,
         role: session.user.role,
+        scopeSubtitle: isStaffRole(session.user.role)
+          ? `${staffRoleLabel(session.user.role)} · ${session.user.halqa.replaceAll("_", " ")} · ${session.user.genderUnit === "MALE" ? "Male unit" : "Female unit"}`
+          : null,
       }
     : {
         name: null,
         email: null,
         image: null,
         role: "SECRETARY",
+        scopeSubtitle: null,
       };
 
   const materialSymbolsHref =

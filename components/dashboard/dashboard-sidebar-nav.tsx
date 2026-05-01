@@ -43,17 +43,19 @@ export function DashboardSidebarNav({
                     title={collapsed ? label : undefined}
                     aria-label={collapsed ? label : undefined}
                     className={cn(
-                      "flex h-9 items-center gap-2.5 rounded-lg px-3 text-sm font-medium transition-colors",
-                      collapsed ? "md:justify-center md:px-0 md:w-9 md:mx-auto" : "",
+                      "flex h-9 items-center gap-2.5 rounded-xl px-3 text-sm font-medium transition-colors",
+                      collapsed ? "md:mx-auto md:w-9 md:justify-center md:px-0" : "",
                       active
-                        ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400"
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
+                        ? "bg-staff-primary-container text-staff-on-primary-container shadow-sm dark:bg-blue-950/55 dark:text-blue-300"
+                        : "text-staff-on-surface-variant hover:bg-staff-surface-container hover:text-staff-on-surface dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-200",
                     )}
                   >
                     <span
                       className={cn(
                         "material-symbols-outlined shrink-0 text-[18px] leading-none",
-                        active ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-500",
+                        active
+                          ? "text-staff-primary dark:text-blue-400"
+                          : "text-staff-on-surface-variant dark:text-slate-500",
                       )}
                     >
                       {icon}

@@ -121,7 +121,7 @@ export default async function DashboardSubmissionsPage({
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 md:space-y-10">
       <StaffPageHeader
         title="Submissions & contacts"
         description="Read-only. Filter by date range (optional)."
