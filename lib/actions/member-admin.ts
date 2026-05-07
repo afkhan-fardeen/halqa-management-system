@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isInStaffScope } from "@/lib/auth/staff-scope";
 import { NOTIFICATION_TYPES } from "@/lib/constants/notification-types";
 import { insertNotification } from "@/lib/db/insert-notification";
 import { db } from "@/lib/db";
@@ -28,13 +29,8 @@ async function assertStaffCanAccessMember(targetId: string) {
     return { ok: false as const, error: "Only members can be managed here" };
   }
 
-  if (session.user.role !== "ADMIN") {
-    if (
-      target.halqa !== session.user.halqa ||
-      target.genderUnit !== session.user.genderUnit
-    ) {
-      return { ok: false as const, error: "Forbidden" };
-    }
+  if (!isInStaffScope(session.user, target.halqa, target.genderUnit)) {
+    return { ok: false as const, error: "Forbidden" };
   }
 
   return { ok: true as const, session, target };

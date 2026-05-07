@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isInStaffScope } from "@/lib/auth/staff-scope";
 import {
   sendRegistrationApprovedEmail,
   sendRegistrationRejectedEmail,
@@ -40,13 +41,8 @@ async function assertCanReviewTarget(targetUserId: string) {
     return { ok: false as const, error: "This registration is not pending" };
   }
 
-  if (session.user.role !== "ADMIN") {
-    if (
-      target.halqa !== session.user.halqa ||
-      target.genderUnit !== session.user.genderUnit
-    ) {
-      return { ok: false as const, error: "Forbidden" };
-    }
+  if (!isInStaffScope(session.user, target.halqa, target.genderUnit)) {
+    return { ok: false as const, error: "Forbidden" };
   }
 
   return { ok: true as const, session, target };

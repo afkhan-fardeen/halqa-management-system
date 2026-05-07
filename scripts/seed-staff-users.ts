@@ -56,6 +56,9 @@ type SeedRow = {
   role: "ADMIN" | "INCHARGE" | "SECRETARY";
   halqa: (typeof HALQAS)[number]["halqa"];
   genderUnit: "MALE" | "FEMALE";
+  scopeAllHalqas?: boolean;
+  scopeGender?: "MALE" | "FEMALE" | "BOTH" | null;
+  staffTag?: string | null;
 };
 
 function buildSeeds(): SeedRow[] {
@@ -67,6 +70,8 @@ function buildSeeds(): SeedRow[] {
       role: "ADMIN",
       halqa: "MANAMA",
       genderUnit: "MALE",
+      scopeAllHalqas: true,
+      scopeGender: "BOTH",
     },
   ];
 
@@ -137,6 +142,9 @@ async function main() {
       genderUnit: row.genderUnit,
       status: "ACTIVE",
       language: "EN",
+      scopeAllHalqas: row.scopeAllHalqas ?? false,
+      scopeGender: row.scopeGender ?? null,
+      staffTag: row.staffTag ?? null,
     });
 
     console.log("Created:", row.role, email, `(${row.halqa} ${row.genderUnit})`);

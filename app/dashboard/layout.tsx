@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-client";
 import type { StaffHeaderUser } from "@/components/dashboard/staff-dashboard-header";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isSuperAdmin } from "@/lib/auth/staff-scope";
 import { getUnreadNotificationCount } from "@/lib/queries/notifications";
 import { staffRoleLabel } from "@/lib/utils/profile-display";
 
@@ -12,7 +13,7 @@ export default async function DashboardLayout({
   children: ReactNode;
 }) {
   const [session, unread] = await Promise.all([auth(), getUnreadNotificationCount()]);
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isAdmin = session?.user ? isSuperAdmin(session.user) : false;
 
   const user: StaffHeaderUser = session?.user
     ? {

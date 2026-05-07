@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isSuperAdmin } from "@/lib/auth/staff-scope";
 import { redirect } from "next/navigation";
 import { listAttendanceProgramsForStaff } from "@/lib/queries/attendance";
 import { attendanceKindLabel } from "@/lib/attendance/labels";
@@ -39,7 +40,7 @@ export default async function DashboardAttendanceProgramsPage() {
     return <p className="text-sm text-red-600 dark:text-red-400">{list.error}</p>;
   }
 
-  const isAdmin = session.user.role === "ADMIN";
+  const isAdmin = isSuperAdmin(session.user);
 
   return (
     <div className="space-y-8 md:space-y-10">

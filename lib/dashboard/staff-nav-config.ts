@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Megaphone,
   MessageSquareText,
+  ShieldCheck,
   UserPlus,
   Users,
   Wallet,
@@ -126,6 +127,12 @@ const adminSection: StaffNavSection = {
       label: "Member feedback",
       description: "App feedback",
       icon: MessageSquareText,
+    },
+    {
+      href: "/dashboard/users",
+      label: "Staff users",
+      description: "Create & manage staff",
+      icon: ShieldCheck,
     },
   ],
 };

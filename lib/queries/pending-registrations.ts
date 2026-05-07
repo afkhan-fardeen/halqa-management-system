@@ -1,13 +1,9 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { buildStaffMemberScope } from "@/lib/auth/staff-scope";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-
-const pendingMember = and(
-  eq(users.status, "PENDING"),
-  eq(users.role, "MEMBER"),
-);
 
 export async function getPendingRegistrations() {
   const session = await auth();
@@ -15,22 +11,8 @@ export async function getPendingRegistrations() {
     return [];
   }
 
-  if (session.user.role === "ADMIN") {
-    return db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        phone: users.phone,
-        halqa: users.halqa,
-        genderUnit: users.genderUnit,
-        language: users.language,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .where(pendingMember)
-      .orderBy(desc(users.createdAt));
-  }
+  const scope = buildStaffMemberScope(session.user);
+  const where = and(scope, eq(users.status, "PENDING"));
 
   return db
     .select({
@@ -44,13 +26,7 @@ export async function getPendingRegistrations() {
       createdAt: users.createdAt,
     })
     .from(users)
-    .where(
-      and(
-        pendingMember,
-        eq(users.halqa, session.user.halqa),
-        eq(users.genderUnit, session.user.genderUnit),
-      ),
-    )
+    .where(where)
     .orderBy(desc(users.createdAt));
 }
 
@@ -60,23 +36,12 @@ export async function getPendingRegistrationCount() {
     return 0;
   }
 
-  if (session.user.role === "ADMIN") {
-    const [row] = await db
-      .select({ n: sql<number>`count(*)::int` })
-      .from(users)
-      .where(pendingMember);
-    return row?.n ?? 0;
-  }
+  const scope = buildStaffMemberScope(session.user);
+  const where = and(scope, eq(users.status, "PENDING"));
 
   const [row] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(users)
-    .where(
-      and(
-        pendingMember,
-        eq(users.halqa, session.user.halqa),
-        eq(users.genderUnit, session.user.genderUnit),
-      ),
-    );
+    .where(where);
   return row?.n ?? 0;
 }

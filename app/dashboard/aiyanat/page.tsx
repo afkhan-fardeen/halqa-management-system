@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isSuperAdmin } from "@/lib/auth/staff-scope";
 import { listAiyanatForStaff } from "@/lib/queries/aiyanat";
 import { redirect } from "next/navigation";
 
@@ -28,8 +29,8 @@ export default async function DashboardAiyanatPage() {
       <StaffPageHeader
         title="Aiyanat"
         description={
-          session.user.role === "ADMIN"
-            ? "All halqas."
+          isSuperAdmin(session.user)
+            ? "All halqas, all genders."
             : `Scoped to ${session.user.halqa.replaceAll("_", " ")} · ${session.user.genderUnit}.`
         }
       />

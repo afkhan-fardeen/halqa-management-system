@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { bahrainLocalToUtc, parseTimeHHMM } from "@/lib/attendance/bahrain";
 import { materializeSessionsForProgram } from "@/lib/attendance/generate-sessions";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isInStaffScope } from "@/lib/auth/staff-scope";
 import {
   createAttendanceSessionSchema,
   updateAttendanceSessionSchema,
@@ -45,13 +46,8 @@ export async function upsertAttendanceProgram(
   }
 
   const { halqa, genderUnit } = parsed.data;
-  if (staff.session.user.role !== "ADMIN") {
-    if (
-      staff.session.user.halqa !== halqa ||
-      staff.session.user.genderUnit !== genderUnit
-    ) {
-      return { ok: false, error: "You can only manage programs for your halqa and unit." };
-    }
+  if (!isInStaffScope(staff.session.user, halqa, genderUnit)) {
+    return { ok: false, error: "You can only manage programs for your halqa and unit." };
   }
 
   const tz = parsed.data.timezone?.trim() || "Asia/Bahrain";

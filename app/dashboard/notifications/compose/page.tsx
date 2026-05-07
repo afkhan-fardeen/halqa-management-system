@@ -7,6 +7,7 @@ import {
 } from "@/components/dashboard/staff-page-section";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isSuperAdmin } from "@/lib/auth/staff-scope";
 import { redirect } from "next/navigation";
 
 export default async function DashboardNotifyMembersPage() {
@@ -15,7 +16,7 @@ export default async function DashboardNotifyMembersPage() {
     redirect("/login");
   }
 
-  const isAdmin = session.user.role === "ADMIN";
+  const isAdmin = isSuperAdmin(session.user);
 
   return (
     <div className="space-y-8">

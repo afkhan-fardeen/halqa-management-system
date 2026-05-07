@@ -6,9 +6,9 @@ import {
   attendanceSessions,
   users,
 } from "@/lib/db/schema";
-import type { Halqa } from "@/lib/constants/halqas";
 import { isStaffRole } from "@/lib/auth/roles";
-import type { StaffRole } from "@/lib/auth/roles";
+import { buildStaffHalqaGenderScope, isInStaffScope } from "@/lib/auth/staff-scope";
+import type { Halqa } from "@/lib/constants/halqas";
 
 /** Full text from Drizzle / pg (often nests the Postgres detail in `cause`). */
 function errorMessageDeep(e: unknown): string {
@@ -169,34 +169,24 @@ export async function listMemberAttendanceSessions(
   return [...upcoming, ...past];
 }
 
-function staffScopeWhere(
-  role: StaffRole,
-  halqa: string,
-  genderUnit: string,
-) {
-  if (role === "ADMIN") {
-    return undefined;
-  }
-  return and(
-    eq(attendancePrograms.halqa, halqa as Halqa),
-    eq(attendancePrograms.genderUnit, genderUnit as "MALE" | "FEMALE"),
-  );
-}
-
-export async function listAttendanceProgramsForStaff(session: {
+export type StaffSessionArg = {
   role: string;
-  halqa: string;
-  genderUnit: string;
-}) {
+  halqa: Halqa;
+  genderUnit: "MALE" | "FEMALE";
+  scopeAllHalqas: boolean;
+  scopeGender: "MALE" | "FEMALE" | "BOTH" | null;
+};
+
+export async function listAttendanceProgramsForStaff(session: StaffSessionArg) {
   if (!isStaffRole(session.role)) {
     return { error: "Unauthorized" as const };
   }
 
   try {
-    const extra = staffScopeWhere(
-      session.role as StaffRole,
-      session.halqa,
-      session.genderUnit,
+    const extra = buildStaffHalqaGenderScope(
+      session,
+      attendancePrograms.halqa,
+      attendancePrograms.genderUnit,
     );
 
     const base = db
@@ -231,7 +221,7 @@ export async function listAttendanceProgramsForStaff(session: {
 
 export async function getAttendanceProgramByIdForStaff(
   programId: string,
-  session: { role: string; halqa: string; genderUnit: string },
+  session: StaffSessionArg,
 ) {
   if (!isStaffRole(session.role)) {
     return { error: "Unauthorized" as const };
@@ -248,13 +238,8 @@ export async function getAttendanceProgramByIdForStaff(
       return { error: "Not found" as const };
     }
 
-    if (session.role !== "ADMIN") {
-      if (
-        row.halqa !== session.halqa ||
-        row.genderUnit !== session.genderUnit
-      ) {
-        return { error: "Forbidden" as const };
-      }
+    if (!isInStaffScope(session, row.halqa, row.genderUnit)) {
+      return { error: "Forbidden" as const };
     }
 
     return { program: row };
@@ -265,7 +250,7 @@ export async function getAttendanceProgramByIdForStaff(
 
 export async function getAttendanceSessionWithProgramForStaff(
   sessionId: string,
-  session: { role: string; halqa: string; genderUnit: string },
+  session: StaffSessionArg,
 ) {
   if (!isStaffRole(session.role)) {
     return { error: "Unauthorized" as const };
@@ -289,13 +274,8 @@ export async function getAttendanceSessionWithProgramForStaff(
       return { error: "Not found" as const };
     }
 
-    if (session.role !== "ADMIN") {
-      if (
-        row.program.halqa !== session.halqa ||
-        row.program.genderUnit !== session.genderUnit
-      ) {
-        return { error: "Forbidden" as const };
-      }
+    if (!isInStaffScope(session, row.program.halqa, row.program.genderUnit)) {
+      return { error: "Forbidden" as const };
     }
 
     return row;
@@ -306,7 +286,7 @@ export async function getAttendanceSessionWithProgramForStaff(
 
 export async function listSessionsForProgramForStaff(
   programId: string,
-  session: { role: string; halqa: string; genderUnit: string },
+  session: StaffSessionArg,
 ): Promise<
   | { error: string }
   | { sessions: (typeof attendanceSessions.$inferSelect)[] }
@@ -341,7 +321,7 @@ export type SessionMarkWithMember = {
 
 export async function listMarksForSessionForStaff(
   sessionId: string,
-  staffSession: { role: string; halqa: string; genderUnit: string },
+  staffSession: StaffSessionArg,
 ): Promise<
   | { error: string }
   | {

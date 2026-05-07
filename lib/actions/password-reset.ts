@@ -5,6 +5,7 @@ import { and, desc, eq, gt } from "drizzle-orm";
 import { auth } from "@/auth";
 import { hashPassword } from "@/lib/auth/credentials";
 import { isStaffRole } from "@/lib/auth/roles";
+import { isInStaffScope } from "@/lib/auth/staff-scope";
 import {
   generateResetToken,
   hashResetToken,
@@ -198,13 +199,8 @@ export async function adminSendPasswordResetEmail(
     return;
   }
 
-  if (session.user.role !== "ADMIN") {
-    if (
-      target.halqa !== session.user.halqa ||
-      target.genderUnit !== session.user.genderUnit
-    ) {
-      return;
-    }
+  if (!isInStaffScope(session.user, target.halqa, target.genderUnit)) {
+    return;
   }
 
   const token = generateResetToken();

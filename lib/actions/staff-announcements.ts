@@ -3,6 +3,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { buildStaffMemberScope, isSuperAdmin } from "@/lib/auth/staff-scope";
 import { NOTIFICATION_TYPES } from "@/lib/constants/notification-types";
 import { insertNotification } from "@/lib/db/insert-notification";
 import { db } from "@/lib/db";
@@ -24,51 +25,56 @@ const filterSchema = z.object({
   genderUnit: z.enum(GENDER_UNITS).optional(),
 });
 
-function buildMemberScope(args: {
+type StaffUserArg = {
   role: string;
-  sessionHalqa: string;
-  sessionGenderUnit: string;
-  filterHalqa?: string;
-  filterGenderUnit?: string;
-}) {
+  halqa: Halqa;
+  genderUnit: "MALE" | "FEMALE";
+  scopeAllHalqas: boolean;
+  scopeGender: "MALE" | "FEMALE" | "BOTH" | null;
+};
+
+/**
+ * Builds the recipient scope for announcements.
+ * Staff scope (from session) is always applied first.
+ * Super-admin (all halqas + all genders) may further narrow by optional halqa/gender filters.
+ * Gender-scoped or halqa-scoped admins can only filter within their own scope.
+ */
+function buildAnnouncementScope(
+  staffUser: StaffUserArg,
+  filterHalqa?: string,
+  filterGenderUnit?: string,
+) {
   const activeMember = and(eq(users.role, "MEMBER"), eq(users.status, "ACTIVE"));
 
-  if (args.role === "ADMIN") {
-    const f = filterSchema.safeParse({
-      halqa: args.filterHalqa || undefined,
-      genderUnit: args.filterGenderUnit || undefined,
-    });
-    if (!f.success) {
-      return { error: "Invalid filter" as const, where: null };
-    }
-    const h = f.data.halqa;
-    const g = f.data.genderUnit;
-    if (h && g) {
-      return {
-        error: null,
-        where: and(activeMember, eq(users.halqa, h), eq(users.genderUnit, g)),
-      };
-    }
-    if (h) {
-      return { error: null, where: and(activeMember, eq(users.halqa, h)) };
-    }
-    if (g) {
-      return {
-        error: null,
-        where: and(activeMember, eq(users.genderUnit, g)),
-      };
-    }
-    return { error: null, where: activeMember };
+  if (!isSuperAdmin(staffUser)) {
+    return { error: null, where: and(activeMember, buildStaffMemberScope(staffUser)) };
   }
 
-  return {
-    error: null,
-    where: and(
-      activeMember,
-      eq(users.halqa, args.sessionHalqa as Halqa),
-      eq(users.genderUnit, args.sessionGenderUnit as (typeof GENDER_UNITS)[number]),
-    ),
-  };
+  const f = filterSchema.safeParse({
+    halqa: filterHalqa || undefined,
+    genderUnit: filterGenderUnit || undefined,
+  });
+  if (!f.success) {
+    return { error: "Invalid filter" as const, where: null };
+  }
+  const h = f.data.halqa;
+  const g = f.data.genderUnit;
+  if (h && g) {
+    return {
+      error: null,
+      where: and(activeMember, eq(users.halqa, h), eq(users.genderUnit, g)),
+    };
+  }
+  if (h) {
+    return { error: null, where: and(activeMember, eq(users.halqa, h)) };
+  }
+  if (g) {
+    return {
+      error: null,
+      where: and(activeMember, eq(users.genderUnit, g)),
+    };
+  }
+  return { error: null, where: activeMember };
 }
 
 export type StaffAnnouncementState =
@@ -90,13 +96,11 @@ export async function getStaffAnnouncementRecipientCount(options: {
     return { error: "Unauthorized" };
   }
 
-  const scope = buildMemberScope({
-    role: session.user.role,
-    sessionHalqa: session.user.halqa,
-    sessionGenderUnit: session.user.genderUnit,
-    filterHalqa: session.user.role === "ADMIN" ? options.halqa : undefined,
-    filterGenderUnit: session.user.role === "ADMIN" ? options.genderUnit : undefined,
-  });
+  const scope = buildAnnouncementScope(
+    session.user,
+    isSuperAdmin(session.user) ? options.halqa : undefined,
+    isSuperAdmin(session.user) ? options.genderUnit : undefined,
+  );
 
   if (scope.error || !scope.where) {
     return { error: scope.error ?? "Invalid scope" };
@@ -135,22 +139,15 @@ export async function sendStaffAnnouncements(
     return { ok: false, error: parsedMsg.error.issues[0]?.message ?? "Invalid message" };
   }
 
-  const filterHalqa =
-    session.user.role === "ADMIN"
-      ? String(formData.get("halqa") ?? "").trim() || undefined
-      : undefined;
-  const filterGenderUnit =
-    session.user.role === "ADMIN"
-      ? String(formData.get("genderUnit") ?? "").trim() || undefined
-      : undefined;
+  const superAdmin = isSuperAdmin(session.user);
+  const filterHalqa = superAdmin
+    ? String(formData.get("halqa") ?? "").trim() || undefined
+    : undefined;
+  const filterGenderUnit = superAdmin
+    ? String(formData.get("genderUnit") ?? "").trim() || undefined
+    : undefined;
 
-  const scope = buildMemberScope({
-    role: session.user.role,
-    sessionHalqa: session.user.halqa,
-    sessionGenderUnit: session.user.genderUnit,
-    filterHalqa,
-    filterGenderUnit,
-  });
+  const scope = buildAnnouncementScope(session.user, filterHalqa, filterGenderUnit);
 
   if (scope.error || !scope.where) {
     return { ok: false, error: scope.error ?? "Invalid scope" };
@@ -168,10 +165,9 @@ export async function sendStaffAnnouncements(
     };
   }
 
-  const body =
-    session.user.role === "ADMIN"
-      ? parsedMsg.data
-      : `[From your halqa team] ${parsedMsg.data}`;
+  const body = superAdmin
+    ? parsedMsg.data
+    : `[From your halqa team] ${parsedMsg.data}`;
 
   for (const r of recipients) {
     await insertNotification({

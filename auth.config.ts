@@ -100,6 +100,9 @@ export const authConfig: NextAuthConfig = {
         token.genderUnit = user.genderUnit;
         token.language = user.language;
         token.status = user.status;
+        token.staffTag = user.staffTag;
+        token.scopeAllHalqas = user.scopeAllHalqas;
+        token.scopeGender = user.scopeGender;
       }
       return token;
     },
@@ -111,6 +114,9 @@ export const authConfig: NextAuthConfig = {
         session.user.genderUnit = token.genderUnit as typeof session.user.genderUnit;
         session.user.language = token.language as typeof session.user.language;
         session.user.status = token.status as typeof session.user.status;
+        session.user.staffTag = token.staffTag as typeof session.user.staffTag;
+        session.user.scopeAllHalqas = token.scopeAllHalqas as boolean;
+        session.user.scopeGender = token.scopeGender as typeof session.user.scopeGender;
       }
       return session;
     },

@@ -1,30 +1,17 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { buildStaffMemberScope } from "@/lib/auth/staff-scope";
 import { db } from "@/lib/db";
 import { contacts, dailyLogs, users } from "@/lib/db/schema";
 import { parseYmdToUtcDate } from "@/lib/utils/date";
-import type { Halqa } from "@/lib/constants/halqas";
 
-type GenderUnit = "MALE" | "FEMALE";
-
-type Scope =
-  | { type: "admin" }
-  | { type: "unit"; halqa: Halqa; genderUnit: GenderUnit };
-
-async function getScope(): Promise<Scope | null> {
+async function getStaffUserScope() {
   const session = await auth();
   if (!session?.user || !isStaffRole(session.user.role)) {
     return null;
   }
-  if (session.user.role === "ADMIN") {
-    return { type: "admin" };
-  }
-  return {
-    type: "unit",
-    halqa: session.user.halqa,
-    genderUnit: session.user.genderUnit,
-  };
+  return session.user;
 }
 
 export type StaffDailyLogRow = {
@@ -60,8 +47,8 @@ export async function listDailyLogsForStaff(options: {
   page: number;
   pageSize: number;
 }): Promise<{ rows: StaffDailyLogRow[]; total: number }> {
-  const scope = await getScope();
-  if (!scope) {
+  const staffUser = await getStaffUserScope();
+  if (!staffUser) {
     return { rows: [], total: 0 };
   }
 
@@ -80,15 +67,9 @@ export async function listDailyLogsForStaff(options: {
   const dateFilter =
     dateParts.length > 0 ? and(...dateParts) : undefined;
 
-  const unitFilter =
-    scope.type === "admin"
-      ? undefined
-      : and(
-          eq(users.halqa, scope.halqa),
-          eq(users.genderUnit, scope.genderUnit),
-        );
+  const memberScope = buildStaffMemberScope(staffUser);
 
-  const parts = [dateFilter, unitFilter].filter(
+  const parts = [dateFilter, memberScope].filter(
     (x): x is NonNullable<typeof x> => x != null,
   );
   const whereClause = parts.length > 0 ? and(...parts) : undefined;
@@ -149,8 +130,8 @@ export async function listContactsForStaff(options: {
   page: number;
   pageSize: number;
 }): Promise<{ rows: StaffContactRow[]; total: number }> {
-  const scope = await getScope();
-  if (!scope) {
+  const staffUser = await getStaffUserScope();
+  if (!staffUser) {
     return { rows: [], total: 0 };
   }
 
@@ -158,15 +139,7 @@ export async function listContactsForStaff(options: {
   const pageSize = Math.min(50_000, Math.max(1, options.pageSize));
   const offset = (page - 1) * pageSize;
 
-  const unitFilter =
-    scope.type === "admin"
-      ? undefined
-      : and(
-          eq(users.halqa, scope.halqa),
-          eq(users.genderUnit, scope.genderUnit),
-        );
-
-  const whereClause = unitFilter ?? undefined;
+  const whereClause = buildStaffMemberScope(staffUser);
 
   const countQuery = db
     .select({ n: sql<number>`count(*)::int` })

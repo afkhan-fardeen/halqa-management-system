@@ -5,6 +5,7 @@ import {
   StaffPanel,
 } from "@/components/dashboard/staff-page-section";
 import { getPendingRegistrations } from "@/lib/queries/pending-registrations";
+import { isSuperAdmin } from "@/lib/auth/staff-scope";
 
 export default async function DashboardRegistrationsPage() {
   const session = await auth();
@@ -21,9 +22,9 @@ export default async function DashboardRegistrationsPage() {
         description={
           <>
             Review people who signed up to join your halqa.{" "}
-            {session?.user?.role !== "ADMIN"
-              ? "You only see requests that match your halqa and gender."
-              : "You see all pending requests across halqas."}
+            {session?.user && isSuperAdmin(session.user)
+              ? "You see all pending requests across halqas."
+              : "You only see requests that match your halqa and gender."}
           </>
         }
       />

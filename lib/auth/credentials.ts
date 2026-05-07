@@ -29,6 +29,9 @@ export async function verifyCredentials(email: string, password: string) {
         genderUnit: (typeof users.$inferSelect)["genderUnit"];
         status: (typeof users.$inferSelect)["status"];
         language: (typeof users.$inferSelect)["language"];
+        staffTag: (typeof users.$inferSelect)["staffTag"];
+        scopeAllHalqas: (typeof users.$inferSelect)["scopeAllHalqas"];
+        scopeGender: (typeof users.$inferSelect)["scopeGender"];
       }
     | undefined;
 
@@ -44,6 +47,9 @@ export async function verifyCredentials(email: string, password: string) {
         genderUnit: users.genderUnit,
         status: users.status,
         language: users.language,
+        staffTag: users.staffTag,
+        scopeAllHalqas: users.scopeAllHalqas,
+        scopeGender: users.scopeGender,
       })
       .from(users)
       .where(eq(users.email, normalized))
@@ -77,5 +83,8 @@ export async function verifyCredentials(email: string, password: string) {
     genderUnit: row.genderUnit,
     language: row.language,
     status: row.status,
+    staffTag: row.staffTag,
+    scopeAllHalqas: row.scopeAllHalqas,
+    scopeGender: row.scopeGender,
   };
 }

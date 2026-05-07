@@ -1,6 +1,7 @@
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { buildStaffMemberScope } from "@/lib/auth/staff-scope";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 
@@ -37,14 +38,7 @@ export async function listMembersForStaff(options: {
   const pageSize = Math.min(50_000, Math.max(1, options.pageSize));
   const offset = (page - 1) * pageSize;
 
-  const scope =
-    session.user.role === "ADMIN"
-      ? eq(users.role, "MEMBER")
-      : and(
-          eq(users.role, "MEMBER"),
-          eq(users.halqa, session.user.halqa),
-          eq(users.genderUnit, session.user.genderUnit),
-        );
+  const scope = buildStaffMemberScope(session.user);
 
   const q = options.q?.trim();
   const search =
@@ -110,14 +104,7 @@ export async function getMemberDirectoryKpis(options: {
     };
   }
 
-  const scope =
-    session.user.role === "ADMIN"
-      ? eq(users.role, "MEMBER")
-      : and(
-          eq(users.role, "MEMBER"),
-          eq(users.halqa, session.user.halqa),
-          eq(users.genderUnit, session.user.genderUnit),
-        );
+  const scope = buildStaffMemberScope(session.user);
 
   const q = options.q?.trim();
   const search =

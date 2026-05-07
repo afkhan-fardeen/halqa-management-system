@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { buildStaffMemberScope, isInStaffScope } from "@/lib/auth/staff-scope";
 import { db } from "@/lib/db";
 import { aiyanat, contacts, dailyLogs, users } from "@/lib/db/schema";
 import {
@@ -77,14 +78,7 @@ export async function listMembersForReportPicker(): Promise<
   const session = await auth();
   if (!session?.user || !isStaffRole(session.user.role)) return [];
 
-  const scope =
-    session.user.role === "ADMIN"
-      ? eq(users.role, "MEMBER")
-      : and(
-          eq(users.role, "MEMBER"),
-          eq(users.halqa, session.user.halqa),
-          eq(users.genderUnit, session.user.genderUnit),
-        );
+  const scope = buildStaffMemberScope(session.user);
 
   return db
     .select({ id: users.id, name: users.name, email: users.email })
@@ -151,16 +145,11 @@ export async function getMemberForStaffView(memberId: string) {
 
   if (!member || member.role !== "MEMBER") return null;
 
-  if (session.user.role === "ADMIN") return member;
-
-  if (
-    member.halqa === session.user.halqa &&
-    member.genderUnit === session.user.genderUnit
-  ) {
-    return member;
+  if (!isInStaffScope(session.user, member.halqa, member.genderUnit)) {
+    return null;
   }
 
-  return null;
+  return member;
 }
 
 export type MemberMonthlyContactRow = {

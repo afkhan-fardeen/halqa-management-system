@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
+import { buildStaffMemberScope } from "@/lib/auth/staff-scope";
 import { db } from "@/lib/db";
 import { aiyanat, users } from "@/lib/db/schema";
 
@@ -61,23 +62,12 @@ export async function listAiyanatForStaff(): Promise<StaffAiyanatRow[]> {
     return [];
   }
 
-  if (session.user.role === "ADMIN") {
-    return db
-      .select(staffSelect)
-      .from(aiyanat)
-      .innerJoin(users, eq(aiyanat.userId, users.id))
-      .orderBy(desc(aiyanat.month), users.name);
-  }
+  const memberScope = buildStaffMemberScope(session.user);
 
   return db
     .select(staffSelect)
     .from(aiyanat)
     .innerJoin(users, eq(aiyanat.userId, users.id))
-    .where(
-      and(
-        eq(users.halqa, session.user.halqa),
-        eq(users.genderUnit, session.user.genderUnit),
-      ),
-    )
+    .where(memberScope)
     .orderBy(desc(aiyanat.month), users.name);
 }

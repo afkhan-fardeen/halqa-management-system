@@ -59,6 +59,13 @@ export const aiyanatStatusEnum = pgEnum("aiyanat_status", [
   "NOT_PAID",
 ]);
 
+/**
+ * Controls which gender(s) a staff user may see across halqas.
+ * MALE / FEMALE = scoped to that gender only; BOTH = no gender filter.
+ * null (DB default) means "use own genderUnit" — identical to current INCHARGE/SECRETARY behaviour.
+ */
+export const scopeGenderEnum = pgEnum("scope_gender", ["MALE", "FEMALE", "BOTH"]);
+
 export const users = pgTable(
   "users",
   {
@@ -81,6 +88,15 @@ export const users = pgTable(
     approvedBy: uuid("approved_by"),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     rejectionReason: text("rejection_reason"),
+    /** Optional display label for staff users, e.g. "Ladies Incharge", "Joint Secretary". No effect on access logic. */
+    staffTag: varchar("staff_tag", { length: 100 }),
+    /** When true, this staff user sees members from all halqas; otherwise only their own halqa. Defaults to false. */
+    scopeAllHalqas: boolean("scope_all_halqas").notNull().default(false),
+    /**
+     * Gender visibility scope for staff. MALE / FEMALE = restricted to that gender across all/scoped halqas.
+     * BOTH = no gender filter. null = use own genderUnit (default for INCHARGE/SECRETARY).
+     */
+    scopeGender: scopeGenderEnum("scope_gender"),
   },
   (table) => [
     index("users_halqa_gender_status_idx").on(

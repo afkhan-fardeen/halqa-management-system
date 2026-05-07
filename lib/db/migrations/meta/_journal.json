@@ -92,6 +92,13 @@
       "when": 1775500000000,
       "tag": "0012_daily_log_literature_yes_no",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1775600000000,
+      "tag": "0013_scoped_staff_permissions",
+      "breakpoints": true
     }
   ]
 }

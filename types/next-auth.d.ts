@@ -6,6 +6,8 @@ export type { Halqa };
 export type GenderUnit = "MALE" | "FEMALE";
 export type Language = "EN" | "UR";
 export type UserStatus = "PENDING" | "ACTIVE" | "REJECTED" | "DEACTIVATED";
+/** Gender visibility scope for staff. null means "use own genderUnit". */
+export type ScopeGender = "MALE" | "FEMALE" | "BOTH" | null;
 
 declare module "next-auth" {
   interface Session {
@@ -16,6 +18,9 @@ declare module "next-auth" {
       genderUnit: GenderUnit;
       language: Language;
       status: UserStatus;
+      staffTag: string | null;
+      scopeAllHalqas: boolean;
+      scopeGender: ScopeGender;
     } & DefaultSession["user"];
   }
 
@@ -25,6 +30,9 @@ declare module "next-auth" {
     genderUnit: GenderUnit;
     language: Language;
     status: UserStatus;
+    staffTag: string | null;
+    scopeAllHalqas: boolean;
+    scopeGender: ScopeGender;
   }
 }
 
@@ -36,5 +44,8 @@ declare module "next-auth/jwt" {
     genderUnit: GenderUnit;
     language: Language;
     status: UserStatus;
+    staffTag: string | null;
+    scopeAllHalqas: boolean;
+    scopeGender: ScopeGender;
   }
 }
