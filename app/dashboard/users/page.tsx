@@ -31,7 +31,7 @@ export default async function DashboardUsersPage() {
         description="Create and manage admin, incharge, and secretary accounts. Set their visibility scope (which halqas and gender units they can see)."
       />
 
-      <StaffUsersClient staffUsers={staffUsers} />
+      <StaffUsersClient staffUsers={staffUsers} currentUserId={session.user.id} />
     </div>
   );
 }

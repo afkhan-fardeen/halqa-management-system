@@ -24,6 +24,7 @@ import {
   RadioGroup,
   Select,
   Stack,
+  Button,
   Typography,
 } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -309,6 +310,10 @@ export function DailyLogForm({
               });
 
       if (!parsed.success) {
+        if (!silent) {
+          const msg = parsed.error.issues[0]?.message ?? "Could not save";
+          toast.error(msg);
+        }
         return;
       }
 
@@ -341,12 +346,6 @@ export function DailyLogForm({
     },
     [genderUnit, router, userId],
   );
-
-  useEffect(() => {
-    if (!autoSaveReady) return;
-    const id = setTimeout(() => flushSection("salah", { silent: true }), 1500);
-    return () => clearTimeout(id);
-  }, [form.salah, form.date, autoSaveReady, flushSection]);
 
   useEffect(() => {
     if (!autoSaveReady) return;
@@ -405,7 +404,7 @@ export function DailyLogForm({
           Today&apos;s report
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.55 }}>
-          Salah, Quran, and literature — changes save automatically a few seconds after you edit.
+          Quran and literature save automatically shortly after you edit. Use Save prayers when you are done with salah.
         </Typography>
 
         <div className="hms-daily-date-bar">
@@ -529,6 +528,15 @@ export function DailyLogForm({
                   </div>
                 ))}
               </div>
+              <Button
+                variant="contained"
+                disableElevation
+                disabled={pendingSection !== null}
+                onClick={() => flushSection("salah")}
+                sx={{ alignSelf: "flex-start", mt: 0.5 }}
+              >
+                {pendingSection === "salah" ? "Saving…" : "Save prayers"}
+              </Button>
             </Stack>
           </CardContent>
         </Card>

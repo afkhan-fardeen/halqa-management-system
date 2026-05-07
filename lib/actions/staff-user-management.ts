@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, ne } from "drizzle-orm";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { isStaffRole } from "@/lib/auth/roles";
@@ -207,6 +207,94 @@ export async function editStaffUser(
 
   revalidatePath("/dashboard/users");
   return { ok: true, userId };
+}
+
+function isSuperAdminStaffRow(row: {
+  scopeAllHalqas: boolean;
+  scopeGender: string | null;
+}) {
+  return row.scopeAllHalqas && row.scopeGender === "BOTH";
+}
+
+export type DeleteStaffUserResult =
+  | { ok: true }
+  | { ok: false; error: string };
+
+/** Permanently deletes a staff account (super-admin only). Cannot delete self or the last super-admin. */
+export async function deleteStaffUser(userId: string): Promise<DeleteStaffUserResult> {
+  const gate = await assertSuperAdmin();
+  if (!gate.ok) {
+    return { ok: false, error: gate.error };
+  }
+
+  const session = await auth();
+  const actorId = session?.user?.id;
+  if (!actorId) {
+    return { ok: false, error: "Unauthorized" };
+  }
+  if (actorId === userId) {
+    return { ok: false, error: "You cannot delete your own account" };
+  }
+
+  const [target] = await db
+    .select({
+      id: users.id,
+      role: users.role,
+      scopeAllHalqas: users.scopeAllHalqas,
+      scopeGender: users.scopeGender,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!target) {
+    return { ok: false, error: "User not found" };
+  }
+  if (!isStaffRole(target.role)) {
+    return { ok: false, error: "Only staff accounts can be deleted here" };
+  }
+
+  if (isSuperAdminStaffRow(target)) {
+    const [otherSuper] = await db
+      .select({ n: count() })
+      .from(users)
+      .where(
+        and(
+          eq(users.scopeAllHalqas, true),
+          eq(users.scopeGender, "BOTH"),
+          ne(users.id, userId),
+          inArray(users.role, ["ADMIN", "INCHARGE", "SECRETARY"]),
+        ),
+      );
+    const others = Number(otherSuper?.n ?? 0);
+    if (others === 0) {
+      return {
+        ok: false,
+        error:
+          "Cannot remove the last global super-admin. Promote another staff user first.",
+      };
+    }
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({ approvedBy: null, approvedAt: null })
+        .where(eq(users.approvedBy, userId));
+
+      await tx.delete(users).where(eq(users.id, userId));
+    });
+  } catch (e) {
+    console.error("[deleteStaffUser]", e);
+    return {
+      ok: false,
+      error: "Could not delete user. They may still be referenced somewhere.",
+    };
+  }
+
+  revalidatePath("/dashboard/users");
+  return { ok: true };
 }
 
 export type StaffUserRow = {
